@@ -256,7 +256,8 @@ def tem_permissao(*chaves):
 def primeira_pagina_permitida():
     opcoes = [
         ("/convenios", ("ver_convenios",)),
-        ("/reqs-formularios", ("ver_reqs", "ver_formularios")),
+        ("/reqs", ("ver_reqs",)),
+        ("/formularios", ("ver_formularios",)),
         ("/endocrinos", ("ver_endocrinos", "ver_agendamentos")),
         ("/usuarios-cargos", ("ver_usuarios_cargos", "ver_usuarios", "ver_cargos")),
     ]
@@ -318,7 +319,6 @@ def proteger_rotas_por_permissao():
         ("/formularios/excluir", ("excluir_formularios", "excluir_formulario")),
         ("/formularios", ("ver_formularios",)),
 
-        ("/reqs-formularios", ("ver_reqs", "ver_formularios")),
 
         ("/endocrinos/exame", ("gerenciar_exames",)),
         ("/endocrinos/status", ("gerenciar_status",)),
@@ -613,6 +613,48 @@ def reqs_formularios():
     )
 
 
+@app.route("/reqs")
+def reqs():
+    if not usuario_logado():
+        return redirect("/login")
+
+    resultado = (
+        supabase.table("reqs")
+        .select("*")
+        .order("criado_em", desc=True)
+        .execute()
+    )
+
+    return render_template(
+        "reqs.html",
+        reqs=resultado.data,
+        nome=session.get("usuario_nome"),
+        cargo=session.get("usuario_cargo"),
+        permissoes=permissoes_usuario()
+    )
+
+
+@app.route("/formularios")
+def formularios():
+    if not usuario_logado():
+        return redirect("/login")
+
+    resultado = (
+        supabase.table("formularios")
+        .select("*")
+        .order("criado_em", desc=True)
+        .execute()
+    )
+
+    return render_template(
+        "formularios.html",
+        formularios=resultado.data,
+        nome=session.get("usuario_nome"),
+        cargo=session.get("usuario_cargo"),
+        permissoes=permissoes_usuario()
+    )
+
+
 @app.route("/reqs/nova", methods=["POST"])
 def nova_req():
     if not usuario_logado():
@@ -624,7 +666,7 @@ def nova_req():
         "criado_por": session.get("usuario_id")
     }).execute()
 
-    return redirect("/reqs-formularios")
+    return redirect("/reqs")
 
 
 @app.route("/reqs/editar/<req_id>", methods=["POST"])
@@ -637,7 +679,7 @@ def editar_req(req_id):
         "link": request.form.get("link")
     }).eq("id", req_id).execute()
 
-    return redirect("/reqs-formularios")
+    return redirect("/reqs")
 
 
 @app.route("/reqs/excluir/<req_id>", methods=["POST"])
@@ -646,7 +688,7 @@ def excluir_req(req_id):
         return redirect("/login")
 
     supabase.table("reqs").delete().eq("id", req_id).execute()
-    return redirect("/reqs-formularios")
+    return redirect("/reqs")
 
 
 @app.route("/formularios/novo", methods=["POST"])
@@ -658,7 +700,7 @@ def novo_formulario():
     arquivo_pdf = request.files.get("arquivo_pdf")
 
     if not nome or not arquivo_pdf:
-        return redirect("/reqs-formularios?aba=formularios")
+        return redirect("/formularios")
 
     pdf_path = salvar_pdf(arquivo_pdf)
 
@@ -686,7 +728,7 @@ def configurar_formulario(formulario_id):
     formulario_result = supabase.table("formularios").select("*").eq("id", formulario_id).execute()
 
     if not formulario_result.data:
-        return redirect("/reqs-formularios?aba=formularios")
+        return redirect("/formularios")
 
     formulario = formulario_result.data[0]
     pdf = dados_pdf(formulario_id, formulario["arquivo_pdf"], pagina)
@@ -786,7 +828,7 @@ def preencher_formulario(formulario_id):
     formulario_result = supabase.table("formularios").select("*").eq("id", formulario_id).execute()
 
     if not formulario_result.data:
-        return redirect("/reqs-formularios?aba=formularios")
+        return redirect("/formularios")
 
     perguntas_result = (
         supabase.table("formulario_perguntas")
@@ -814,7 +856,7 @@ def gerar_pdf_preenchido(formulario_id):
     formulario_result = supabase.table("formularios").select("*").eq("id", formulario_id).execute()
 
     if not formulario_result.data:
-        return redirect("/reqs-formularios?aba=formularios")
+        return redirect("/formularios")
 
     formulario = formulario_result.data[0]
 
@@ -876,7 +918,7 @@ def excluir_formulario(formulario_id):
         return redirect("/login")
 
     supabase.table("formularios").delete().eq("id", formulario_id).execute()
-    return redirect("/reqs-formularios?aba=formularios")
+    return redirect("/formularios")
 
 
 @app.route("/endocrinos")
