@@ -1,1 +1,353 @@
-{% extends '_layout.html' %}{% set titulo='Configurar Formulário - SINTER' %}{% block conteudo %}<h1>Configurar Formulário</h1><h2>{{ formulario.nome }}</h2><p>Página {{ pagina_atual + 1 }} de {{ total_paginas }}</p><img src="{{ imagem_pdf }}" style="max-width:100%;border:1px solid #ddd"><h2>Perguntas</h2>{% if tem_permissao('configurar_formularios') %}<form method="POST" action="/formularios/perguntas/nova/{{ formulario.id }}"><input type="hidden" name="pagina" value="{{ pagina_atual }}"><input name="pergunta" placeholder="Pergunta" required><select name="tipo"><option value="texto">Texto</option><option value="checkbox">Checkbox</option></select><input name="ordem" type="number" placeholder="Ordem"><input name="pos_x" placeholder="X"><input name="pos_y" placeholder="Y"><button>Adicionar</button></form>{% endif %}<div class="lista-cards">{% for pergunta in perguntas %}<div class="card-lista"><strong>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</strong><p>Tipo: {{ pergunta.tipo }} | X: {{ pergunta.pos_x }} | Y: {{ pergunta.pos_y }}</p>{% if tem_permissao('configurar_formularios') %}<form method="POST" action="/formularios/perguntas/excluir/{{ pergunta.id }}/{{ formulario.id }}"><input type="hidden" name="pagina" value="{{ pagina_atual }}"><button>Excluir</button></form>{% endif %}</div>{% endfor %}</div>{% endblock %}
+{% extends '_layout.html' %}
+{% set titulo = 'Configurar Formulário - SINTER' %}
+
+{% block conteudo %}
+
+<style>
+    .config-formulario {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 25px;
+        align-items: start;
+    }
+
+    .pdf-area {
+        background: white;
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .pdf-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .pdf-toolbar a,
+    .pdf-toolbar button {
+        width: auto;
+        margin-top: 0;
+        padding: 10px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        background: #0077b6;
+        color: white;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .pdf-toolbar a.desativado {
+        background: #9ca3af;
+        pointer-events: none;
+    }
+
+    .pdf-container {
+        position: relative;
+        display: inline-block;
+        border: 1px solid #d1d5db;
+        background: #f8fafc;
+        max-width: 100%;
+        overflow: auto;
+    }
+
+    #imagemPdf {
+        display: block;
+        max-width: 100%;
+        cursor: crosshair;
+    }
+
+    .marcador {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        background: #dc2626;
+        border: 3px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 2px 8px rgba(0,0,0,.35);
+        z-index: 5;
+    }
+
+    .marcador span {
+        position: absolute;
+        top: -28px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #111827;
+        color: white;
+        font-size: 11px;
+        padding: 3px 6px;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+
+    #marcadorNovo {
+        background: #16a34a;
+        display: none;
+        z-index: 10;
+    }
+
+    .painel-config {
+        background: white;
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        position: sticky;
+        top: 20px;
+    }
+
+    .painel-config h2 {
+        color: #0077b6;
+        margin-bottom: 12px;
+    }
+
+    .coordenadas {
+        background: #f1f5f9;
+        padding: 12px;
+        border-radius: 10px;
+        margin: 12px 0;
+        font-size: 14px;
+    }
+
+    .lista-perguntas {
+        margin-top: 25px;
+        display: grid;
+        gap: 12px;
+    }
+
+    .pergunta-card {
+        background: white;
+        padding: 14px;
+        border-radius: 14px;
+        box-shadow: 0 5px 16px rgba(0,0,0,.06);
+        border-left: 5px solid #0077b6;
+    }
+
+    .pergunta-card strong {
+        color: #0077b6;
+    }
+
+    .pergunta-acoes {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .pergunta-acoes button {
+        width: auto;
+        margin-top: 0;
+        padding: 8px 12px;
+    }
+
+    .btn-excluir {
+        background: #dc2626;
+    }
+
+    .btn-excluir:hover {
+        background: #991b1b;
+    }
+
+    .aviso-clique {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+</style>
+
+<section class="barra-acoes">
+    <div>
+        <h1>Configurar Formulário</h1>
+        <p>{{ formulario.nome }}</p>
+    </div>
+</section>
+
+<div class="config-formulario">
+
+    <div class="pdf-area">
+
+        <div class="pdf-toolbar">
+            <div>
+                <strong>Página {{ pagina_atual + 1 }} de {{ total_paginas }}</strong>
+            </div>
+
+            <div>
+                {% if pagina_atual > 0 %}
+                <a href="/formularios/configurar/{{ formulario.id }}?pagina={{ pagina_atual - 1 }}">← Página anterior</a>
+                {% else %}
+                <a class="desativado">← Página anterior</a>
+                {% endif %}
+
+                {% if pagina_atual + 1 < total_paginas %}
+                <a href="/formularios/configurar/{{ formulario.id }}?pagina={{ pagina_atual + 1 }}">Próxima página →</a>
+                {% else %}
+                <a class="desativado">Próxima página →</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="aviso-clique">
+            Clique no local do PDF onde a resposta deve aparecer.
+        </div>
+
+        <div class="pdf-container" id="pdfContainer">
+            <img id="imagemPdf" src="{{ imagem_pdf }}" data-zoom="{{ zoom_pdf }}">
+
+            <div id="marcadorNovo" class="marcador">
+                <span>Novo campo</span>
+            </div>
+
+            {% for pergunta in perguntas %}
+                {% if pergunta.pagina|int == pagina_atual|int and pergunta.pos_x and pergunta.pos_y %}
+                <div
+                    class="marcador marcador-existente"
+                    data-x="{{ pergunta.pos_x }}"
+                    data-y="{{ pergunta.pos_y }}"
+                    data-label="{{ pergunta.ordem }} - {{ pergunta.pergunta }}"
+                >
+                    <span>{{ pergunta.ordem }}</span>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <h2 style="margin-top: 25px;">Perguntas cadastradas</h2>
+
+        <div class="lista-perguntas">
+            {% for pergunta in perguntas %}
+            <div class="pergunta-card">
+                <strong>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</strong>
+                <p>Tipo: {{ pergunta.tipo }}</p>
+                <p>Página: {{ pergunta.pagina|int + 1 }} | X: {{ pergunta.pos_x }} | Y: {{ pergunta.pos_y }}</p>
+
+                {% if tem_permissao('configurar_formularios') %}
+                <div class="pergunta-acoes">
+                    <form method="POST" action="/formularios/perguntas/excluir/{{ pergunta.id }}/{{ formulario.id }}" onsubmit="return confirm('Excluir pergunta?')">
+                        <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                        <button type="submit" class="btn-excluir">Excluir</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="sem-registros">
+                Nenhuma pergunta cadastrada nesta formulário.
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    {% if tem_permissao('configurar_formularios') %}
+    <aside class="painel-config">
+        <h2>Novo Campo</h2>
+
+        <form method="POST" action="/formularios/perguntas/nova/{{ formulario.id }}">
+
+            <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+
+            <label>Pergunta</label>
+            <input name="pergunta" placeholder="Ex: Nome completo" required>
+
+            <label>Tipo</label>
+            <select name="tipo" required>
+                <option value="texto">Texto</option>
+                <option value="checkbox">Checkbox</option>
+            </select>
+
+            <label>Ordem</label>
+            <input name="ordem" type="number" placeholder="Ex: 1" value="{{ perguntas|length + 1 }}">
+
+            <div class="coordenadas">
+                <strong>Posição selecionada:</strong><br>
+                X: <span id="textoX">nenhum</span><br>
+                Y: <span id="textoY">nenhum</span>
+            </div>
+
+            <label>Posição X</label>
+            <input id="posX" name="pos_x" readonly required>
+
+            <label>Posição Y</label>
+            <input id="posY" name="pos_y" readonly required>
+
+            <button type="submit" class="btn-salvar">
+                Adicionar Campo
+            </button>
+
+        </form>
+    </aside>
+    {% endif %}
+
+</div>
+
+<script>
+const imagemPdf = document.getElementById("imagemPdf");
+const pdfContainer = document.getElementById("pdfContainer");
+const marcadorNovo = document.getElementById("marcadorNovo");
+const posX = document.getElementById("posX");
+const posY = document.getElementById("posY");
+const textoX = document.getElementById("textoX");
+const textoY = document.getElementById("textoY");
+
+function escalaImagem() {
+    return imagemPdf.naturalWidth / imagemPdf.clientWidth;
+}
+
+function zoomPdf() {
+    return parseFloat(imagemPdf.dataset.zoom || "2");
+}
+
+function posicionarMarcadoresExistentes() {
+    const escala = escalaImagem();
+    const zoom = zoomPdf();
+
+    document.querySelectorAll(".marcador-existente").forEach(marcador => {
+        const xPdf = parseFloat(marcador.dataset.x || "0");
+        const yPdf = parseFloat(marcador.dataset.y || "0");
+
+        const xTela = (xPdf * zoom) / escala;
+        const yTela = (yPdf * zoom) / escala;
+
+        marcador.style.left = xTela + "px";
+        marcador.style.top = yTela + "px";
+    });
+}
+
+imagemPdf.addEventListener("load", posicionarMarcadoresExistentes);
+window.addEventListener("resize", posicionarMarcadoresExistentes);
+
+imagemPdf.addEventListener("click", function(event) {
+    const rect = imagemPdf.getBoundingClientRect();
+
+    const xTela = event.clientX - rect.left;
+    const yTela = event.clientY - rect.top;
+
+    const escala = escalaImagem();
+    const zoom = zoomPdf();
+
+    const xPdf = Math.round((xTela * escala) / zoom);
+    const yPdf = Math.round((yTela * escala) / zoom);
+
+    posX.value = xPdf;
+    posY.value = yPdf;
+    textoX.textContent = xPdf;
+    textoY.textContent = yPdf;
+
+    marcadorNovo.style.display = "block";
+    marcadorNovo.style.left = xTela + "px";
+    marcadorNovo.style.top = yTela + "px";
+});
+
+setTimeout(posicionarMarcadoresExistentes, 300);
+</script>
+
+{% endblock %}

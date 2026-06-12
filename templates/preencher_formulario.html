@@ -1,1 +1,93 @@
-{% extends '_layout.html' %}{% set titulo='Preencher Formulário - SINTER' %}{% block conteudo %}<h1>Preencher Formulário</h1><h2>{{ formulario.nome }}</h2><form method="POST" action="/formularios/gerar-pdf/{{ formulario.id }}">{% for pergunta in perguntas %}<label>{{ pergunta.pergunta }}</label>{% if pergunta.tipo == 'checkbox' %}<input type="checkbox" name="{{ pergunta.id }}" value="X">{% else %}<input name="{{ pergunta.id }}">{% endif %}{% endfor %}<button>Gerar PDF</button></form>{% endblock %}
+{% extends '_layout.html' %}
+{% set titulo = 'Preencher Formulário - SINTER' %}
+
+{% block conteudo %}
+
+<style>
+    .preencher-card {
+        background: white;
+        padding: 25px;
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        max-width: 800px;
+    }
+
+    .pergunta-preencher {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 15px;
+    }
+
+    .pergunta-preencher label {
+        margin-top: 0;
+        color: #0077b6;
+        font-weight: bold;
+    }
+
+    .checkbox-linha {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .checkbox-linha input {
+        width: auto;
+    }
+
+    .btn-gerar {
+        width: auto;
+        padding: 14px 28px;
+        background: #7dbe4d;
+    }
+
+    .btn-gerar:hover {
+        background: #6ca63f;
+    }
+</style>
+
+<section class="barra-acoes">
+    <div>
+        <h1>Preencher Formulário</h1>
+        <p>{{ formulario.nome }}</p>
+    </div>
+</section>
+
+<div class="preencher-card">
+
+    <form method="POST" action="/formularios/gerar-pdf/{{ formulario.id }}">
+
+        {% for pergunta in perguntas %}
+        <div class="pergunta-preencher">
+
+            <label>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</label>
+
+            {% if pergunta.tipo == 'checkbox' %}
+            <div class="checkbox-linha">
+                <input type="checkbox" name="{{ pergunta.id }}" value="X">
+                <span>Marcar opção</span>
+            </div>
+            {% else %}
+            <input name="{{ pergunta.id }}" placeholder="Digite a resposta">
+            {% endif %}
+
+        </div>
+        {% else %}
+        <div class="sem-registros">
+            Nenhuma pergunta configurada para este formulário.
+        </div>
+        {% endfor %}
+
+        {% if perguntas %}
+        <button type="submit" class="btn-gerar">
+            Gerar PDF Preenchido
+        </button>
+        {% endif %}
+
+    </form>
+
+</div>
+
+{% endblock %}
