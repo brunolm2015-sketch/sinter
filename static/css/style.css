@@ -18,23 +18,33 @@ body {
     background: linear-gradient(135deg, #0077b6, #7dbe4d);
 }
 
+.login-area {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .login-card {
-    width: 400px;
+    width: 420px;
     background: white;
-    padding: 40px;
+    padding: 42px 45px;
     border-radius: 20px;
     box-shadow: 0 10px 35px rgba(0,0,0,0.22);
 }
 
-.login-card h1 {
-    color: #0077b6;
-    margin-bottom: 8px;
-    font-size: 32px;
+.logo-login {
+    width: 150px !important;
+    max-width: 150px !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto 28px auto !important;
+    object-fit: contain !important;
 }
 
+.login-card h1,
 .login-card p {
-    color: #7dbe4d;
-    margin-bottom: 22px;
+    display: none;
 }
 
 .login-card a {
@@ -135,7 +145,7 @@ button:disabled {
 }
 
 .sidebar {
-    width: 270px;
+    width: 300px;
     min-height: 100vh;
     background: #0077b6;
     color: white;
@@ -146,7 +156,19 @@ button:disabled {
 }
 
 .sidebar-logo {
-    margin-bottom: 35px;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 38px;
+    overflow: visible;
+}
+
+.logo-sistema-lateral {
+    width: 230px !important;
+    max-width: 230px !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+    object-fit: contain !important;
 }
 
 .sidebar-logo h2 {
@@ -288,6 +310,17 @@ button:disabled {
     height: 85px;
     object-fit: contain;
     margin-bottom: 12px;
+}
+
+.link-imagem-convenio {
+    display: inline-block;
+    cursor: pointer;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.link-imagem-convenio:hover {
+    transform: scale(1.04);
+    opacity: .9;
 }
 
 .info-convenio {
@@ -609,70 +642,12 @@ button:disabled {
     opacity: 1;
     transform: translateY(0);
 }
-/* ==========================
-   LOGO SINTER
-========================== */
 
-.sidebar {
-    width: 340px;
-    min-height: 100vh;
-    background: #0077b6;
-    color: white;
-    padding: 28px 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.sidebar-logo {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 40px;
-    overflow: visible;
-}
-
-.logo-sistema-lateral {
-    width: 280px !important;
-    max-width: 280px !important;
-    height: auto !important;
-    display: block !important;
-    margin: 0 auto !important;
-    object-fit: contain !important;
-}
-
-.logo-login {
-    width: 650px !important;
-    max-width: 95vw !important;
-    height: auto !important;
-    display: block !important;
-    margin: 0 auto 35px auto !important;
-    object-fit: contain !important;
-}
-
-.login-area {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.login-card {
-    width: 520px;
-}
+/* IMPEDE LOGO VAZANDO NO CONTEÚDO */
 
 .conteudo > img.logo-sistema-lateral,
 .conteudo > img.logo-login,
-.conteudo > img[src*="logo_sinter"] {
+.conteudo > img[src*="logo_sinter"],
+.conteudo > img[src*="logo_sinter_login"] {
     display: none !important;
-}
-
-.link-imagem-convenio {
-    display: inline-block;
-    cursor: pointer;
-    transition: transform .2s ease, opacity .2s ease;
-}
-
-.link-imagem-convenio:hover {
-    transform: scale(1.04);
-    opacity: .9;
 }
