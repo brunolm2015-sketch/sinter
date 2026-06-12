@@ -6,12 +6,13 @@
 <style>
     .config-formulario {
         display: grid;
-        grid-template-columns: 1fr 360px;
+        grid-template-columns: minmax(0, 1fr) 380px;
         gap: 25px;
         align-items: start;
     }
 
-    .pdf-area {
+    .pdf-area,
+    .painel-perguntas {
         background: white;
         padding: 20px;
         border-radius: 18px;
@@ -22,23 +23,20 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
         gap: 10px;
         flex-wrap: wrap;
+        margin-bottom: 12px;
     }
 
-    .pdf-toolbar a,
-    .pdf-toolbar button {
-        width: auto;
-        margin-top: 0;
+    .pdf-toolbar a {
+        display: inline-block;
         padding: 10px 14px;
-        border-radius: 8px;
-        text-decoration: none;
         background: #0077b6;
         color: white;
-        border: none;
+        border-radius: 8px;
+        text-decoration: none;
         font-weight: bold;
-        cursor: pointer;
+        margin-left: 6px;
     }
 
     .pdf-toolbar a.desativado {
@@ -46,34 +44,59 @@
         pointer-events: none;
     }
 
+    .aviso-clique {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
     .pdf-container {
         position: relative;
         display: inline-block;
+        max-width: 100%;
         border: 1px solid #d1d5db;
         background: #f8fafc;
-        max-width: 100%;
         overflow: auto;
     }
 
     #imagemPdf {
         display: block;
         max-width: 100%;
-        cursor: crosshair;
+        cursor: text;
     }
 
-    .marcador {
+    .marcador-campo {
         position: absolute;
-        width: 18px;
-        height: 18px;
-        background: #dc2626;
-        border: 3px solid white;
-        border-radius: 50%;
         transform: translate(-50%, -50%);
-        box-shadow: 0 2px 8px rgba(0,0,0,.35);
         z-index: 5;
     }
 
-    .marcador span {
+    .marcador-campo.texto,
+    .marcador-campo.cpf,
+    .marcador-campo.data,
+    .marcador-campo.cep {
+        width: 2px;
+        height: 30px;
+        background: #dc2626;
+        box-shadow: 0 0 0 2px white, 0 2px 8px rgba(0,0,0,.35);
+    }
+
+    .marcador-campo.checkbox,
+    .marcador-campo.caixa_selecao {
+        width: 18px;
+        height: 18px;
+        border: 3px solid #dc2626;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    }
+
+    .marcador-campo span {
         position: absolute;
         top: -28px;
         left: 50%;
@@ -87,61 +110,67 @@
     }
 
     #marcadorNovo {
-        background: #16a34a;
         display: none;
-        z-index: 10;
+        background: #16a34a;
+        z-index: 20;
     }
 
-    .painel-config {
+    #marcadorNovo.checkbox {
         background: white;
-        padding: 20px;
-        border-radius: 18px;
-        box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        border-color: #16a34a;
+    }
+
+    .painel-perguntas {
         position: sticky;
         top: 20px;
     }
 
-    .painel-config h2 {
+    .painel-perguntas h2 {
         color: #0077b6;
-        margin-bottom: 12px;
-    }
-
-    .coordenadas {
-        background: #f1f5f9;
-        padding: 12px;
-        border-radius: 10px;
-        margin: 12px 0;
-        font-size: 14px;
-    }
-
-    .lista-perguntas {
-        margin-top: 25px;
-        display: grid;
-        gap: 12px;
+        margin-bottom: 15px;
     }
 
     .pergunta-card {
-        background: white;
-        padding: 14px;
-        border-radius: 14px;
-        box-shadow: 0 5px 16px rgba(0,0,0,.06);
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
         border-left: 5px solid #0077b6;
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 12px;
     }
 
     .pergunta-card strong {
         color: #0077b6;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .pergunta-meta {
+        font-size: 13px;
+        color: #374151;
+        line-height: 1.4;
     }
 
     .pergunta-acoes {
-        display: flex;
-        gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
         margin-top: 10px;
     }
 
     .pergunta-acoes button {
-        width: auto;
+        width: 100%;
+        padding: 8px;
         margin-top: 0;
-        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .btn-cinza {
+        background: #64748b;
+    }
+
+    .btn-cinza:hover {
+        background: #475569;
     }
 
     .btn-excluir {
@@ -152,15 +181,49 @@
         background: #991b1b;
     }
 
-    .aviso-clique {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #86efac;
-        padding: 10px;
+    .modal-campo {
+        width: 520px;
+        max-width: 100%;
+    }
+
+    .coordenadas {
+        background: #f1f5f9;
+        padding: 12px;
         border-radius: 10px;
-        margin-bottom: 12px;
+        margin: 12px 0;
         font-size: 14px;
-        font-weight: bold;
+    }
+
+    .campo-auto {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        border-radius: 12px;
+        margin-top: 12px;
+    }
+
+    .campo-auto label {
+        margin-top: 0;
+    }
+
+    .linha-checkbox {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .linha-checkbox input {
+        width: auto;
+    }
+
+    @media (max-width: 1100px) {
+        .config-formulario {
+            grid-template-columns: 1fr;
+        }
+
+        .painel-perguntas {
+            position: static;
+        }
     }
 </style>
 
@@ -173,12 +236,9 @@
 
 <div class="config-formulario">
 
-    <div class="pdf-area">
-
+    <section class="pdf-area">
         <div class="pdf-toolbar">
-            <div>
-                <strong>Página {{ pagina_atual + 1 }} de {{ total_paginas }}</strong>
-            </div>
+            <strong>Página {{ pagina_atual + 1 }} de {{ total_paginas }}</strong>
 
             <div>
                 {% if pagina_atual > 0 %}
@@ -196,20 +256,20 @@
         </div>
 
         <div class="aviso-clique">
-            Clique no local do PDF onde a resposta deve aparecer.
+            Clique no local do PDF onde a resposta deve aparecer. Depois disso a janela de criação da pergunta será aberta.
         </div>
 
         <div class="pdf-container" id="pdfContainer">
             <img id="imagemPdf" src="{{ imagem_pdf }}" data-zoom="{{ zoom_pdf }}">
 
-            <div id="marcadorNovo" class="marcador">
+            <div id="marcadorNovo" class="marcador-campo texto">
                 <span>Novo campo</span>
             </div>
 
             {% for pergunta in perguntas %}
                 {% if pergunta.pagina|int == pagina_atual|int and pergunta.pos_x and pergunta.pos_y %}
                 <div
-                    class="marcador marcador-existente"
+                    class="marcador-campo marcador-existente {{ 'checkbox' if pergunta.tipo in ['checkbox', 'caixa_selecao', 'caixa de seleção'] else pergunta.tipo }}"
                     data-x="{{ pergunta.pos_x }}"
                     data-y="{{ pergunta.pos_y }}"
                     data-label="{{ pergunta.ordem }} - {{ pergunta.pergunta }}"
@@ -219,53 +279,80 @@
                 {% endif %}
             {% endfor %}
         </div>
+    </section>
 
-        <h2 style="margin-top: 25px;">Perguntas cadastradas</h2>
+    <aside class="painel-perguntas">
+        <h2>Perguntas criadas</h2>
 
-        <div class="lista-perguntas">
-            {% for pergunta in perguntas %}
-            <div class="pergunta-card">
-                <strong>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</strong>
-                <p>Tipo: {{ pergunta.tipo }}</p>
-                <p>Página: {{ pergunta.pagina|int + 1 }} | X: {{ pergunta.pos_x }} | Y: {{ pergunta.pos_y }}</p>
-
-                {% if tem_permissao('configurar_formularios') %}
-                <div class="pergunta-acoes">
-                    <form method="POST" action="/formularios/perguntas/excluir/{{ pergunta.id }}/{{ formulario.id }}" onsubmit="return confirm('Excluir pergunta?')">
-                        <input type="hidden" name="pagina" value="{{ pagina_atual }}">
-                        <button type="submit" class="btn-excluir">Excluir</button>
-                    </form>
-                </div>
+        {% for pergunta in perguntas %}
+        <div class="pergunta-card">
+            <strong>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</strong>
+            <div class="pergunta-meta">
+                Tipo: {{ 'caixa de seleção' if pergunta.tipo in ['checkbox', 'caixa_selecao'] else pergunta.tipo }}<br>
+                Página: {{ pergunta.pagina|int + 1 }} | X: {{ pergunta.pos_x }} | Y: {{ pergunta.pos_y }}
+                {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}
+                <br>Resposta automática: sim
                 {% endif %}
             </div>
-            {% else %}
-            <div class="sem-registros">
-                Nenhuma pergunta cadastrada nesta formulário.
+
+            {% if tem_permissao('configurar_formularios') %}
+            <div class="pergunta-acoes">
+                <form method="POST" action="/formularios/perguntas/mover/{{ pergunta.id }}/{{ formulario.id }}/cima">
+                    <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                    <button type="submit" class="btn-cinza">↑</button>
+                </form>
+
+                <form method="POST" action="/formularios/perguntas/mover/{{ pergunta.id }}/{{ formulario.id }}/baixo">
+                    <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                    <button type="submit" class="btn-cinza">↓</button>
+                </form>
+
+                <button type="button" onclick="abrirModal('editarPergunta{{ pergunta.id }}')">✏️</button>
+
+                <form method="POST" action="/formularios/perguntas/excluir/{{ pergunta.id }}/{{ formulario.id }}" onsubmit="return confirm('Excluir pergunta?')">
+                    <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                    <button type="submit" class="btn-excluir">🗑️</button>
+                </form>
             </div>
-            {% endfor %}
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="sem-registros">
+            Nenhuma pergunta criada ainda.
+        </div>
+        {% endfor %}
+    </aside>
+
+</div>
+
+{% if tem_permissao('configurar_formularios') %}
+<div id="modalNovaPergunta" class="modal-fundo">
+    <div class="modal-card modal-campo">
+        <div class="modal-topo">
+            <div>
+                <h2>Nova Pergunta</h2>
+                <p>Configure a pergunta para o local selecionado no PDF.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovaPergunta')">×</button>
         </div>
 
-    </div>
-
-    {% if tem_permissao('configurar_formularios') %}
-    <aside class="painel-config">
-        <h2>Novo Campo</h2>
-
         <form method="POST" action="/formularios/perguntas/nova/{{ formulario.id }}">
-
             <input type="hidden" name="pagina" value="{{ pagina_atual }}">
 
             <label>Pergunta</label>
-            <input name="pergunta" placeholder="Ex: Nome completo" required>
+            <input name="pergunta" placeholder="Digite a pergunta" required>
 
-            <label>Tipo</label>
-            <select name="tipo" required>
+            <label>Tipo de pergunta</label>
+            <select name="tipo" id="tipoNovaPergunta" required onchange="atualizarMarcadorNovoPorTipo()">
                 <option value="texto">Texto</option>
-                <option value="checkbox">Checkbox</option>
+                <option value="cpf">CPF</option>
+                <option value="data">Data</option>
+                <option value="cep">CEP</option>
+                <option value="checkbox">Caixa de seleção</option>
             </select>
 
             <label>Ordem</label>
-            <input name="ordem" type="number" placeholder="Ex: 1" value="{{ perguntas|length + 1 }}">
+            <input name="ordem" type="number" value="{{ perguntas|length + 1 }}">
 
             <div class="coordenadas">
                 <strong>Posição selecionada:</strong><br>
@@ -273,30 +360,113 @@
                 Y: <span id="textoY">nenhum</span>
             </div>
 
+            <input type="hidden" id="posX" name="pos_x" required>
+            <input type="hidden" id="posY" name="pos_y" required>
+
+            <div class="campo-auto">
+                <div class="linha-checkbox">
+                    <input type="checkbox" id="copiarRespostaNova" name="copiar_resposta" onchange="alternarCopiaNova()">
+                    <label for="copiarRespostaNova">Resposta automática copiando outra pergunta</label>
+                </div>
+
+                <div id="areaCopiaNova" style="display:none; margin-top:10px;">
+                    <label>Copiar resposta da pergunta</label>
+                    <select name="copiar_de_pergunta_id">
+                        <option value="">Selecione</option>
+                        {% for pergunta in perguntas %}
+                        <option value="{{ pergunta.id }}">{{ pergunta.ordem }} - {{ pergunta.pergunta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovaPergunta')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar Pergunta</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% for pergunta in perguntas %}
+<div id="editarPergunta{{ pergunta.id }}" class="modal-fundo">
+    <div class="modal-card modal-campo">
+        <div class="modal-topo">
+            <div>
+                <h2>Editar Pergunta</h2>
+                <p>{{ pergunta.pergunta }}</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('editarPergunta{{ pergunta.id }}')">×</button>
+        </div>
+
+        <form method="POST" action="/formularios/perguntas/editar/{{ pergunta.id }}/{{ formulario.id }}">
+            <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+
+            <label>Pergunta</label>
+            <input name="pergunta" value="{{ pergunta.pergunta }}" required>
+
+            <label>Tipo de pergunta</label>
+            <select name="tipo" required>
+                <option value="texto" {% if pergunta.tipo == 'texto' %}selected{% endif %}>Texto</option>
+                <option value="cpf" {% if pergunta.tipo == 'cpf' %}selected{% endif %}>CPF</option>
+                <option value="data" {% if pergunta.tipo == 'data' %}selected{% endif %}>Data</option>
+                <option value="cep" {% if pergunta.tipo == 'cep' %}selected{% endif %}>CEP</option>
+                <option value="checkbox" {% if pergunta.tipo in ['checkbox', 'caixa_selecao', 'caixa de seleção'] %}selected{% endif %}>Caixa de seleção</option>
+            </select>
+
+            <label>Ordem</label>
+            <input name="ordem" type="number" value="{{ pergunta.ordem }}">
+
             <label>Posição X</label>
-            <input id="posX" name="pos_x" readonly required>
+            <input name="pos_x" value="{{ pergunta.pos_x }}" required>
 
             <label>Posição Y</label>
-            <input id="posY" name="pos_y" readonly required>
+            <input name="pos_y" value="{{ pergunta.pos_y }}" required>
 
-            <button type="submit" class="btn-salvar">
-                Adicionar Campo
-            </button>
+            <div class="campo-auto">
+                <div class="linha-checkbox">
+                    <input type="checkbox" id="copiarResposta{{ pergunta.id }}" name="copiar_resposta" {% if pergunta.copiar_resposta %}checked{% endif %} onchange="alternarCopiaEditar('{{ pergunta.id }}')">
+                    <label for="copiarResposta{{ pergunta.id }}">Resposta automática copiando outra pergunta</label>
+                </div>
 
+                <div id="areaCopia{{ pergunta.id }}" style="display:{% if pergunta.copiar_resposta %}block{% else %}none{% endif %}; margin-top:10px;">
+                    <label>Copiar resposta da pergunta</label>
+                    <select name="copiar_de_pergunta_id">
+                        <option value="">Selecione</option>
+                        {% for origem in perguntas %}
+                            {% if origem.id != pergunta.id %}
+                            <option value="{{ origem.id }}" {% if pergunta.copiar_de_pergunta_id == origem.id %}selected{% endif %}>{{ origem.ordem }} - {{ origem.pergunta }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('editarPergunta{{ pergunta.id }}')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
         </form>
-    </aside>
-    {% endif %}
-
+    </div>
 </div>
+{% endfor %}
+{% endif %}
 
 <script>
 const imagemPdf = document.getElementById("imagemPdf");
-const pdfContainer = document.getElementById("pdfContainer");
 const marcadorNovo = document.getElementById("marcadorNovo");
 const posX = document.getElementById("posX");
 const posY = document.getElementById("posY");
 const textoX = document.getElementById("textoX");
 const textoY = document.getElementById("textoY");
+
+function abrirModal(id) {
+    document.getElementById(id).classList.add('ativo');
+}
+
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('ativo');
+}
 
 function escalaImagem() {
     return imagemPdf.naturalWidth / imagemPdf.clientWidth;
@@ -322,6 +492,12 @@ function posicionarMarcadoresExistentes() {
     });
 }
 
+function atualizarMarcadorNovoPorTipo() {
+    const tipo = document.getElementById("tipoNovaPergunta").value;
+    marcadorNovo.classList.remove("texto", "cpf", "data", "cep", "checkbox", "caixa_selecao");
+    marcadorNovo.classList.add(tipo === "checkbox" ? "checkbox" : tipo);
+}
+
 imagemPdf.addEventListener("load", posicionarMarcadoresExistentes);
 window.addEventListener("resize", posicionarMarcadoresExistentes);
 
@@ -345,7 +521,20 @@ imagemPdf.addEventListener("click", function(event) {
     marcadorNovo.style.display = "block";
     marcadorNovo.style.left = xTela + "px";
     marcadorNovo.style.top = yTela + "px";
+
+    atualizarMarcadorNovoPorTipo();
+    abrirModal("modalNovaPergunta");
 });
+
+function alternarCopiaNova() {
+    const marcado = document.getElementById("copiarRespostaNova").checked;
+    document.getElementById("areaCopiaNova").style.display = marcado ? "block" : "none";
+}
+
+function alternarCopiaEditar(id) {
+    const marcado = document.getElementById("copiarResposta" + id).checked;
+    document.getElementById("areaCopia" + id).style.display = marcado ? "block" : "none";
+}
 
 setTimeout(posicionarMarcadoresExistentes, 300);
 </script>

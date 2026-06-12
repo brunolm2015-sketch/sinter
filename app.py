@@ -809,6 +809,60 @@ def editar_pergunta_formulario(pergunta_id, formulario_id):
     return redirect(f"/formularios/configurar/{formulario_id}?pagina={pagina}")
 
 
+@app.route("/formularios/perguntas/mover/<pergunta_id>/<formulario_id>/<direcao>", methods=["POST"])
+def mover_pergunta_formulario(pergunta_id, formulario_id, direcao):
+    if not usuario_logado():
+        return redirect("/login")
+
+    pagina = request.form.get("pagina") or 0
+
+    atual_result = (
+        supabase.table("formulario_perguntas")
+        .select("*")
+        .eq("id", pergunta_id)
+        .limit(1)
+        .execute()
+    )
+
+    if not atual_result.data:
+        return redirect(f"/formularios/configurar/{formulario_id}?pagina={pagina}")
+
+    atual = atual_result.data[0]
+    ordem_atual = int(atual.get("ordem") or 1)
+
+    if direcao == "cima":
+        vizinho_result = (
+            supabase.table("formulario_perguntas")
+            .select("*")
+            .eq("formulario_id", formulario_id)
+            .lt("ordem", ordem_atual)
+            .order("ordem", desc=True)
+            .limit(1)
+            .execute()
+        )
+    elif direcao == "baixo":
+        vizinho_result = (
+            supabase.table("formulario_perguntas")
+            .select("*")
+            .eq("formulario_id", formulario_id)
+            .gt("ordem", ordem_atual)
+            .order("ordem")
+            .limit(1)
+            .execute()
+        )
+    else:
+        return redirect(f"/formularios/configurar/{formulario_id}?pagina={pagina}")
+
+    if vizinho_result.data:
+        vizinho = vizinho_result.data[0]
+        ordem_vizinho = int(vizinho.get("ordem") or 1)
+
+        supabase.table("formulario_perguntas").update({"ordem": ordem_vizinho}).eq("id", pergunta_id).execute()
+        supabase.table("formulario_perguntas").update({"ordem": ordem_atual}).eq("id", vizinho["id"]).execute()
+
+    return redirect(f"/formularios/configurar/{formulario_id}?pagina={pagina}")
+
+
 @app.route("/formularios/perguntas/excluir/<pergunta_id>/<formulario_id>", methods=["POST"])
 def excluir_pergunta_formulario(pergunta_id, formulario_id):
     if not usuario_logado():
@@ -897,7 +951,7 @@ def gerar_pdf_preenchido(formulario_id):
         x = float(pergunta.get("pos_x") or 50)
         y = float(pergunta.get("pos_y") or 50)
 
-        texto = "X" if pergunta.get("tipo") == "checkbox" else resposta
+        texto = "X" if pergunta.get("tipo") in ("checkbox", "caixa_selecao", "caixa de seleção") else resposta
 
         pagina.insert_text(
             (x, y),
