@@ -1,0 +1,4 @@
+ALTER TABLE formulario_perguntas
+ADD COLUMN IF NOT EXISTS largura numeric DEFAULT 160,
+ADD COLUMN IF NOT EXISTS altura numeric DEFAULT 18,
+ADD COLUMN IF NOT EXISTS fonte numeric DEFAULT 9;

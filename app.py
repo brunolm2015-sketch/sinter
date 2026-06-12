@@ -430,6 +430,136 @@ def dados_pdf(formulario_id, arquivo_pdf, pagina_numero=0):
     }
 
 
+def detectar_campos_pdf(arquivo_pdf, pagina_numero=0):
+    """Detecta automaticamente áreas preenchíveis no PDF.
+
+    Regras:
+    - Linhas de sublinhado/pontilhado feitas com vários "_" viram campos de texto.
+    - Marcações "( )" viram campos de caixa de seleção.
+
+    As coordenadas retornadas já estão no sistema de coordenadas do PDF,
+    o mesmo usado pelo PyMuPDF para escrever o PDF final.
+    """
+    campos = []
+
+    try:
+        caminho_pdf = caminho_local(arquivo_pdf)
+        doc = fitz.open(caminho_pdf)
+
+        if pagina_numero < 0:
+            pagina_numero = 0
+
+        if pagina_numero >= len(doc):
+            pagina_numero = len(doc) - 1
+
+        pagina = doc[pagina_numero]
+
+        def adiciona_campo(tipo, x, y, largura, altura, label, fonte=9):
+            if largura <= 0 or altura <= 0:
+                return
+
+            # Evita campos repetidos muito próximos.
+            for c in campos:
+                if (
+                    abs(c["pos_x"] - x) < 3
+                    and abs(c["pos_y"] - y) < 3
+                    and abs(c["largura"] - largura) < 6
+                ):
+                    return
+
+            campos.append({
+                "id": f"campo_{len(campos) + 1}",
+                "tipo": tipo,
+                "tipo_sugerido": "caixa_selecao" if tipo == "checkbox" else "texto",
+                "pos_x": round(float(x), 2),
+                "pos_y": round(float(y), 2),
+                "largura": round(float(largura), 2),
+                "altura": round(float(altura), 2),
+                "fonte": fonte,
+                "label": label,
+            })
+
+        # 1) Detecta linhas feitas com underscores.
+        underscores = list(pagina.search_for("_"))
+        linhas = []
+
+        for r in underscores:
+            centro_y = (r.y0 + r.y1) / 2
+            grupo = None
+
+            for linha in linhas:
+                if abs(linha["centro_y"] - centro_y) <= 3:
+                    grupo = linha
+                    break
+
+            if grupo is None:
+                grupo = {"centro_y": centro_y, "rects": []}
+                linhas.append(grupo)
+
+            grupo["rects"].append(r)
+
+        for linha in linhas:
+            rects = sorted(linha["rects"], key=lambda rr: rr.x0)
+            if not rects:
+                continue
+
+            segmentos = []
+            atual = fitz.Rect(rects[0])
+
+            for r in rects[1:]:
+                # Se os underscores estão próximos, fazem parte da mesma linha.
+                if r.x0 - atual.x1 <= 12:
+                    atual |= r
+                else:
+                    segmentos.append(atual)
+                    atual = fitz.Rect(r)
+
+            segmentos.append(atual)
+
+            for seg in segmentos:
+                largura = seg.width
+
+                # Ignora riscos muito pequenos; normalmente são artefatos.
+                if largura < 25:
+                    continue
+
+                # O texto deve ficar um pouco acima do risco.
+                x = seg.x0
+                y = max(0, seg.y0 - 9)
+                altura = max(14, seg.height + 8)
+
+                adiciona_campo(
+                    "texto",
+                    x,
+                    y,
+                    largura,
+                    altura,
+                    f"Linha detectada {len(campos) + 1}",
+                    9,
+                )
+
+        # 2) Detecta caixas de seleção escritas como ( ).
+        for r in pagina.search_for("( )"):
+            adiciona_campo(
+                "checkbox",
+                r.x0 + 1,
+                r.y0,
+                max(10, r.width - 2),
+                max(10, r.height),
+                f"Caixa de seleção {len(campos) + 1}",
+                10,
+            )
+
+        doc.close()
+
+    except Exception:
+        # Se a detecção falhar, a tela continua funcionando com seleção manual.
+        return []
+
+    campos.sort(key=lambda c: (c["pos_y"], c["pos_x"]))
+    return campos
+
+
 @app.route("/")
 def index():
     return redirect(primeira_pagina_permitida() if usuario_logado() else "/login")
@@ -732,6 +862,7 @@ def configurar_formulario(formulario_id):
 
     formulario = formulario_result.data[0]
     pdf = dados_pdf(formulario_id, formulario["arquivo_pdf"], pagina)
+    campos_detectados = detectar_campos_pdf(formulario["arquivo_pdf"], pdf["pagina_atual"])
 
     perguntas_result = (
         supabase.table("formulario_perguntas")
@@ -750,6 +881,7 @@ def configurar_formulario(formulario_id):
         zoom_pdf=pdf["zoom"],
         pagina_atual=pdf["pagina_atual"],
         total_paginas=pdf["total_paginas"],
+        campos_detectados=campos_detectados,
         nome=session.get("usuario_nome"),
         cargo=session.get("usuario_cargo"),
         permissoes=permissoes_usuario()

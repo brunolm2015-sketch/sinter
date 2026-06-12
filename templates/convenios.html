@@ -37,7 +37,13 @@
         {% endif %}
 
         {% if convenio.imagem and convenio.imagem_ativo %}
-        <img src="{{ convenio.imagem }}" class="logo-convenio">
+            {% if convenio.link_site %}
+            <a href="{{ convenio.link_site }}" target="_blank" title="Abrir site do convênio">
+                <img src="{{ convenio.imagem }}" class="logo-convenio">
+            </a>
+            {% else %}
+            <img src="{{ convenio.imagem }}" class="logo-convenio">
+            {% endif %}
         {% endif %}
 
         {% if convenio.nome_ativo %}

@@ -111,6 +111,36 @@
         display: none;
     }
 
+    .campo-box.detectado {
+        border-color: #f59e0b;
+        background: rgba(245,158,11,.18);
+        color: #92400e;
+        cursor: pointer;
+        z-index: 4;
+    }
+
+    .campo-box.detectado:hover {
+        background: rgba(245,158,11,.34);
+        border-color: #d97706;
+    }
+
+    .campo-box.detectado.checkbox {
+        border-radius: 50%;
+        border-color: #f97316;
+        background: rgba(249,115,22,.18);
+    }
+
+    .instrucoes-deteccao {
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        color: #9a3412;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
     .campo-box::after {
         content: attr(data-label);
         position: absolute;
@@ -277,7 +307,11 @@
         </div>
 
         <div class="aviso-clique">
-            Clique e arraste no local onde a resposta deve aparecer. Para caixa de seleção, faça uma área pequena.
+            O sistema marcou automaticamente as linhas pontilhadas e as opções ( ). Clique em um campo amarelo para criar a pergunta. Se precisar, também pode clicar e arrastar manualmente no PDF.
+        </div>
+
+        <div class="instrucoes-deteccao">
+            Campos detectados automaticamente: {{ campos_detectados|length }}
         </div>
 
         <div class="pdf-container" id="pdfContainer">
@@ -286,6 +320,20 @@
             <div id="campoNovo" class="campo-box novo" data-label="Novo campo">
                 <span class="cursor-digitacao"></span>
             </div>
+
+            {% for campo in campos_detectados %}
+            <div
+                class="campo-box campo-detectado detectado {% if campo.tipo == 'checkbox' %}checkbox{% endif %}"
+                data-x="{{ campo.pos_x }}"
+                data-y="{{ campo.pos_y }}"
+                data-largura="{{ campo.largura }}"
+                data-altura="{{ campo.altura }}"
+                data-fonte="{{ campo.fonte }}"
+                data-tipo="{{ campo.tipo_sugerido }}"
+                data-label="{{ campo.label }}"
+                onclick="selecionarCampoDetectado(this)"
+            >{% if campo.tipo == 'checkbox' %}X{% else %}<span class="cursor-digitacao"></span>{% endif %}</div>
+            {% endfor %}
 
             {% for pergunta in perguntas %}
                 {% if pergunta.pagina|int == pagina_atual|int and pergunta.pos_x and pergunta.pos_y %}
@@ -350,6 +398,7 @@
 <div id="modalNovoCampo" class="modal-campo-fundo">
     <div class="modal-campo-card">
         <h2>Nova Pergunta</h2>
+        <p style="margin-top:-8px;color:#64748b;font-size:13px">A posição e o tamanho foram preenchidos pelo campo selecionado.</p>
 
         <form method="POST" action="/formularios/perguntas/nova/{{ formulario.id }}">
             <input type="hidden" name="pagina" value="{{ pagina_atual }}">
@@ -489,7 +538,7 @@ function converterPdfParaTela(valorPdf) {
 }
 
 function posicionarCamposExistentes() {
-    document.querySelectorAll(".campo-existente").forEach(campo => {
+    document.querySelectorAll(".campo-existente, .campo-detectado").forEach(campo => {
         const x = converterPdfParaTela(campo.dataset.x);
         const y = converterPdfParaTela(campo.dataset.y);
         const largura = converterPdfParaTela(campo.dataset.largura || 160);
@@ -500,6 +549,48 @@ function posicionarCamposExistentes() {
         campo.style.width = largura + "px";
         campo.style.height = altura + "px";
     });
+}
+
+function abrirModalNovoComDados(xPdf, yPdf, larguraPdf, alturaPdf, tipo, fonte) {
+    document.getElementById("novoX").value = Math.round(parseFloat(xPdf || 0));
+    document.getElementById("novoY").value = Math.round(parseFloat(yPdf || 0));
+    document.getElementById("novoLargura").value = Math.round(parseFloat(larguraPdf || 160));
+    document.getElementById("novoAltura").value = Math.round(parseFloat(alturaPdf || 18));
+
+    const tipoSelect = document.getElementById("novoTipo");
+    if (tipo === "caixa_selecao" || tipo === "checkbox") {
+        tipoSelect.value = "caixa_selecao";
+        campoNovo.classList.add("checkbox");
+        campoNovo.innerHTML = "X";
+    } else {
+        tipoSelect.value = "texto";
+        campoNovo.classList.remove("checkbox");
+        campoNovo.innerHTML = '<span class="cursor-digitacao"></span>';
+    }
+
+    const fonteInput = document.querySelector('#modalNovoCampo input[name="fonte"]');
+    if (fonteInput && fonte) {
+        fonteInput.value = fonte;
+    }
+
+    modalNovoCampo.classList.add("ativo");
+}
+
+function selecionarCampoDetectado(campo) {
+    const x = campo.dataset.x;
+    const y = campo.dataset.y;
+    const largura = campo.dataset.largura;
+    const altura = campo.dataset.altura;
+    const tipo = campo.dataset.tipo || "texto";
+    const fonte = campo.dataset.fonte || 9;
+
+    campoNovo.style.display = "flex";
+    campoNovo.style.left = campo.style.left;
+    campoNovo.style.top = campo.style.top;
+    campoNovo.style.width = campo.style.width;
+    campoNovo.style.height = campo.style.height;
+
+    abrirModalNovoComDados(x, y, largura, altura, tipo, fonte);
 }
 
 function pontoRelativo(event) {
@@ -559,12 +650,14 @@ window.addEventListener("mouseup", function() {
         campoNovo.style.height = height + "px";
     }
 
-    document.getElementById("novoX").value = converterTelaParaPdf(left);
-    document.getElementById("novoY").value = converterTelaParaPdf(top);
-    document.getElementById("novoLargura").value = converterTelaParaPdf(width);
-    document.getElementById("novoAltura").value = converterTelaParaPdf(height);
-
-    modalNovoCampo.classList.add("ativo");
+    abrirModalNovoComDados(
+        converterTelaParaPdf(left),
+        converterTelaParaPdf(top),
+        converterTelaParaPdf(width),
+        converterTelaParaPdf(height),
+        "texto",
+        9
+    );
 });
 
 function ajustarTipoNovo() {
