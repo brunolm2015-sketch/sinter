@@ -1,0 +1,104 @@
+{% extends '_layout.html' %}
+{% set titulo = 'REQs - SINTER' %}
+
+{% block conteudo %}
+
+<section class="barra-acoes">
+    {% if tem_permissao('criar_reqs') %}
+    <button type="button" onclick="abrirModal('modalNovaReq')" class="btn-novo">
+        + Nova REQ
+    </button>
+    {% endif %}
+</section>
+
+<h2 style="margin-bottom: 15px;">REQs</h2>
+
+<section class="grid-reqs">
+    {% for req in reqs %}
+    <div class="card-req">
+        {% if tem_permissao('editar_reqs') or tem_permissao('excluir_reqs') %}
+        <div class="acoes-card">
+            {% if tem_permissao('editar_reqs') %}
+            <button type="button" onclick="abrirModal('editarReq{{ req.id }}')" class="btn-card editar">✏️</button>
+            {% endif %}
+
+            {% if tem_permissao('excluir_reqs') %}
+            <form method="POST" action="/reqs/excluir/{{ req.id }}" onsubmit="return confirm('Excluir REQ?')">
+                <button type="submit" class="btn-card excluir">🗑️</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if req.link %}
+        <a href="{{ req.link }}" target="_blank" class="botao-req">{{ req.nome }}</a>
+        {% else %}
+        <div class="botao-req">{{ req.nome }}</div>
+        {% endif %}
+    </div>
+
+    {% if tem_permissao('editar_reqs') %}
+    <div id="editarReq{{ req.id }}" class="modal-fundo">
+        <div class="modal-card modal-pequeno">
+            <div class="modal-topo">
+                <div>
+                    <h2>Editar REQ</h2>
+                    <p>Atualize os dados da REQ.</p>
+                </div>
+                <button type="button" class="btn-fechar" onclick="fecharModal('editarReq{{ req.id }}')">×</button>
+            </div>
+
+            <form method="POST" action="/reqs/editar/{{ req.id }}">
+                <label>Nome</label>
+                <input name="nome" value="{{ req.nome or '' }}" required>
+
+                <label>Link</label>
+                <input name="link" value="{{ req.link or '' }}">
+
+                <div class="modal-botoes">
+                    <button type="button" class="btn-cancelar" onclick="fecharModal('editarReq{{ req.id }}')">Cancelar</button>
+                    <button type="submit" class="btn-salvar">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="sem-registros">Nenhuma REQ cadastrada.</div>
+    {% endfor %}
+</section>
+
+{% if tem_permissao('criar_reqs') %}
+<div id="modalNovaReq" class="modal-fundo">
+    <div class="modal-card modal-pequeno">
+        <div class="modal-topo">
+            <div>
+                <h2>Nova REQ</h2>
+                <p>Cadastre uma nova REQ.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovaReq')">×</button>
+        </div>
+
+        <form method="POST" action="/reqs/nova">
+            <label>Nome</label>
+            <input name="nome" required>
+
+            <label>Link</label>
+            <input name="link">
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovaReq')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function abrirModal(id) { document.getElementById(id).classList.add('ativo'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('ativo'); }
+</script>
+
+{% endblock %}

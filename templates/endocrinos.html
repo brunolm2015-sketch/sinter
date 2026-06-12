@@ -1,0 +1,160 @@
+{% extends '_layout.html' %}
+{% set titulo = 'Endócrinos - SINTER' %}
+
+{% block conteudo %}
+
+<section class="barra-acoes">
+    {% if tem_permissao('criar_agendamentos') %}
+    <button type="button" onclick="abrirModal('modalNovoAgendamento')" class="btn-novo">+ Novo Agendamento</button>
+    {% endif %}
+
+    {% if tem_permissao('gerenciar_exames') %}
+    <button type="button" onclick="abrirModal('modalNovoExame')" class="btn-novo">+ Exame</button>
+    {% endif %}
+
+    {% if tem_permissao('gerenciar_status') %}
+    <button type="button" onclick="abrirModal('modalNovoStatus')" class="btn-novo">+ Status</button>
+    {% endif %}
+</section>
+
+{% if tem_permissao('ver_endocrinos') or tem_permissao('ver_agendamentos') %}
+<h2 style="margin-bottom: 15px;">Agendamentos</h2>
+
+<section class="grid-reqs">
+    {% for ag in agendamentos %}
+    <div class="card-req">
+        <h3 style="color:#0077b6; margin-bottom:10px;">{{ ag.nome }}</h3>
+        <p><strong>CIP:</strong> {{ ag.cip }}</p>
+        <p><strong>CPF:</strong> {{ ag.cpf }}</p>
+        <p><strong>Data:</strong> {{ ag.data_agendamento }} {{ ag.horario }}</p>
+        <p><strong>Exame:</strong> {{ ag.endocrino_exames.exame if ag.endocrino_exames else '' }}</p>
+        <p><strong>Status:</strong> {{ ag.endocrino_status.nome if ag.endocrino_status else '' }}</p>
+        {% if ag.status_descricao %}<p>{{ ag.status_descricao }}</p>{% endif %}
+
+        {% if anexos_por_agendamento.get(ag.id) %}
+        <div style="margin-top:10px;">
+            {% for anexo in anexos_por_agendamento.get(ag.id) %}
+            <a href="{{ anexo.arquivo }}" target="_blank">{{ anexo.nome_arquivo }}</a><br>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if tem_permissao('excluir_agendamentos') %}
+        <form method="POST" action="/endocrinos/agendamento/excluir/{{ ag.id }}" onsubmit="return confirm('Excluir agendamento?')">
+            <button type="submit" class="btn-card excluir" style="margin-top:10px;">🗑️</button>
+        </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="sem-registros">Nenhum agendamento cadastrado.</div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% if tem_permissao('criar_agendamentos') %}
+<div id="modalNovoAgendamento" class="modal-fundo">
+    <div class="modal-card">
+        <div class="modal-topo">
+            <div>
+                <h2>Novo Agendamento</h2>
+                <p>Cadastre um novo agendamento endócrino.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoAgendamento')">×</button>
+        </div>
+
+        <form method="POST" action="/endocrinos/agendamento/novo" enctype="multipart/form-data" class="form-convenio">
+            <div class="campo-modal"><label>CIP</label><input name="cip"></div>
+            <div class="campo-modal"><label>Nome</label><input name="nome" required></div>
+            <div class="campo-modal"><label>CPF</label><input name="cpf"></div>
+            <div class="campo-modal"><label>Nascimento</label><input type="date" name="data_nascimento"></div>
+
+            <div class="campo-modal">
+                <label>Exame</label>
+                <select name="exame_id">
+                    <option value="">Selecione</option>
+                    {% for exame in exames %}<option value="{{ exame.id }}">{{ exame.exame }}</option>{% endfor %}
+                </select>
+            </div>
+
+            <div class="campo-modal"><label>Data</label><input type="date" name="data_agendamento"></div>
+            <div class="campo-modal"><label>Horário</label><input type="time" name="horario"></div>
+
+            <div class="campo-modal">
+                <label>Status</label>
+                <select name="status_id">
+                    <option value="">Automático</option>
+                    {% for st in status %}<option value="{{ st.id }}">{{ st.nome }}</option>{% endfor %}
+                </select>
+            </div>
+
+            <div class="campo-modal">
+                <label>Descrição</label>
+                <textarea name="status_descricao"></textarea>
+            </div>
+
+            <div class="campo-modal">
+                <label>Anexos</label>
+                <input type="file" name="anexos" multiple>
+            </div>
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoAgendamento')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if tem_permissao('gerenciar_exames') %}
+<div id="modalNovoExame" class="modal-fundo">
+    <div class="modal-card modal-pequeno">
+        <div class="modal-topo">
+            <div><h2>Novo Exame</h2><p>Cadastre um novo exame.</p></div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoExame')">×</button>
+        </div>
+        <form method="POST" action="/endocrinos/exame/novo">
+            <label>Exame</label><input name="exame" required>
+            <label>Sigla</label><input name="sigla">
+            <label>Tempo médio</label><input name="tempo_medio">
+            <label>Observação</label><textarea name="observacao"></textarea>
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoExame')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if tem_permissao('gerenciar_status') %}
+<div id="modalNovoStatus" class="modal-fundo">
+    <div class="modal-card modal-pequeno">
+        <div class="modal-topo">
+            <div><h2>Novo Status</h2><p>Cadastre um novo status.</p></div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoStatus')">×</button>
+        </div>
+        <form method="POST" action="/endocrinos/status/novo">
+            <label>Nome</label><input name="nome" required>
+            <label>Cor</label><input name="cor">
+            <label>Descrição padrão</label><textarea name="descricao_padrao"></textarea>
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoStatus')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function abrirModal(id) {
+    document.getElementById(id).classList.add('ativo');
+}
+
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('ativo');
+}
+</script>
+
+{% endblock %}

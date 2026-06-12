@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel - SINTER</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="painel-body">
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>SINTER</h2>
+            <span>Sistema Interno</span>
+        </div>
+
+        <nav class="menu">
+            <a href="/painel" class="ativo">Painel Inicial</a>
+            <a href="#">Convênios</a>
+            <a href="#">Reqs e Formulários</a>
+            <a href="#">Endócrinos</a>
+            <a href="#">Usuários e Cargos</a>
+        </nav>
+    </aside>
+
+    <section class="conteudo">
+        <header class="topbar">
+            <div>
+                <h1>Painel Inicial</h1>
+                <p>Bem-vindo ao Sistema Interno Ghanem</p>
+            </div>
+
+            <div class="usuario-box">
+                <strong>{{ nome }}</strong>
+                <span>{{ cargo }}</span>
+                <a href="/logout">Sair</a>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <div class="card-dashboard">
+                <h3>Convênios</h3>
+                <p>Área para cadastro e consulta de convênios.</p>
+            </div>
+
+            <div class="card-dashboard">
+                <h3>Reqs e Formulários</h3>
+                <p>Área de requisições e formulários internos.</p>
+            </div>
+
+            <div class="card-dashboard">
+                <h3>Endócrinos</h3>
+                <p>Controle e organização da área de endócrinos.</p>
+            </div>
+
+            <div class="card-dashboard">
+                <h3>Usuários e Cargos</h3>
+                <p>Gerenciamento de acessos do sistema.</p>
+            </div>
+        </main>
+    </section>
+
+</body>
+</html>

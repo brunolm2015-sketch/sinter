@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo or 'SINTER' }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="painel-body">
+
+    <aside class="sidebar">
+
+        <div>
+            <div class="sidebar-logo">
+                <h2>SINTER</h2>
+                <span>Sistema Interno</span>
+            </div>
+
+            <nav class="menu">
+
+                {% if tem_permissao('ver_convenios') %}
+                <a href="/convenios" class="{% if request.path.startswith('/convenios') %}ativo{% endif %}">
+                    Convênios
+                </a>
+                {% endif %}
+
+                {% if tem_permissao('ver_reqs') %}
+                <a href="/reqs" class="{% if request.path.startswith('/reqs') %}ativo{% endif %}">
+                    REQs
+                </a>
+                {% endif %}
+
+                {% if tem_permissao('ver_formularios') %}
+                <a href="/formularios" class="{% if request.path.startswith('/formularios') %}ativo{% endif %}">
+                    Formulários
+                </a>
+                {% endif %}
+
+                {% if tem_permissao('ver_endocrinos') or tem_permissao('ver_agendamentos') %}
+                <a href="/endocrinos" class="{% if request.path.startswith('/endocrinos') %}ativo{% endif %}">
+                    Endócrinos
+                </a>
+                {% endif %}
+
+                {% if tem_permissao('ver_usuarios_cargos') or tem_permissao('ver_usuarios') or tem_permissao('ver_cargos') %}
+                <a href="/usuarios-cargos" class="{% if request.path.startswith('/usuarios-cargos') or request.path.startswith('/usuarios') or request.path.startswith('/cargos') %}ativo{% endif %}">
+                    Usuários e Cargos
+                </a>
+                {% endif %}
+
+            </nav>
+        </div>
+
+        <div class="usuario-lateral">
+            <strong>{{ nome }}</strong>
+            <span>{{ cargo }}</span>
+            <a href="/logout">Sair</a>
+        </div>
+
+    </aside>
+
+    <main class="conteudo">
+        {% block conteudo %}{% endblock %}
+    </main>
+
+</body>
+</html>

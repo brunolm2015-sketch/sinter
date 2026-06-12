@@ -1,0 +1,352 @@
+{% extends '_layout.html' %}
+{% set titulo = 'Convênios - SINTER' %}
+
+{% block conteudo %}
+
+<section class="barra-acoes">
+    {% if tem_permissao('criar_convenios') %}
+    <button type="button" onclick="abrirModal('modalNovoConvenio')" class="btn-novo">
+        + Novo Convênio
+    </button>
+    {% endif %}
+</section>
+
+<section class="grid-convenios">
+
+    {% for convenio in convenios %}
+    <div class="card-convenio">
+
+        {% if tem_permissao('editar_convenios') or tem_permissao('excluir_convenios') %}
+        <div class="acoes-card">
+
+            {% if tem_permissao('editar_convenios') %}
+            <button type="button" onclick="abrirModal('editar{{ convenio.id }}')" class="btn-card editar">
+                ✏️
+            </button>
+            {% endif %}
+
+            {% if tem_permissao('excluir_convenios') %}
+            <form method="POST" action="/convenios/excluir/{{ convenio.id }}" onsubmit="return confirm('Excluir convênio?')">
+                <button type="submit" class="btn-card excluir">
+                    🗑️
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+        {% if convenio.imagem and convenio.imagem_ativo %}
+        <img src="{{ convenio.imagem }}" class="logo-convenio">
+        {% endif %}
+
+        {% if convenio.nome_ativo %}
+        <h2>{{ convenio.nome }}</h2>
+        {% endif %}
+
+        <div class="info-convenio">
+
+            {% if convenio.login_ativo %}
+            <div class="linha-info">
+                <span><strong>Login:</strong><br>{{ convenio.login }}</span>
+                <button type="button" class="btn-copiar" onclick="copiarTexto('{{ convenio.login }}')">📋</button>
+            </div>
+            {% endif %}
+
+            {% if convenio.cpf_ativo %}
+            <div class="linha-info">
+                <span><strong>CPF:</strong><br>{{ convenio.cpf }}</span>
+                <button type="button" class="btn-copiar" onclick="copiarTexto('{{ convenio.cpf }}')">📋</button>
+            </div>
+            {% endif %}
+
+            {% if convenio.cnpj_ativo %}
+            <div class="linha-info">
+                <span><strong>CNPJ:</strong><br>{{ convenio.cnpj }}</span>
+                <button type="button" class="btn-copiar" onclick="copiarTexto('{{ convenio.cnpj }}')">📋</button>
+            </div>
+            {% endif %}
+
+            {% if convenio.codigo_ativo %}
+            <div class="linha-info">
+                <span><strong>Código:</strong><br>{{ convenio.codigo }}</span>
+                <button type="button" class="btn-copiar" onclick="copiarTexto('{{ convenio.codigo }}')">📋</button>
+            </div>
+            {% endif %}
+
+            {% if convenio.senha_ativo %}
+            <div class="linha-info">
+                <span><strong>Senha:</strong><br>{{ convenio.senha }}</span>
+                <button type="button" class="btn-copiar" onclick="copiarTexto('{{ convenio.senha }}')">📋</button>
+            </div>
+            {% endif %}
+
+            {% if convenio.link_site %}
+            <a href="{{ convenio.link_site }}" target="_blank">Abrir site</a>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% if tem_permissao('editar_convenios') %}
+    <div id="editar{{ convenio.id }}" class="modal-fundo">
+        <div class="modal-card">
+
+            <div class="modal-topo">
+                <div>
+                    <h2>Editar Convênio</h2>
+                    <p>Atualize os dados do convênio.</p>
+                </div>
+
+                <button type="button" class="btn-fechar" onclick="fecharModal('editar{{ convenio.id }}')">
+                    ×
+                </button>
+            </div>
+
+            <form method="POST" action="/convenios/editar/{{ convenio.id }}" enctype="multipart/form-data" class="form-convenio">
+
+                <input type="hidden" name="imagem_atual" value="{{ convenio.imagem }}">
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>Nome</label>
+                        <label class="switch">
+                            <input type="checkbox" name="nome_ativo" {% if convenio.nome_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input name="nome" value="{{ convenio.nome or '' }}">
+                </div>
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>Login</label>
+                        <label class="switch">
+                            <input type="checkbox" name="login_ativo" {% if convenio.login_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input name="login" value="{{ convenio.login or '' }}">
+                </div>
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>CPF</label>
+                        <label class="switch">
+                            <input type="checkbox" name="cpf_ativo" {% if convenio.cpf_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input name="cpf" value="{{ convenio.cpf or '' }}">
+                </div>
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>CNPJ</label>
+                        <label class="switch">
+                            <input type="checkbox" name="cnpj_ativo" {% if convenio.cnpj_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input name="cnpj" value="{{ convenio.cnpj or '' }}">
+                </div>
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>Código</label>
+                        <label class="switch">
+                            <input type="checkbox" name="codigo_ativo" {% if convenio.codigo_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input name="codigo" value="{{ convenio.codigo or '' }}">
+                </div>
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>Senha</label>
+                        <label class="switch">
+                            <input type="checkbox" name="senha_ativo" {% if convenio.senha_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input name="senha" value="{{ convenio.senha or '' }}">
+                </div>
+
+                <div class="campo-modal">
+                    <div class="linha-switch">
+                        <label>Imagem</label>
+                        <label class="switch">
+                            <input type="checkbox" name="imagem_ativo" {% if convenio.imagem_ativo %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <input type="file" name="imagem">
+                </div>
+
+                <div class="campo-modal">
+                    <label>Link do site</label>
+                    <input name="link_site" value="{{ convenio.link_site or '' }}">
+                </div>
+
+                <div class="modal-botoes">
+                    <button type="button" class="btn-cancelar" onclick="fecharModal('editar{{ convenio.id }}')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn-salvar">
+                        Salvar
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="sem-registros">
+        Nenhum convênio cadastrado.
+    </div>
+    {% endfor %}
+
+</section>
+
+{% if tem_permissao('criar_convenios') %}
+<div id="modalNovoConvenio" class="modal-fundo">
+    <div class="modal-card">
+
+        <div class="modal-topo">
+            <div>
+                <h2>Novo Convênio</h2>
+                <p>Cadastre um novo convênio no sistema.</p>
+            </div>
+
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoConvenio')">
+                ×
+            </button>
+        </div>
+
+        <form method="POST" action="/convenios/novo" enctype="multipart/form-data" class="form-convenio">
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>Nome</label>
+                    <label class="switch">
+                        <input type="checkbox" name="nome_ativo" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input name="nome">
+            </div>
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>Login</label>
+                    <label class="switch">
+                        <input type="checkbox" name="login_ativo">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input name="login">
+            </div>
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>CPF</label>
+                    <label class="switch">
+                        <input type="checkbox" name="cpf_ativo">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input name="cpf">
+            </div>
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>CNPJ</label>
+                    <label class="switch">
+                        <input type="checkbox" name="cnpj_ativo">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input name="cnpj">
+            </div>
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>Código</label>
+                    <label class="switch">
+                        <input type="checkbox" name="codigo_ativo">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input name="codigo">
+            </div>
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>Senha</label>
+                    <label class="switch">
+                        <input type="checkbox" name="senha_ativo">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input name="senha">
+            </div>
+
+            <div class="campo-modal">
+                <div class="linha-switch">
+                    <label>Imagem</label>
+                    <label class="switch">
+                        <input type="checkbox" name="imagem_ativo">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <input type="file" name="imagem">
+            </div>
+
+            <div class="campo-modal">
+                <label>Link do site</label>
+                <input name="link_site">
+            </div>
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoConvenio')">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-salvar">
+                    Salvar
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div id="avisoCopiado" class="aviso-copiado">
+    Copiado!
+</div>
+
+<script>
+function abrirModal(id) {
+    document.getElementById(id).classList.add('ativo');
+}
+
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('ativo');
+}
+
+function copiarTexto(texto) {
+    navigator.clipboard.writeText(texto);
+
+    const aviso = document.getElementById('avisoCopiado');
+    aviso.classList.add('mostrar');
+
+    setTimeout(() => {
+        aviso.classList.remove('mostrar');
+    }, 1500);
+}
+</script>
+
+{% endblock %}

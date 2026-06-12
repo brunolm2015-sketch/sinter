@@ -1,0 +1,8 @@
+{% extends '_layout.html' %}
+{% set titulo = 'REQs e Formulários - SINTER' %}
+{% block conteudo %}
+<section class="barra-acoes">
+    {% if tem_permissao('ver_reqs') %}<a href="/reqs" class="btn-novo">Abrir REQs</a>{% endif %}
+    {% if tem_permissao('ver_formularios') %}<a href="/formularios" class="btn-novo">Abrir Formulários</a>{% endif %}
+</section>
+{% endblock %}
