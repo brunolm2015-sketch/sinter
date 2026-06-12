@@ -87,6 +87,10 @@
         margin-top: 6px;
     }
 
+    .campo-dinheiro {
+        font-weight: 700;
+    }
+
     .btn-gerar {
         width: auto;
         padding: 14px 28px;
@@ -142,6 +146,8 @@
                         <input type="date" name="{{ pergunta.id }}">
                     {% elif tipo == 'cep' %}
                         <input name="{{ pergunta.id }}" placeholder="00000-000">
+                    {% elif tipo == 'dinheiro' %}
+                        <input name="{{ pergunta.id }}" placeholder="R$ 0,00" class="campo-dinheiro" inputmode="decimal">
                     {% else %}
                         <input name="{{ pergunta.id }}" placeholder="Digite a resposta manual">
                     {% endif %}
@@ -161,6 +167,9 @@
 
             {% elif tipo == 'cep' %}
                 <input name="{{ pergunta.id }}" placeholder="00000-000">
+
+            {% elif tipo == 'dinheiro' %}
+                <input name="{{ pergunta.id }}" placeholder="R$ 0,00" class="campo-dinheiro" inputmode="decimal">
 
             {% else %}
                 <input name="{{ pergunta.id }}" placeholder="Digite a resposta">
@@ -199,6 +208,29 @@ function alternarModoResposta(perguntaId) {
         });
     }
 }
+
+function aplicarMascaraDinheiro(campo) {
+    let valor = String(campo.value || "").replace(/\D/g, "");
+
+    if (!valor) {
+        campo.value = "";
+        return;
+    }
+
+    let numero = (parseInt(valor, 10) / 100).toFixed(2);
+    let partes = numero.split(".");
+    let reais = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    let centavos = partes[1];
+
+    campo.value = "R$ " + reais + "," + centavos;
+}
+
+document.querySelectorAll(".campo-dinheiro").forEach(campo => {
+    campo.addEventListener("input", function() {
+        aplicarMascaraDinheiro(this);
+    });
+});
+
 </script>
 
 {% endblock %}

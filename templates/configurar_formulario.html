@@ -31,6 +31,40 @@
 
     .topo-config h1 { margin: 0; font-size: 30px; }
     .topo-config p { margin: 4px 0 0 0; font-size: 15px; }
+    .topo-config-com-voltar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 25px;
+    }
+
+    .btn-voltar-formularios {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        min-width: 90px;
+        height: 44px;
+        padding: 0 16px;
+        background: #e5e7eb;
+        color: #111827;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 800;
+        box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    }
+
+    .btn-voltar-formularios:hover {
+        background: #dbeafe;
+        border-color: #0077b6;
+    }
+
+    .topo-config-com-voltar .topo-config {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
 
     .pdf-toolbar {
         display: flex;
@@ -281,10 +315,14 @@
     }
 </style>
 
-<section class="topo-config">
-    <h1>Configurar Formulário</h1>
-    <p>{{ formulario.nome }}</p>
-</section>
+<div class="topo-config-com-voltar">
+    <a href="/formularios" class="btn-voltar-formularios">← Voltar</a>
+
+    <section class="topo-config">
+        <h1>Configurar Formulário</h1>
+        <p>{{ formulario.nome }}</p>
+    </section>
+</div>
 
 <div class="config-formulario">
 
@@ -416,6 +454,7 @@
                 <option value="cpf">CPF</option>
                 <option value="data">Data</option>
                 <option value="cep">CEP</option>
+                <option value="dinheiro">Dinheiro - Reais</option>
                 <option value="caixa_selecao">Caixa de seleção</option>
             </select>
 
@@ -470,6 +509,7 @@
                 <option value="cpf" {% if pergunta.tipo == 'cpf' %}selected{% endif %}>CPF</option>
                 <option value="data" {% if pergunta.tipo == 'data' %}selected{% endif %}>Data</option>
                 <option value="cep" {% if pergunta.tipo == 'cep' %}selected{% endif %}>CEP</option>
+                <option value="dinheiro" {% if pergunta.tipo == 'dinheiro' %}selected{% endif %}>Dinheiro - Reais</option>
                 <option value="caixa_selecao" {% if pergunta.tipo in ['caixa_selecao', 'checkbox', 'caixa de seleção'] %}selected{% endif %}>Caixa de seleção</option>
             </select>
 

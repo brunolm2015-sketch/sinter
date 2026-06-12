@@ -18,31 +18,25 @@
 
         {% if tem_permissao('editar_convenios') or tem_permissao('excluir_convenios') %}
         <div class="acoes-card">
-
             {% if tem_permissao('editar_convenios') %}
-            <button type="button" onclick="abrirModal('editar{{ convenio.id }}')" class="btn-card editar">
-                ✏️
-            </button>
+            <button type="button" onclick="abrirModal('editar{{ convenio.id }}')" class="btn-card editar">✏️</button>
             {% endif %}
 
             {% if tem_permissao('excluir_convenios') %}
             <form method="POST" action="/convenios/excluir/{{ convenio.id }}" onsubmit="return confirm('Excluir convênio?')">
-                <button type="submit" class="btn-card excluir">
-                    🗑️
-                </button>
+                <button type="submit" class="btn-card excluir">🗑️</button>
             </form>
             {% endif %}
-
         </div>
         {% endif %}
 
         {% if convenio.imagem and convenio.imagem_ativo %}
             {% if convenio.link_site %}
             <a href="{{ convenio.link_site }}" target="_blank" class="link-imagem-convenio" title="Abrir site">
-                <img src="{{ convenio.imagem }}" class="logo-convenio">
+                <img src="{{ convenio.imagem }}" class="logo-convenio" alt="{{ convenio.nome }}">
             </a>
             {% else %}
-            <img src="{{ convenio.imagem }}" class="logo-convenio">
+            <img src="{{ convenio.imagem }}" class="logo-convenio" alt="{{ convenio.nome }}">
             {% endif %}
         {% endif %}
 
@@ -99,10 +93,7 @@
                     <h2>Editar Convênio</h2>
                     <p>Atualize os dados do convênio.</p>
                 </div>
-
-                <button type="button" class="btn-fechar" onclick="fecharModal('editar{{ convenio.id }}')">
-                    ×
-                </button>
+                <button type="button" class="btn-fechar" onclick="fecharModal('editar{{ convenio.id }}')">×</button>
             </div>
 
             <form method="POST" action="/convenios/editar/{{ convenio.id }}" enctype="multipart/form-data" class="form-convenio">
@@ -183,7 +174,7 @@
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <input type="file" name="imagem">
+                    <input type="file" name="imagem" accept="image/*">
                 </div>
 
                 <div class="campo-modal">
@@ -222,10 +213,7 @@
                 <h2>Novo Convênio</h2>
                 <p>Cadastre um novo convênio no sistema.</p>
             </div>
-
-            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoConvenio')">
-                ×
-            </button>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoConvenio')">×</button>
         </div>
 
         <form method="POST" action="/convenios/novo" enctype="multipart/form-data" class="form-convenio">
@@ -304,7 +292,7 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <input type="file" name="imagem">
+                <input type="file" name="imagem" accept="image/*">
             </div>
 
             <div class="campo-modal">
@@ -329,40 +317,6 @@
 <div id="avisoCopiado" class="aviso-copiado">
     Copiado!
 </div>
-
-<style>
-.logo-sistema-lateral {
-    width: 150px;
-    max-width: 100%;
-    display: block;
-    margin: 0 auto 25px auto;
-}
-
-.logo-login {
-    width: 240px;
-    max-width: 90%;
-    display: block;
-    margin: 0 auto 20px auto;
-}
-
-.login-area {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.link-imagem-convenio {
-    display: inline-block;
-    cursor: pointer;
-    transition: transform .2s ease, opacity .2s ease;
-}
-
-.link-imagem-convenio:hover {
-    transform: scale(1.04);
-    opacity: .9;
-}
-</style>
 
 <script>
 function abrirModal(id) {

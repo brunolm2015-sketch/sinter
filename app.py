@@ -1104,7 +1104,29 @@ def gerar_pdf_preenchido(formulario_id):
         except Exception:
             return float(padrao)
 
+    def formatar_reais(valor):
+        texto = str(valor or "").strip()
+
+        if not texto:
+            return ""
+
+        # Se já veio formatado como R$ 1.234,56, normaliza e mantém o padrão brasileiro.
+        texto_limpo = texto.replace("R$", "").replace(" ", "")
+
+        try:
+            if "," in texto_limpo:
+                numero_valor = float(texto_limpo.replace(".", "").replace(",", "."))
+            else:
+                numero_valor = float(texto_limpo)
+
+            texto_formatado = f"R$ {numero_valor:,.2f}"
+            texto_formatado = texto_formatado.replace(",", "X").replace(".", ",").replace("X", ".")
+            return texto_formatado
+        except Exception:
+            return texto if texto.startswith("R$") else f"R$ {texto}"
+
     tipos_checkbox = {"checkbox", "caixa_selecao", "caixa de seleção", "caixa_de_selecao"}
+    tipos_dinheiro = {"dinheiro", "reais", "dinheiro_reais", "valor", "moeda"}
 
     for pergunta in perguntas:
         resposta = respostas.get(pergunta["id"], "")
@@ -1132,6 +1154,9 @@ def gerar_pdf_preenchido(formulario_id):
             altura = 8
 
         tipo = str(pergunta.get("tipo") or "texto").strip().lower()
+
+        if tipo in tipos_dinheiro:
+            resposta = formatar_reais(resposta)
 
         if tipo in tipos_checkbox:
             # Para caixa de seleção, o X fica centralizado dentro da área selecionada.
