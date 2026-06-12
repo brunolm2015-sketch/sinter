@@ -523,10 +523,12 @@ def detectar_campos_pdf(arquivo_pdf, pagina_numero=0):
                 if largura < 25:
                     continue
 
-                # O texto deve ficar um pouco acima do risco.
+                # A caixa começa praticamente em cima da linha detectada.
+                # Isso ajuda a escrita final ficar alinhada na parte inferior,
+                # exatamente sobre a linha pontilhada do documento.
                 x = seg.x0
-                y = max(0, seg.y0 - 9)
-                altura = max(14, seg.height + 8)
+                y = max(0, seg.y0 - 2)
+                altura = 12
 
                 adiciona_campo(
                     "texto",
@@ -1144,14 +1146,17 @@ def gerar_pdf_preenchido(formulario_id):
             )
         else:
             texto = str(resposta or "")
-            caixa = fitz.Rect(x, y, x + largura, y + altura)
-            pagina.insert_textbox(
-                caixa,
+
+            # Escreve a resposta na parte inferior da caixa detectada,
+            # ficando alinhada sobre a linha pontilhada do formulário.
+            y_texto = y + altura - 1
+
+            pagina.insert_text(
+                (x + 2, y_texto),
                 texto,
                 fontsize=fonte,
                 fontname="helv",
-                color=(0, 0, 0),
-                align=0
+                color=(0, 0, 0)
             )
 
     nome_saida = f"formulario_preenchido_{formulario_id}.pdf"
