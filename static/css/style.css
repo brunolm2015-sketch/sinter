@@ -609,3 +609,56 @@ button:disabled {
     opacity: 1;
     transform: translateY(0);
 }
+/* ==========================
+   CORREÇÃO LOGO SINTER
+   A logo deve aparecer somente no menu lateral e no login.
+========================== */
+.sidebar-logo {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+
+.logo-sistema-lateral {
+    width: 150px !important;
+    max-width: 150px !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+    object-fit: contain !important;
+}
+
+.logo-login {
+    width: 240px !important;
+    max-width: 90% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto 20px auto !important;
+    object-fit: contain !important;
+}
+
+.login-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Impede que a logo apareça gigante dentro do conteúdo das páginas */
+.conteudo > img.logo-sistema-lateral,
+.conteudo > img.logo-login,
+.conteudo > img[src*="logo_sinter"] {
+    display: none !important;
+}
+
+.link-imagem-convenio {
+    display: inline-block;
+    cursor: pointer;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.link-imagem-convenio:hover {
+    transform: scale(1.04);
+    opacity: .9;
+}
