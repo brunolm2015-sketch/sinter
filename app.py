@@ -763,15 +763,18 @@ def nova_pergunta_formulario(formulario_id):
 
     pagina = request.form.get("pagina") or 0
 
-    supabase.table("formulario_perguntas").insert({
+    dados = {
         "formulario_id": formulario_id,
         "pergunta": request.form.get("pergunta"),
-        "tipo": request.form.get("tipo"),
+        "tipo": request.form.get("tipo") or "texto",
         "placeholder": "",
         "obrigatoria": False,
         "ordem": request.form.get("ordem") or 1,
         "pos_x": request.form.get("pos_x") or None,
         "pos_y": request.form.get("pos_y") or None,
+        "largura": request.form.get("largura") or 160,
+        "altura": request.form.get("altura") or 18,
+        "fonte": request.form.get("fonte") or 9,
         "pagina": pagina,
         "acao_padrao": "proxima",
         "pergunta_destino_id": None,
@@ -783,7 +786,9 @@ def nova_pergunta_formulario(formulario_id):
         "pergunta_se_marcado_id": None,
         "copiar_resposta": "copiar_resposta" in request.form,
         "copiar_de_pergunta_id": request.form.get("copiar_de_pergunta_id") or None
-    }).execute()
+    }
+
+    supabase.table("formulario_perguntas").insert(dados).execute()
 
     return redirect(f"/formularios/configurar/{formulario_id}?pagina={pagina}")
 
@@ -795,16 +800,21 @@ def editar_pergunta_formulario(pergunta_id, formulario_id):
 
     pagina = request.form.get("pagina") or 0
 
-    supabase.table("formulario_perguntas").update({
+    dados = {
         "pergunta": request.form.get("pergunta"),
-        "tipo": request.form.get("tipo"),
+        "tipo": request.form.get("tipo") or "texto",
         "ordem": request.form.get("ordem") or 1,
         "pos_x": request.form.get("pos_x") or None,
         "pos_y": request.form.get("pos_y") or None,
+        "largura": request.form.get("largura") or 160,
+        "altura": request.form.get("altura") or 18,
+        "fonte": request.form.get("fonte") or 9,
         "pagina": pagina,
         "copiar_resposta": "copiar_resposta" in request.form,
         "copiar_de_pergunta_id": request.form.get("copiar_de_pergunta_id") or None
-    }).eq("id", pergunta_id).execute()
+    }
+
+    supabase.table("formulario_perguntas").update(dados).eq("id", pergunta_id).execute()
 
     return redirect(f"/formularios/configurar/{formulario_id}?pagina={pagina}")
 
@@ -925,19 +935,42 @@ def gerar_pdf_preenchido(formulario_id):
         .execute()
     )
 
-    perguntas = perguntas_result.data
+    perguntas = perguntas_result.data or []
     respostas = {}
 
+    # Primeiro coleta tudo que foi digitado manualmente no formulário.
     for pergunta in perguntas:
         respostas[pergunta["id"]] = request.form.get(pergunta["id"], "")
 
+    # Depois aplica cópia automática somente quando o usuário escolher
+    # realmente usar a resposta automática.
+    # No HTML, cada pergunta automática envia:
+    # modo_resposta_<id> = automatico ou manual
     for pergunta in perguntas:
-        if pergunta.get("copiar_resposta") and pergunta.get("copiar_de_pergunta_id"):
-            origem_id = pergunta.get("copiar_de_pergunta_id")
-            respostas[pergunta["id"]] = respostas.get(origem_id, "")
+        pergunta_id = pergunta["id"]
+        origem_id = pergunta.get("copiar_de_pergunta_id")
+        usa_copia = pergunta.get("copiar_resposta") and origem_id
+
+        if usa_copia:
+            modo_resposta = request.form.get(f"modo_resposta_{pergunta_id}", "automatico")
+
+            if modo_resposta == "automatico":
+                respostas[pergunta_id] = respostas.get(origem_id, "")
+            else:
+                respostas[pergunta_id] = request.form.get(pergunta_id, "")
 
     caminho_pdf = caminho_local(formulario["arquivo_pdf"])
     doc = fitz.open(caminho_pdf)
+
+    def numero(valor, padrao):
+        try:
+            if valor in (None, ""):
+                return float(padrao)
+            return float(valor)
+        except Exception:
+            return float(padrao)
+
+    tipos_checkbox = {"checkbox", "caixa_selecao", "caixa de seleção", "caixa_de_selecao"}
 
     for pergunta in perguntas:
         resposta = respostas.get(pergunta["id"], "")
@@ -946,19 +979,48 @@ def gerar_pdf_preenchido(formulario_id):
             continue
 
         pagina_index = int(pergunta.get("pagina") or 0)
+
+        if pagina_index < 0 or pagina_index >= len(doc):
+            continue
+
         pagina = doc[pagina_index]
 
-        x = float(pergunta.get("pos_x") or 50)
-        y = float(pergunta.get("pos_y") or 50)
+        x = numero(pergunta.get("pos_x"), 50)
+        y = numero(pergunta.get("pos_y"), 50)
+        largura = numero(pergunta.get("largura"), 160)
+        altura = numero(pergunta.get("altura"), 18)
+        fonte = numero(pergunta.get("fonte"), 9)
 
-        texto = "X" if pergunta.get("tipo") in ("checkbox", "caixa_selecao", "caixa de seleção") else resposta
+        if largura < 8:
+            largura = 8
 
-        pagina.insert_text(
-            (x, y),
-            texto,
-            fontsize=10,
-            color=(0, 0, 0)
-        )
+        if altura < 8:
+            altura = 8
+
+        tipo = str(pergunta.get("tipo") or "texto").strip().lower()
+
+        if tipo in tipos_checkbox:
+            # Para caixa de seleção, o X fica centralizado dentro da área selecionada.
+            x_marca = x + (largura / 2) - (fonte / 3)
+            y_marca = y + (altura / 2) + (fonte / 3)
+            pagina.insert_text(
+                (x_marca, y_marca),
+                "X",
+                fontsize=fonte,
+                fontname="helv",
+                color=(0, 0, 0)
+            )
+        else:
+            texto = str(resposta or "")
+            caixa = fitz.Rect(x, y, x + largura, y + altura)
+            pagina.insert_textbox(
+                caixa,
+                texto,
+                fontsize=fonte,
+                fontname="helv",
+                color=(0, 0, 0),
+                align=0
+            )
 
     nome_saida = f"formulario_preenchido_{formulario_id}.pdf"
     caminho_saida = os.path.join(PDF_GERADOS, nome_saida)
