@@ -4,25 +4,57 @@
 {% block conteudo %}
 
 <style>
+    .cabecalho-preencher {
+        background: white;
+        padding: 22px 28px;
+        border-radius: 18px;
+        border-left: 8px solid #7dbe4d;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-voltar-formulario {
+        width: auto;
+        margin-top: 0;
+        padding: 10px 16px;
+        border-radius: 9px;
+        background: #eef2f7;
+        color: #1f2937;
+        text-decoration: none;
+        font-weight: 800;
+        border: 1px solid #d1d5db;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .btn-voltar-formulario:hover {
+        background: #e5e7eb;
+        border-color: #94a3b8;
+    }
+
+    .cabecalho-preencher h1 {
+        margin: 0;
+        color: #111827;
+        font-size: 28px;
+    }
+
+    .cabecalho-preencher p {
+        margin-top: 6px;
+        color: #374151;
+    }
+
     .preencher-card {
         background: white;
         padding: 25px;
         border-radius: 18px;
         box-shadow: 0 8px 22px rgba(0,0,0,.08);
-        max-width: 900px;
+        max-width: 850px;
     }
-
-    .topo-preencher {
-        background: white;
-        border-left: 7px solid #7dbe4d;
-        border-radius: 18px;
-        padding: 22px 28px;
-        margin-bottom: 25px;
-        box-shadow: 0 8px 22px rgba(0,0,0,.06);
-    }
-
-    .topo-preencher h1 { margin: 0; }
-    .topo-preencher p { margin: 4px 0 0 0; }
 
     .pergunta-preencher {
         background: #f8fafc;
@@ -32,82 +64,68 @@
         margin-bottom: 15px;
     }
 
-    .pergunta-preencher label {
+    .pergunta-preencher label.titulo-pergunta {
         margin-top: 0;
         color: #0077b6;
-        font-weight: bold;
-        display: block;
+        font-weight: 800;
+        font-size: 16px;
     }
 
-    .pergunta-preencher input,
-    .pergunta-preencher select {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 11px;
-        border: 1px solid #d1d5db;
-        border-radius: 9px;
-        margin-top: 8px;
-    }
-
-    .radio-linha {
+    .checkbox-linha {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-top: 10px;
     }
 
-    .radio-linha input {
+    .checkbox-linha input {
         width: auto;
-        transform: scale(1.2);
+        margin: 0;
     }
 
-    .automatico-box {
-        background: #e8f2ff;
-        border: 1px solid #bfdbfe;
-        color: #0f4c81;
-        padding: 12px;
-        border-radius: 12px;
+    .box-automatico {
         margin-top: 10px;
-        font-size: 14px;
+        background: #eaf1f8;
+        color: #1f2937;
+        border-radius: 10px;
+        padding: 12px;
     }
 
-    .automatico-box strong {
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    .manual-box {
-        margin-top: 12px;
-        display: none;
-    }
-
-    .ajuda-auto {
-        color: #475569;
-        font-size: 13px;
-        margin-top: 6px;
-    }
-
-    .campo-dinheiro {
+    .box-automatico label {
+        margin: 8px 0 0 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         font-weight: 700;
+    }
+
+    .box-automatico input[type="radio"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .campo-manual-automatico {
+        margin-top: 10px;
+        display: none;
     }
 
     .btn-gerar {
         width: auto;
         padding: 14px 28px;
         background: #7dbe4d;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-weight: bold;
-        cursor: pointer;
     }
 
-    .btn-gerar:hover { background: #6ca63f; }
+    .btn-gerar:hover {
+        background: #6ca63f;
+    }
 </style>
 
-<section class="topo-preencher">
-    <h1>Preencher Formulário</h1>
-    <p>{{ formulario.nome }}</p>
+<section class="cabecalho-preencher">
+    <a href="/formularios" class="btn-voltar-formulario">← Voltar</a>
+    <div>
+        <h1>Preencher Formulário</h1>
+        <p>{{ formulario.nome }}</p>
+    </div>
 </section>
 
 <div class="preencher-card">
@@ -115,64 +133,43 @@
 
         {% for pergunta in perguntas %}
         <div class="pergunta-preencher">
-            <label>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</label>
+            <label class="titulo-pergunta">{{ pergunta.ordem }} - {{ pergunta.pergunta }}</label>
 
-            {% set tipo = (pergunta.tipo or 'texto')|lower %}
-            {% set pergunta_automatica = pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}
+            {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}
+                <div class="box-automatico">
+                    <p>Esta resposta pode ser preenchida automaticamente com base em outra pergunta.</p>
 
-            {% if pergunta_automatica %}
-                <div class="automatico-box">
-                    <strong>Esta pergunta pode puxar automaticamente a resposta de outra pergunta.</strong>
+                    <label>
+                        <input type="radio" name="modo_resposta_{{ pergunta.id }}" value="automatico" checked onchange="alternarRespostaManual('{{ pergunta.id }}')">
+                        Usar resposta automática
+                    </label>
 
-                    <select name="modo_resposta_{{ pergunta.id }}" onchange="alternarModoResposta('{{ pergunta.id }}')" id="modoResposta{{ pergunta.id }}">
-                        <option value="automatico" selected>Usar resposta automática</option>
-                        <option value="manual">Digitar resposta manualmente</option>
-                    </select>
-
-                    <div class="ajuda-auto">
-                        Se deixar automático, o sistema copiará a resposta da pergunta vinculada. Se escolher manual, você digita outro valor só para este campo.
-                    </div>
+                    <label>
+                        <input type="radio" name="modo_resposta_{{ pergunta.id }}" value="manual" onchange="alternarRespostaManual('{{ pergunta.id }}')">
+                        Digitar resposta manualmente
+                    </label>
                 </div>
+            {% endif %}
 
-                <div class="manual-box" id="manualBox{{ pergunta.id }}">
-                    {% if tipo in ['caixa_selecao', 'caixa de seleção', 'checkbox', 'caixa_de_selecao'] %}
-                        <div class="radio-linha">
-                            <input type="checkbox" name="{{ pergunta.id }}" value="X">
-                            <span>Marcar opção manualmente</span>
-                        </div>
-                    {% elif tipo == 'cpf' %}
-                        <input name="{{ pergunta.id }}" placeholder="000.000.000-00">
-                    {% elif tipo == 'data' %}
-                        <input type="date" name="{{ pergunta.id }}">
-                    {% elif tipo == 'cep' %}
-                        <input name="{{ pergunta.id }}" placeholder="00000-000">
-                    {% elif tipo == 'dinheiro' %}
-                        <input name="{{ pergunta.id }}" placeholder="R$ 0,00" class="campo-dinheiro" inputmode="decimal">
-                    {% else %}
-                        <input name="{{ pergunta.id }}" placeholder="Digite a resposta manual">
-                    {% endif %}
-                </div>
+            {% set tipo = pergunta.tipo or 'texto' %}
 
-            {% elif tipo in ['caixa_selecao', 'caixa de seleção', 'checkbox', 'caixa_de_selecao'] %}
-                <div class="radio-linha">
+            {% if tipo in ['checkbox', 'caixa_selecao', 'caixa_de_selecao', 'caixa de seleção'] %}
+                <div class="checkbox-linha {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}">
                     <input type="checkbox" name="{{ pergunta.id }}" value="X">
                     <span>Marcar opção</span>
                 </div>
-
             {% elif tipo == 'cpf' %}
-                <input name="{{ pergunta.id }}" placeholder="000.000.000-00">
-
+                <input class="campo-cpf {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}" name="{{ pergunta.id }}" placeholder="000.000.000-00">
             {% elif tipo == 'data' %}
-                <input type="date" name="{{ pergunta.id }}">
-
+                <input type="date" class="{% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}" name="{{ pergunta.id }}">
             {% elif tipo == 'cep' %}
-                <input name="{{ pergunta.id }}" placeholder="00000-000">
-
-            {% elif tipo == 'dinheiro' %}
-                <input name="{{ pergunta.id }}" placeholder="R$ 0,00" class="campo-dinheiro" inputmode="decimal">
-
+                <input class="campo-cep {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}" name="{{ pergunta.id }}" placeholder="00000-000">
+            {% elif tipo == 'telefone' %}
+                <input class="campo-telefone {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}" name="{{ pergunta.id }}" placeholder="(00) 00000-0000">
+            {% elif tipo in ['dinheiro', 'reais', 'dinheiro_reais', 'valor', 'moeda'] %}
+                <input class="campo-dinheiro {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}" name="{{ pergunta.id }}" placeholder="R$ 0,00">
             {% else %}
-                <input name="{{ pergunta.id }}" placeholder="Digite a resposta">
+                <input class="{% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}campo-manual-automatico{% endif %}" id="campo_manual_{{ pergunta.id }}" name="{{ pergunta.id }}" placeholder="Digite a resposta">
             {% endif %}
         </div>
         {% else %}
@@ -182,55 +179,97 @@
         {% if perguntas %}
         <button type="submit" class="btn-gerar">Gerar PDF Preenchido</button>
         {% endif %}
-
     </form>
 </div>
 
 <script>
-function alternarModoResposta(perguntaId) {
-    const select = document.getElementById('modoResposta' + perguntaId);
-    const box = document.getElementById('manualBox' + perguntaId);
+function somenteNumeros(valor) {
+    return String(valor || '').replace(/\D/g, '');
+}
 
-    if (!select || !box) return;
+function mascaraCpf(valor) {
+    valor = somenteNumeros(valor).slice(0, 11);
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d)/, '$1.$2');
+    valor = valor.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return valor;
+}
 
-    if (select.value === 'manual') {
-        box.style.display = 'block';
+function mascaraCep(valor) {
+    valor = somenteNumeros(valor).slice(0, 8);
+    valor = valor.replace(/(\d{5})(\d)/, '$1-$2');
+    return valor;
+}
+
+function mascaraTelefone(valor) {
+    valor = somenteNumeros(valor).slice(0, 11);
+    if (valor.length <= 10) {
+        valor = valor.replace(/(\d{2})(\d)/, '($1) $2');
+        valor = valor.replace(/(\d{4})(\d)/, '$1-$2');
     } else {
-        box.style.display = 'none';
-
-        const campos = box.querySelectorAll('input, textarea, select');
-        campos.forEach(campo => {
-            if (campo.type === 'checkbox' || campo.type === 'radio') {
-                campo.checked = false;
-            } else {
-                campo.value = '';
-            }
-        });
+        valor = valor.replace(/(\d{2})(\d)/, '($1) $2');
+        valor = valor.replace(/(\d{5})(\d)/, '$1-$2');
     }
+    return valor;
 }
 
-function aplicarMascaraDinheiro(campo) {
-    let valor = String(campo.value || "").replace(/\D/g, "");
+function mascaraDinheiro(valor) {
+    let numeros = somenteNumeros(valor);
+    if (!numeros) return '';
 
-    if (!valor) {
-        campo.value = "";
-        return;
-    }
+    let numero = parseInt(numeros, 10) / 100;
 
-    let numero = (parseInt(valor, 10) / 100).toFixed(2);
-    let partes = numero.split(".");
-    let reais = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    let centavos = partes[1];
-
-    campo.value = "R$ " + reais + "," + centavos;
-}
-
-document.querySelectorAll(".campo-dinheiro").forEach(campo => {
-    campo.addEventListener("input", function() {
-        aplicarMascaraDinheiro(this);
+    return numero.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
     });
+}
+
+document.addEventListener('input', function(event) {
+    const campo = event.target;
+
+    if (campo.classList.contains('campo-cpf')) {
+        campo.value = mascaraCpf(campo.value);
+    }
+
+    if (campo.classList.contains('campo-cep')) {
+        campo.value = mascaraCep(campo.value);
+    }
+
+    if (campo.classList.contains('campo-telefone')) {
+        campo.value = mascaraTelefone(campo.value);
+    }
+
+    if (campo.classList.contains('campo-dinheiro')) {
+        campo.value = mascaraDinheiro(campo.value);
+    }
 });
 
+function alternarRespostaManual(perguntaId) {
+    const radios = document.querySelectorAll(`input[name="modo_resposta_${perguntaId}"]`);
+    let modo = 'automatico';
+
+    radios.forEach(radio => {
+        if (radio.checked) modo = radio.value;
+    });
+
+    const campo = document.getElementById('campo_manual_' + perguntaId);
+    if (!campo) return;
+
+    if (modo === 'manual') {
+        campo.style.display = campo.classList.contains('checkbox-linha') ? 'flex' : 'block';
+    } else {
+        campo.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[id^="campo_manual_"]').forEach(campo => {
+        if (campo.classList.contains('campo-manual-automatico')) {
+            campo.style.display = 'none';
+        }
+    });
+});
 </script>
 
 {% endblock %}

@@ -4,488 +4,549 @@
 {% block conteudo %}
 
 <style>
-    .config-formulario {
+    .cabecalho-config-formulario {
+        background: white;
+        padding: 22px 28px;
+        border-radius: 18px;
+        border-left: 8px solid #7dbe4d;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-voltar-formulario {
+        width: auto;
+        margin-top: 0;
+        padding: 10px 16px;
+        border-radius: 9px;
+        background: #eef2f7;
+        color: #1f2937;
+        text-decoration: none;
+        font-weight: 800;
+        border: 1px solid #d1d5db;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    .btn-voltar-formulario:hover {
+        background: #e5e7eb;
+        border-color: #94a3b8;
+    }
+
+    .cabecalho-config-formulario h1 {
+        margin: 0;
+        color: #111827;
+        font-size: 28px;
+    }
+
+    .cabecalho-config-formulario p {
+        margin-top: 6px;
+        color: #374151;
+    }
+
+    .config-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 380px;
+        grid-template-columns: minmax(0, 1fr) 360px;
         gap: 25px;
         align-items: start;
     }
 
-    .pdf-area, .painel-lateral, .modal-campo-card {
+    .painel-pdf {
         background: white;
+        padding: 20px;
         border-radius: 18px;
         box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        overflow: auto;
     }
 
-    .pdf-area { padding: 20px; }
-    .painel-lateral { padding: 18px; position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow: auto; }
-
-    .topo-config {
-        background: white;
-        border-left: 7px solid #7dbe4d;
-        border-radius: 18px;
-        padding: 22px 28px;
-        margin-bottom: 25px;
-        box-shadow: 0 8px 22px rgba(0,0,0,.06);
-    }
-
-    .topo-config h1 { margin: 0; font-size: 30px; }
-    .topo-config p { margin: 4px 0 0 0; font-size: 15px; }
-    .topo-config-com-voltar {
+    .topo-pdf {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 25px;
-    }
-
-    .btn-voltar-formularios {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: auto;
-        min-width: 90px;
-        height: 44px;
-        padding: 0 16px;
-        background: #e5e7eb;
-        color: #111827;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 800;
-        box-shadow: 0 4px 12px rgba(0,0,0,.06);
-    }
-
-    .btn-voltar-formularios:hover {
-        background: #dbeafe;
-        border-color: #0077b6;
-    }
-
-    .topo-config-com-voltar .topo-config {
-        flex: 1;
-        margin-bottom: 0;
-    }
-
-
-    .pdf-toolbar {
-        display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        gap: 10px;
+        gap: 15px;
+        margin-bottom: 14px;
         flex-wrap: wrap;
     }
 
-    .pdf-toolbar a {
+    .topo-pdf strong {
+        color: #111827;
+        font-size: 16px;
+    }
+
+    .botoes-pagina {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-pagina {
         display: inline-block;
-        padding: 10px 14px;
+        width: auto;
+        margin: 0;
+        padding: 11px 15px;
         border-radius: 8px;
         text-decoration: none;
         background: #0077b6;
         color: white;
+        font-weight: 800;
         border: none;
-        font-weight: bold;
     }
 
-    .pdf-toolbar a.desativado { background: #9ca3af; pointer-events: none; }
+    .btn-pagina:hover {
+        background: #005f91;
+    }
 
-    .aviso-clique {
+    .btn-pagina.desativado {
+        background: #9ca3af;
+        color: white;
+        pointer-events: none;
+    }
+
+    .aviso-verde {
         background: #dcfce7;
         color: #166534;
         border: 1px solid #86efac;
-        padding: 10px;
-        border-radius: 10px;
+        padding: 11px 13px;
+        border-radius: 9px;
         margin-bottom: 12px;
         font-size: 14px;
-        font-weight: bold;
+        font-weight: 700;
     }
 
-    .pdf-container {
+    .aviso-laranja {
+        background: #fff7ed;
+        color: #9a3412;
+        border: 1px solid #fdba74;
+        padding: 11px 13px;
+        border-radius: 9px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .pdf-wrapper {
         position: relative;
         display: inline-block;
         border: 1px solid #d1d5db;
-        background: #f8fafc;
+        background: white;
+        overflow: hidden;
+    }
+
+    #imagemPdf {
+        display: block;
         max-width: 100%;
-        overflow: auto;
+        height: auto;
         user-select: none;
+        cursor: crosshair;
     }
 
-    #imagemPdf { display: block; max-width: 100%; cursor: crosshair; }
-
-    .campo-box {
+    .campo-detectado,
+    .campo-criado,
+    #campoManualNovo {
         position: absolute;
-        border: 2px solid #0077b6;
-        background: rgba(0,119,182,.10);
-        color: #0077b6;
-        font-size: 11px;
-        font-weight: bold;
-        z-index: 5;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        padding-left: 3px;
-        overflow: visible;
-        white-space: nowrap;
-    }
-
-    .campo-box.checkbox {
-        border-radius: 50%;
-        padding: 0;
-        align-items: center;
-        justify-content: center;
-        color: #dc2626;
-        border-color: #dc2626;
-        background: rgba(220,38,38,.10);
-    }
-
-    .campo-box.novo {
-        border-color: #16a34a;
-        background: rgba(22,163,74,.15);
-        color: #16a34a;
-        z-index: 10;
-        display: none;
-    }
-
-    .campo-box.detectado {
-        border-color: #f59e0b;
-        background: rgba(245,158,11,.18);
-        color: #92400e;
+        border: 2px solid #f59e0b;
+        background: rgba(254, 240, 138, 0.35);
         cursor: pointer;
         z-index: 4;
     }
 
-    .campo-box.detectado:hover {
-        background: rgba(245,158,11,.34);
-        border-color: #d97706;
+    .campo-detectado:hover,
+    .campo-criado:hover {
+        outline: 3px solid rgba(0, 119, 182, 0.35);
     }
 
-    .campo-box.detectado.checkbox {
-        border-radius: 50%;
-        border-color: #f97316;
-        background: rgba(249,115,22,.18);
+    .campo-criado {
+        border-color: #0077b6;
+        background: rgba(125, 190, 77, 0.18);
+        z-index: 6;
     }
 
-    .instrucoes-deteccao {
-        background: #fff7ed;
-        border: 1px solid #fdba74;
-        color: #9a3412;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 12px;
-        font-size: 13px;
-        font-weight: bold;
+    #campoManualNovo {
+        border-color: #16a34a;
+        background: rgba(34, 197, 94, 0.22);
+        display: none;
+        z-index: 8;
     }
 
-    .campo-box::after {
-        content: attr(data-label);
+    .etiqueta-campo {
         position: absolute;
-        left: 0;
         top: -24px;
+        left: 0;
         background: #111827;
         color: white;
-        font-size: 10px;
-        padding: 3px 6px;
+        font-size: 11px;
+        line-height: 1;
+        padding: 5px 7px;
         border-radius: 6px;
-        max-width: 260px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: nowrap;
+        pointer-events: none;
     }
 
-    .cursor-digitacao {
-        display: inline-block;
-        height: 100%;
-        border-left: 2px solid #16a34a;
-        margin-right: 4px;
-        animation: piscar .8s infinite;
+    .campo-criado .etiqueta-campo {
+        background: #0077b6;
     }
 
-    @keyframes piscar { 50% { opacity: 0; } }
+    .painel-perguntas {
+        background: white;
+        padding: 18px;
+        border-radius: 18px;
+        box-shadow: 0 8px 22px rgba(0,0,0,.08);
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        position: sticky;
+        top: 20px;
+    }
 
-    .painel-lateral h2 { color: #0077b6; margin: 0 0 12px; }
-    .lista-perguntas { display: grid; gap: 12px; }
+    .painel-perguntas h2 {
+        color: #0077b6;
+        margin-bottom: 14px;
+        font-size: 24px;
+    }
 
     .pergunta-card {
+        background: #f8fafc;
         border: 1px solid #e5e7eb;
         border-left: 5px solid #0077b6;
         border-radius: 14px;
-        padding: 12px;
-        background: #f8fafc;
+        padding: 14px;
+        margin-bottom: 12px;
     }
 
-    .pergunta-card strong { color: #0077b6; }
-    .pergunta-card p { margin: 5px 0; font-size: 13px; }
+    .pergunta-card h3 {
+        color: #0077b6;
+        font-size: 17px;
+        margin-bottom: 6px;
+        word-break: break-word;
+    }
+
+    .pergunta-card p {
+        color: #111827;
+        font-size: 13px;
+        line-height: 1.35;
+        margin-bottom: 4px;
+    }
 
     .acoes-pergunta {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 7px;
-        margin-top: 9px;
+        gap: 8px;
+        margin-top: 10px;
     }
 
     .acoes-pergunta button {
-        padding: 8px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        background: #0077b6;
-        color: white;
-        width: 100%;
         margin: 0;
+        padding: 9px 10px;
+        font-size: 13px;
     }
 
-    .acoes-pergunta .excluir { background: #dc2626; }
-    .acoes-pergunta .cinza { background: #64748b; }
-
-    .sem-registros {
-        background: #f8fafc;
-        border-radius: 14px;
-        padding: 18px;
-        text-align: center;
+    .btn-editar-pergunta {
+        background: #0077b6;
     }
 
-    .modal-campo-fundo {
+    .btn-mover-pergunta {
+        background: #64748b;
+    }
+
+    .btn-excluir-pergunta {
+        background: #dc2626;
+    }
+
+    .btn-excluir-pergunta:hover {
+        background: #991b1b;
+    }
+
+    .modal-campo {
         position: fixed;
         inset: 0;
-        background: rgba(15,23,42,.65);
+        background: rgba(15, 23, 42, 0.62);
         display: none;
         align-items: center;
         justify-content: center;
-        z-index: 9999;
-        padding: 20px;
+        padding: 22px;
+        z-index: 3000;
     }
 
-    .modal-campo-fundo.ativo { display: flex; }
+    .modal-campo.ativo {
+        display: flex;
+    }
 
     .modal-campo-card {
-        width: 540px;
+        width: 560px;
         max-width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        background: white;
+        border-radius: 18px;
         padding: 24px;
+        box-shadow: 0 25px 70px rgba(0,0,0,.28);
     }
 
-    .modal-campo-card h2 { color: #0077b6; margin-top: 0; }
+    .modal-campo-topo {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 16px;
+    }
 
-    .modal-grid {
+    .modal-campo-topo h2 {
+        color: #0077b6;
+        font-size: 25px;
+    }
+
+    .modal-campo-topo p {
+        color: #64748b;
+        margin-top: 4px;
+        font-size: 14px;
+    }
+
+    .grid-campos-formulario {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
     }
 
-    .modal-campo-card label { display: block; margin-top: 12px; font-weight: bold; }
+    .grid-campos-formulario .campo-inteiro {
+        grid-column: 1 / -1;
+    }
 
-    .modal-campo-card input,
-    .modal-campo-card select {
+    .modal-campo input,
+    .modal-campo select {
         width: 100%;
-        box-sizing: border-box;
+    }
+
+    .ajuda-campo {
+        background: #f1f5f9;
+        border-radius: 10px;
         padding: 10px;
-        border: 1px solid #d1d5db;
-        border-radius: 9px;
+        font-size: 13px;
+        color: #334155;
+        margin-top: 10px;
     }
 
-    .linha-checkbox {
+    .modal-campo-botoes {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 12px;
-    }
-
-    .linha-checkbox input { width: auto; }
-
-    .modal-botoes {
-        display: flex;
+        justify-content: flex-end;
         gap: 10px;
         margin-top: 18px;
     }
 
-    .modal-botoes button {
-        flex: 1;
-        padding: 12px;
-        border-radius: 10px;
-        border: none;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
+    .modal-campo-botoes button {
+        width: auto;
+        margin: 0;
+        padding: 11px 18px;
     }
 
-    .btn-cancelar { background: #64748b; }
-    .btn-salvar { background: #0077b6; }
+    .btn-cancelar-campo {
+        background: #e5e7eb;
+        color: #1f2937;
+    }
+
+    .btn-cancelar-campo:hover {
+        background: #d1d5db;
+    }
 
     @media (max-width: 1100px) {
-        .config-formulario { grid-template-columns: 1fr; }
-        .painel-lateral { position: static; }
+        .config-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .painel-perguntas {
+            position: static;
+            max-height: none;
+        }
     }
 </style>
 
-<div class="topo-config-com-voltar">
-    <a href="/formularios" class="btn-voltar-formularios">← Voltar</a>
-
-    <section class="topo-config">
+<section class="cabecalho-config-formulario">
+    <a href="/formularios" class="btn-voltar-formulario">← Voltar</a>
+    <div>
         <h1>Configurar Formulário</h1>
         <p>{{ formulario.nome }}</p>
-    </section>
-</div>
+    </div>
+</section>
 
-<div class="config-formulario">
+<section class="config-layout">
 
-    <div class="pdf-area">
-        <div class="pdf-toolbar">
+    <div class="painel-pdf">
+        <div class="topo-pdf">
             <strong>Página {{ pagina_atual + 1 }} de {{ total_paginas }}</strong>
-            <div>
+
+            <div class="botoes-pagina">
                 {% if pagina_atual > 0 %}
-                <a href="/formularios/configurar/{{ formulario.id }}?pagina={{ pagina_atual - 1 }}">← Página anterior</a>
+                <a href="/formularios/configurar/{{ formulario.id }}?pagina={{ pagina_atual - 1 }}" class="btn-pagina">← Página anterior</a>
                 {% else %}
-                <a class="desativado">← Página anterior</a>
+                <a class="btn-pagina desativado">← Página anterior</a>
                 {% endif %}
 
                 {% if pagina_atual + 1 < total_paginas %}
-                <a href="/formularios/configurar/{{ formulario.id }}?pagina={{ pagina_atual + 1 }}">Próxima página →</a>
+                <a href="/formularios/configurar/{{ formulario.id }}?pagina={{ pagina_atual + 1 }}" class="btn-pagina">Próxima página →</a>
                 {% else %}
-                <a class="desativado">Próxima página →</a>
+                <a class="btn-pagina desativado">Próxima página →</a>
                 {% endif %}
             </div>
         </div>
 
-        <div class="aviso-clique">
+        <div class="aviso-verde">
             O sistema marcou automaticamente as linhas pontilhadas e as opções ( ). Clique em um campo amarelo para criar a pergunta. Se precisar, também pode clicar e arrastar manualmente no PDF.
         </div>
 
-        <div class="instrucoes-deteccao">
+        <div class="aviso-laranja">
             Campos detectados automaticamente: {{ campos_detectados|length }}
         </div>
 
-        <div class="pdf-container" id="pdfContainer">
-            <img id="imagemPdf" src="{{ imagem_pdf }}" data-zoom="{{ zoom_pdf }}">
-
-            <div id="campoNovo" class="campo-box novo" data-label="Novo campo">
-                <span class="cursor-digitacao"></span>
-            </div>
+        <div class="pdf-wrapper" id="pdfWrapper">
+            <img id="imagemPdf" src="{{ imagem_pdf }}" data-zoom="{{ zoom_pdf }}" alt="PDF do formulário">
+            <div id="campoManualNovo"><span class="etiqueta-campo">Novo campo</span></div>
 
             {% for campo in campos_detectados %}
             <div
-                class="campo-box campo-detectado detectado {% if campo.tipo == 'checkbox' %}checkbox{% endif %}"
+                class="campo-detectado"
+                data-tipo-sugerido="{{ campo.tipo_sugerido }}"
                 data-x="{{ campo.pos_x }}"
                 data-y="{{ campo.pos_y }}"
                 data-largura="{{ campo.largura }}"
                 data-altura="{{ campo.altura }}"
                 data-fonte="{{ campo.fonte }}"
-                data-tipo="{{ campo.tipo_sugerido }}"
                 data-label="{{ campo.label }}"
-                onclick="selecionarCampoDetectado(this)"
-            >{% if campo.tipo == 'checkbox' %}X{% else %}<span class="cursor-digitacao"></span>{% endif %}</div>
+            >
+                <span class="etiqueta-campo">{{ campo.label }}</span>
+            </div>
             {% endfor %}
 
             {% for pergunta in perguntas %}
                 {% if pergunta.pagina|int == pagina_atual|int and pergunta.pos_x and pergunta.pos_y %}
                 <div
-                    class="campo-box campo-existente {% if pergunta.tipo in ['caixa_selecao', 'caixa de seleção', 'checkbox'] %}checkbox{% endif %}"
+                    class="campo-criado"
                     data-x="{{ pergunta.pos_x }}"
                     data-y="{{ pergunta.pos_y }}"
                     data-largura="{{ pergunta.largura or 160 }}"
                     data-altura="{{ pergunta.altura or 18 }}"
                     data-label="{{ pergunta.ordem }} - {{ pergunta.pergunta }}"
-                >{% if pergunta.tipo in ['caixa_selecao', 'caixa de seleção', 'checkbox'] %}X{% else %}<span class="cursor-digitacao"></span>{% endif %}</div>
+                >
+                    <span class="etiqueta-campo">{{ pergunta.ordem }} - {{ pergunta.pergunta }}</span>
+                </div>
                 {% endif %}
             {% endfor %}
         </div>
     </div>
 
-    <aside class="painel-lateral">
+    <aside class="painel-perguntas">
         <h2>Perguntas criadas</h2>
 
-        <div class="lista-perguntas">
-            {% for pergunta in perguntas %}
-            <div class="pergunta-card">
-                <strong>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</strong>
-                <p>Tipo: {{ pergunta.tipo }}</p>
-                <p>Página: {{ pergunta.pagina|int + 1 }}</p>
-                <p>X: {{ pergunta.pos_x }} | Y: {{ pergunta.pos_y }}</p>
-                <p>Largura: {{ pergunta.largura or 160 }} | Altura: {{ pergunta.altura or 18 }} | Fonte: {{ pergunta.fonte or 9 }}</p>
+        {% for pergunta in perguntas %}
+        <div class="pergunta-card">
+            <h3>{{ pergunta.ordem }} - {{ pergunta.pergunta }}</h3>
+            <p><strong>Tipo:</strong> {{ pergunta.tipo }}</p>
+            <p><strong>Página:</strong> {{ pergunta.pagina|int + 1 }}</p>
+            <p><strong>X:</strong> {{ pergunta.pos_x }} | <strong>Y:</strong> {{ pergunta.pos_y }}</p>
+            <p><strong>Largura:</strong> {{ pergunta.largura or 160 }} | <strong>Altura:</strong> {{ pergunta.altura or 18 }} | <strong>Fonte:</strong> {{ pergunta.fonte or 9 }}</p>
 
-                {% if pergunta.copiar_resposta and pergunta.copiar_de_pergunta_id %}
-                <p><strong>Automática:</strong> copia resposta de outra pergunta.</p>
-                {% endif %}
-
+            <div class="acoes-pergunta">
                 {% if tem_permissao('configurar_formularios') %}
-                <div class="acoes-pergunta">
-                    <button type="button" onclick="abrirEditar('{{ pergunta.id }}')">Editar</button>
+                <button type="button" class="btn-editar-pergunta" onclick="abrirEdicaoPergunta('{{ pergunta.id }}')">Editar</button>
 
-                    <form method="POST" action="/formularios/perguntas/mover/{{ pergunta.id }}/{{ formulario.id }}/cima">
-                        <input type="hidden" name="pagina" value="{{ pagina_atual }}">
-                        <button type="submit" class="cinza">↑ Subir</button>
-                    </form>
+                <form method="POST" action="/formularios/perguntas/mover/{{ pergunta.id }}/{{ formulario.id }}/cima">
+                    <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                    <button type="submit" class="btn-mover-pergunta">↑ Subir</button>
+                </form>
 
-                    <form method="POST" action="/formularios/perguntas/mover/{{ pergunta.id }}/{{ formulario.id }}/baixo">
-                        <input type="hidden" name="pagina" value="{{ pagina_atual }}">
-                        <button type="submit" class="cinza">↓ Descer</button>
-                    </form>
+                <form method="POST" action="/formularios/perguntas/mover/{{ pergunta.id }}/{{ formulario.id }}/baixo">
+                    <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                    <button type="submit" class="btn-mover-pergunta">↓ Descer</button>
+                </form>
 
-                    <form method="POST" action="/formularios/perguntas/excluir/{{ pergunta.id }}/{{ formulario.id }}" onsubmit="return confirm('Excluir pergunta?')">
-                        <input type="hidden" name="pagina" value="{{ pagina_atual }}">
-                        <button type="submit" class="excluir">Excluir</button>
-                    </form>
-                </div>
+                <form method="POST" action="/formularios/perguntas/excluir/{{ pergunta.id }}/{{ formulario.id }}" onsubmit="return confirm('Excluir esta pergunta?')">
+                    <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                    <button type="submit" class="btn-excluir-pergunta">Excluir</button>
+                </form>
                 {% endif %}
             </div>
-            {% else %}
-            <div class="sem-registros">Nenhuma pergunta criada.</div>
-            {% endfor %}
         </div>
+        {% else %}
+        <div class="sem-registros">Nenhuma pergunta criada.</div>
+        {% endfor %}
     </aside>
-</div>
+
+</section>
 
 {% if tem_permissao('configurar_formularios') %}
-<div id="modalNovoCampo" class="modal-campo-fundo">
+<div id="modalNovaPergunta" class="modal-campo">
     <div class="modal-campo-card">
-        <h2>Nova Pergunta</h2>
-        <p style="margin-top:-8px;color:#64748b;font-size:13px">A posição e o tamanho foram preenchidos pelo campo selecionado.</p>
+        <div class="modal-campo-topo">
+            <div>
+                <h2 id="tituloModalPergunta">Nova Pergunta</h2>
+                <p>Configure a pergunta que será preenchida nesse campo do PDF.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModalPergunta()">×</button>
+        </div>
 
-        <form method="POST" action="/formularios/perguntas/nova/{{ formulario.id }}">
-            <input type="hidden" name="pagina" value="{{ pagina_atual }}">
-            <input type="hidden" id="novoX" name="pos_x">
-            <input type="hidden" id="novoY" name="pos_y">
-            <input type="hidden" id="novoLargura" name="largura">
-            <input type="hidden" id="novoAltura" name="altura">
+        <form id="formPergunta" method="POST" action="/formularios/perguntas/nova/{{ formulario.id }}">
+            <div class="grid-campos-formulario">
+                <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+                <input type="hidden" name="pos_x" id="campoPosX">
+                <input type="hidden" name="pos_y" id="campoPosY">
+                <input type="hidden" name="largura" id="campoLargura">
+                <input type="hidden" name="altura" id="campoAltura">
 
-            <label>Pergunta</label>
-            <input name="pergunta" placeholder="Digite a pergunta" required>
+                <div class="campo-inteiro">
+                    <label>Pergunta</label>
+                    <input name="pergunta" id="campoPergunta" placeholder="Ex: Valor estimado" required>
+                </div>
 
-            <label>Tipo de pergunta</label>
-            <select name="tipo" id="novoTipo" required onchange="ajustarTipoNovo()">
-                <option value="texto">Texto</option>
-                <option value="cpf">CPF</option>
-                <option value="data">Data</option>
-                <option value="cep">CEP</option>
-                <option value="dinheiro">Dinheiro - Reais</option>
-                <option value="caixa_selecao">Caixa de seleção</option>
-            </select>
+                <div>
+                    <label>Tipo de pergunta</label>
+                    <select name="tipo" id="campoTipo" required>
+                        <option value="texto">Texto</option>
+                        <option value="cpf">CPF</option>
+                        <option value="data">Data</option>
+                        <option value="cep">CEP</option>
+                        <option value="telefone">Telefone / Celular</option>
+                        <option value="dinheiro">Dinheiro - Reais</option>
+                        <option value="caixa_selecao">Caixa de seleção</option>
+                    </select>
+                </div>
 
-            <div class="modal-grid">
                 <div>
                     <label>Ordem</label>
-                    <input name="ordem" type="number" value="{{ perguntas|length + 1 }}">
+                    <input name="ordem" id="campoOrdem" type="number" value="{{ perguntas|length + 1 }}">
                 </div>
+
                 <div>
                     <label>Fonte</label>
-                    <input name="fonte" type="number" step="0.5" value="9">
+                    <input name="fonte" id="campoFonte" type="number" step="0.5" value="9">
+                </div>
+
+                <div>
+                    <label>Copiar resposta?</label>
+                    <select id="copiarRespostaSelect" onchange="alternarCopiaResposta()">
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                    </select>
+                </div>
+
+                <div class="campo-inteiro" id="boxCopiarDe" style="display:none;">
+                    <label>Copiar resposta da pergunta</label>
+                    <input type="hidden" name="copiar_resposta" id="inputCopiarResposta" value="">
+                    <select name="copiar_de_pergunta_id" id="campoCopiarDe">
+                        <option value="">Selecione uma pergunta</option>
+                        {% for pergunta in perguntas %}
+                        <option value="{{ pergunta.id }}">{{ pergunta.ordem }} - {{ pergunta.pergunta }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
 
-            <div class="linha-checkbox">
-                <input type="checkbox" id="novoCopiar" name="copiar_resposta" onchange="mostrarCopiarNovo()">
-                <label for="novoCopiar" style="margin:0">Resposta automática copiando outra pergunta</label>
+            <div class="ajuda-campo">
+                Para valores em dinheiro, escolha <strong>Dinheiro - Reais</strong>. No preenchimento, o sistema formatará automaticamente como <strong>R$ 0,00</strong> e o PDF também receberá o valor nesse padrão.
             </div>
 
-            <div id="novoBlocoCopiar" style="display:none">
-                <label>Copiar resposta da pergunta</label>
-                <select name="copiar_de_pergunta_id">
-                    <option value="">Selecione</option>
-                    {% for pergunta in perguntas %}
-                    <option value="{{ pergunta.id }}">{{ pergunta.ordem }} - {{ pergunta.pergunta }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="modal-botoes">
-                <button type="button" class="btn-cancelar" onclick="fecharModalNovo()">Cancelar</button>
+            <div class="modal-campo-botoes">
+                <button type="button" class="btn-cancelar-campo" onclick="fecharModalPergunta()">Cancelar</button>
                 <button type="submit" class="btn-salvar">Salvar Pergunta</button>
             </div>
         </form>
@@ -493,54 +554,86 @@
 </div>
 
 {% for pergunta in perguntas %}
-<div id="editar{{ pergunta.id }}" class="modal-campo-fundo">
+<div id="modalEditarPergunta{{ pergunta.id }}" class="modal-campo">
     <div class="modal-campo-card">
-        <h2>Editar Pergunta</h2>
+        <div class="modal-campo-topo">
+            <div>
+                <h2>Editar Pergunta</h2>
+                <p>Atualize os dados dessa pergunta.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharEdicaoPergunta('{{ pergunta.id }}')">×</button>
+        </div>
 
         <form method="POST" action="/formularios/perguntas/editar/{{ pergunta.id }}/{{ formulario.id }}">
-            <input type="hidden" name="pagina" value="{{ pagina_atual }}">
+            <div class="grid-campos-formulario">
+                <input type="hidden" name="pagina" value="{{ pergunta.pagina or pagina_atual }}">
 
-            <label>Pergunta</label>
-            <input name="pergunta" value="{{ pergunta.pergunta }}" required>
+                <div class="campo-inteiro">
+                    <label>Pergunta</label>
+                    <input name="pergunta" value="{{ pergunta.pergunta or '' }}" required>
+                </div>
 
-            <label>Tipo de pergunta</label>
-            <select name="tipo" required>
-                <option value="texto" {% if pergunta.tipo == 'texto' %}selected{% endif %}>Texto</option>
-                <option value="cpf" {% if pergunta.tipo == 'cpf' %}selected{% endif %}>CPF</option>
-                <option value="data" {% if pergunta.tipo == 'data' %}selected{% endif %}>Data</option>
-                <option value="cep" {% if pergunta.tipo == 'cep' %}selected{% endif %}>CEP</option>
-                <option value="dinheiro" {% if pergunta.tipo == 'dinheiro' %}selected{% endif %}>Dinheiro - Reais</option>
-                <option value="caixa_selecao" {% if pergunta.tipo in ['caixa_selecao', 'checkbox', 'caixa de seleção'] %}selected{% endif %}>Caixa de seleção</option>
-            </select>
+                <div>
+                    <label>Tipo de pergunta</label>
+                    <select name="tipo" required>
+                        <option value="texto" {% if pergunta.tipo == 'texto' %}selected{% endif %}>Texto</option>
+                        <option value="cpf" {% if pergunta.tipo == 'cpf' %}selected{% endif %}>CPF</option>
+                        <option value="data" {% if pergunta.tipo == 'data' %}selected{% endif %}>Data</option>
+                        <option value="cep" {% if pergunta.tipo == 'cep' %}selected{% endif %}>CEP</option>
+                        <option value="telefone" {% if pergunta.tipo == 'telefone' %}selected{% endif %}>Telefone / Celular</option>
+                        <option value="dinheiro" {% if pergunta.tipo in ['dinheiro', 'reais', 'dinheiro_reais', 'valor', 'moeda'] %}selected{% endif %}>Dinheiro - Reais</option>
+                        <option value="caixa_selecao" {% if pergunta.tipo in ['caixa_selecao', 'checkbox'] %}selected{% endif %}>Caixa de seleção</option>
+                    </select>
+                </div>
 
-            <div class="modal-grid">
-                <div><label>Ordem</label><input name="ordem" type="number" value="{{ pergunta.ordem }}"></div>
-                <div><label>Fonte</label><input name="fonte" type="number" step="0.5" value="{{ pergunta.fonte or 9 }}"></div>
-                <div><label>X</label><input name="pos_x" value="{{ pergunta.pos_x }}"></div>
-                <div><label>Y</label><input name="pos_y" value="{{ pergunta.pos_y }}"></div>
-                <div><label>Largura</label><input name="largura" value="{{ pergunta.largura or 160 }}"></div>
-                <div><label>Altura</label><input name="altura" value="{{ pergunta.altura or 18 }}"></div>
+                <div>
+                    <label>Ordem</label>
+                    <input name="ordem" type="number" value="{{ pergunta.ordem or 1 }}">
+                </div>
+
+                <div>
+                    <label>Posição X</label>
+                    <input name="pos_x" value="{{ pergunta.pos_x or '' }}">
+                </div>
+
+                <div>
+                    <label>Posição Y</label>
+                    <input name="pos_y" value="{{ pergunta.pos_y or '' }}">
+                </div>
+
+                <div>
+                    <label>Largura</label>
+                    <input name="largura" value="{{ pergunta.largura or 160 }}">
+                </div>
+
+                <div>
+                    <label>Altura</label>
+                    <input name="altura" value="{{ pergunta.altura or 18 }}">
+                </div>
+
+                <div>
+                    <label>Fonte</label>
+                    <input name="fonte" type="number" step="0.5" value="{{ pergunta.fonte or 9 }}">
+                </div>
+
+                <div class="campo-inteiro">
+                    <label>
+                        <input type="checkbox" name="copiar_resposta" style="width:auto;" {% if pergunta.copiar_resposta %}checked{% endif %}>
+                        Copiar resposta de outra pergunta
+                    </label>
+                    <select name="copiar_de_pergunta_id">
+                        <option value="">Selecione uma pergunta</option>
+                        {% for origem in perguntas %}
+                            {% if origem.id != pergunta.id %}
+                            <option value="{{ origem.id }}" {% if pergunta.copiar_de_pergunta_id == origem.id %}selected{% endif %}>{{ origem.ordem }} - {{ origem.pergunta }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <div class="linha-checkbox">
-                <input type="checkbox" id="copiar{{ pergunta.id }}" name="copiar_resposta" {% if pergunta.copiar_resposta %}checked{% endif %} onchange="document.getElementById('blocoCopiar{{ pergunta.id }}').style.display=this.checked?'block':'none'">
-                <label for="copiar{{ pergunta.id }}" style="margin:0">Resposta automática copiando outra pergunta</label>
-            </div>
-
-            <div id="blocoCopiar{{ pergunta.id }}" style="display:{% if pergunta.copiar_resposta %}block{% else %}none{% endif %}">
-                <label>Copiar resposta da pergunta</label>
-                <select name="copiar_de_pergunta_id">
-                    <option value="">Selecione</option>
-                    {% for pergunta_opcao in perguntas %}
-                        {% if pergunta_opcao.id != pergunta.id %}
-                        <option value="{{ pergunta_opcao.id }}" {% if pergunta.copiar_de_pergunta_id == pergunta_opcao.id %}selected{% endif %}>{{ pergunta_opcao.ordem }} - {{ pergunta_opcao.pergunta }}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="modal-botoes">
-                <button type="button" class="btn-cancelar" onclick="fecharEditar('{{ pergunta.id }}')">Cancelar</button>
+            <div class="modal-campo-botoes">
+                <button type="button" class="btn-cancelar-campo" onclick="fecharEdicaoPergunta('{{ pergunta.id }}')">Cancelar</button>
                 <button type="submit" class="btn-salvar">Salvar Alterações</button>
             </div>
         </form>
@@ -550,192 +643,168 @@
 {% endif %}
 
 <script>
-const imagemPdf = document.getElementById("imagemPdf");
-const pdfContainer = document.getElementById("pdfContainer");
-const campoNovo = document.getElementById("campoNovo");
-const modalNovoCampo = document.getElementById("modalNovoCampo");
+const imagemPdf = document.getElementById('imagemPdf');
+const pdfWrapper = document.getElementById('pdfWrapper');
+const campoManualNovo = document.getElementById('campoManualNovo');
 
 let arrastando = false;
 let inicioX = 0;
 let inicioY = 0;
-let atualX = 0;
-let atualY = 0;
 
 function escalaImagem() {
+    if (!imagemPdf || !imagemPdf.naturalWidth || !imagemPdf.clientWidth) return 1;
     return imagemPdf.naturalWidth / imagemPdf.clientWidth;
 }
 
 function zoomPdf() {
-    return parseFloat(imagemPdf.dataset.zoom || "2");
+    return parseFloat(imagemPdf.dataset.zoom || '2');
 }
 
-function converterTelaParaPdf(valorTela) {
-    return Math.round((valorTela * escalaImagem()) / zoomPdf());
+function pdfParaTela(valor) {
+    return (parseFloat(valor || 0) * zoomPdf()) / escalaImagem();
 }
 
-function converterPdfParaTela(valorPdf) {
-    return (parseFloat(valorPdf || 0) * zoomPdf()) / escalaImagem();
+function telaParaPdf(valor) {
+    return (parseFloat(valor || 0) * escalaImagem()) / zoomPdf();
 }
 
-function posicionarCamposExistentes() {
-    document.querySelectorAll(".campo-existente, .campo-detectado").forEach(campo => {
-        const x = converterPdfParaTela(campo.dataset.x);
-        const y = converterPdfParaTela(campo.dataset.y);
-        const largura = converterPdfParaTela(campo.dataset.largura || 160);
-        const altura = converterPdfParaTela(campo.dataset.altura || 18);
+function posicionarCampos() {
+    document.querySelectorAll('.campo-detectado, .campo-criado').forEach(campo => {
+        const x = pdfParaTela(campo.dataset.x);
+        const y = pdfParaTela(campo.dataset.y);
+        const largura = pdfParaTela(campo.dataset.largura);
+        const altura = pdfParaTela(campo.dataset.altura);
 
-        campo.style.left = x + "px";
-        campo.style.top = y + "px";
-        campo.style.width = largura + "px";
-        campo.style.height = altura + "px";
+        campo.style.left = x + 'px';
+        campo.style.top = y + 'px';
+        campo.style.width = Math.max(largura, 10) + 'px';
+        campo.style.height = Math.max(altura, 10) + 'px';
     });
 }
 
-function abrirModalNovoComDados(xPdf, yPdf, larguraPdf, alturaPdf, tipo, fonte) {
-    document.getElementById("novoX").value = Math.round(parseFloat(xPdf || 0));
-    document.getElementById("novoY").value = Math.round(parseFloat(yPdf || 0));
-    document.getElementById("novoLargura").value = Math.round(parseFloat(larguraPdf || 160));
-    document.getElementById("novoAltura").value = Math.round(parseFloat(alturaPdf || 18));
+function abrirModalPergunta(dados) {
+    document.getElementById('tituloModalPergunta').innerText = 'Nova Pergunta';
+    document.getElementById('formPergunta').action = '/formularios/perguntas/nova/{{ formulario.id }}';
 
-    const tipoSelect = document.getElementById("novoTipo");
-    if (tipo === "caixa_selecao" || tipo === "checkbox") {
-        tipoSelect.value = "caixa_selecao";
-        campoNovo.classList.add("checkbox");
-        campoNovo.innerHTML = "X";
+    document.getElementById('campoPosX').value = Math.round(dados.x);
+    document.getElementById('campoPosY').value = Math.round(dados.y);
+    document.getElementById('campoLargura').value = Math.round(dados.largura);
+    document.getElementById('campoAltura').value = Math.round(dados.altura);
+    document.getElementById('campoFonte').value = dados.fonte || 9;
+    document.getElementById('campoTipo').value = dados.tipo || 'texto';
+    document.getElementById('campoPergunta').value = dados.pergunta || '';
+    document.getElementById('campoOrdem').value = '{{ perguntas|length + 1 }}';
+
+    document.getElementById('modalNovaPergunta').classList.add('ativo');
+    setTimeout(() => document.getElementById('campoPergunta').focus(), 100);
+}
+
+function fecharModalPergunta() {
+    document.getElementById('modalNovaPergunta').classList.remove('ativo');
+}
+
+function abrirEdicaoPergunta(id) {
+    document.getElementById('modalEditarPergunta' + id).classList.add('ativo');
+}
+
+function fecharEdicaoPergunta(id) {
+    document.getElementById('modalEditarPergunta' + id).classList.remove('ativo');
+}
+
+function alternarCopiaResposta() {
+    const seletor = document.getElementById('copiarRespostaSelect');
+    const box = document.getElementById('boxCopiarDe');
+    const input = document.getElementById('inputCopiarResposta');
+
+    if (seletor.value === 'sim') {
+        box.style.display = 'block';
+        input.name = 'copiar_resposta';
+        input.value = 'on';
     } else {
-        tipoSelect.value = "texto";
-        campoNovo.classList.remove("checkbox");
-        campoNovo.innerHTML = '<span class="cursor-digitacao"></span>';
+        box.style.display = 'none';
+        input.name = '';
+        input.value = '';
+        document.getElementById('campoCopiarDe').value = '';
     }
-
-    const fonteInput = document.querySelector('#modalNovoCampo input[name="fonte"]');
-    if (fonteInput && fonte) {
-        fonteInput.value = fonte;
-    }
-
-    modalNovoCampo.classList.add("ativo");
 }
 
-function selecionarCampoDetectado(campo) {
-    const x = campo.dataset.x;
-    const y = campo.dataset.y;
-    const largura = campo.dataset.largura;
-    const altura = campo.dataset.altura;
-    const tipo = campo.dataset.tipo || "texto";
-    const fonte = campo.dataset.fonte || 9;
+document.querySelectorAll('.campo-detectado').forEach(campo => {
+    campo.addEventListener('click', function(event) {
+        event.stopPropagation();
 
-    campoNovo.style.display = "flex";
-    campoNovo.style.left = campo.style.left;
-    campoNovo.style.top = campo.style.top;
-    campoNovo.style.width = campo.style.width;
-    campoNovo.style.height = campo.style.height;
-
-    abrirModalNovoComDados(x, y, largura, altura, tipo, fonte);
-}
-
-function pontoRelativo(event) {
-    const rect = imagemPdf.getBoundingClientRect();
-    return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-    };
-}
-
-imagemPdf.addEventListener("mousedown", function(event) {
-    const p = pontoRelativo(event);
-    arrastando = true;
-    inicioX = p.x;
-    inicioY = p.y;
-    atualX = p.x;
-    atualY = p.y;
-
-    campoNovo.style.display = "flex";
-    campoNovo.style.left = inicioX + "px";
-    campoNovo.style.top = inicioY + "px";
-    campoNovo.style.width = "2px";
-    campoNovo.style.height = "18px";
+        abrirModalPergunta({
+            x: parseFloat(this.dataset.x || 0),
+            y: parseFloat(this.dataset.y || 0),
+            largura: parseFloat(this.dataset.largura || 160),
+            altura: parseFloat(this.dataset.altura || 18),
+            fonte: parseFloat(this.dataset.fonte || 9),
+            tipo: this.dataset.tipoSugerido || 'texto',
+            pergunta: ''
+        });
+    });
 });
 
-imagemPdf.addEventListener("mousemove", function(event) {
+pdfWrapper.addEventListener('mousedown', function(event) {
+    if (event.target !== imagemPdf) return;
+
+    const rect = imagemPdf.getBoundingClientRect();
+    inicioX = event.clientX - rect.left;
+    inicioY = event.clientY - rect.top;
+    arrastando = true;
+
+    campoManualNovo.style.display = 'block';
+    campoManualNovo.style.left = inicioX + 'px';
+    campoManualNovo.style.top = inicioY + 'px';
+    campoManualNovo.style.width = '1px';
+    campoManualNovo.style.height = '1px';
+});
+
+window.addEventListener('mousemove', function(event) {
     if (!arrastando) return;
 
-    const p = pontoRelativo(event);
-    atualX = p.x;
-    atualY = p.y;
+    const rect = imagemPdf.getBoundingClientRect();
+    const atualX = event.clientX - rect.left;
+    const atualY = event.clientY - rect.top;
 
     const left = Math.min(inicioX, atualX);
     const top = Math.min(inicioY, atualY);
-    const width = Math.max(6, Math.abs(atualX - inicioX));
-    const height = Math.max(14, Math.abs(atualY - inicioY));
+    const width = Math.abs(atualX - inicioX);
+    const height = Math.abs(atualY - inicioY);
 
-    campoNovo.style.left = left + "px";
-    campoNovo.style.top = top + "px";
-    campoNovo.style.width = width + "px";
-    campoNovo.style.height = height + "px";
+    campoManualNovo.style.left = left + 'px';
+    campoManualNovo.style.top = top + 'px';
+    campoManualNovo.style.width = Math.max(width, 8) + 'px';
+    campoManualNovo.style.height = Math.max(height, 8) + 'px';
 });
 
-window.addEventListener("mouseup", function() {
+window.addEventListener('mouseup', function(event) {
     if (!arrastando) return;
     arrastando = false;
 
-    const left = Math.min(inicioX, atualX);
-    const top = Math.min(inicioY, atualY);
-    let width = Math.max(8, Math.abs(atualX - inicioX));
-    let height = Math.max(14, Math.abs(atualY - inicioY));
+    const left = parseFloat(campoManualNovo.style.left || 0);
+    const top = parseFloat(campoManualNovo.style.top || 0);
+    const width = parseFloat(campoManualNovo.style.width || 0);
+    const height = parseFloat(campoManualNovo.style.height || 0);
 
-    if (width < 12 && height < 18) {
-        width = 160;
-        height = 18;
-        campoNovo.style.width = width + "px";
-        campoNovo.style.height = height + "px";
+    if (width < 8 || height < 8) {
+        campoManualNovo.style.display = 'none';
+        return;
     }
 
-    abrirModalNovoComDados(
-        converterTelaParaPdf(left),
-        converterTelaParaPdf(top),
-        converterTelaParaPdf(width),
-        converterTelaParaPdf(height),
-        "texto",
-        9
-    );
+    abrirModalPergunta({
+        x: telaParaPdf(left),
+        y: telaParaPdf(top),
+        largura: telaParaPdf(width),
+        altura: telaParaPdf(height),
+        fonte: 9,
+        tipo: 'texto',
+        pergunta: ''
+    });
 });
 
-function ajustarTipoNovo() {
-    const tipo = document.getElementById("novoTipo").value;
-
-    if (tipo === "caixa_selecao") {
-        const tamanho = converterPdfParaTela(12);
-        campoNovo.classList.add("checkbox");
-        campoNovo.style.width = tamanho + "px";
-        campoNovo.style.height = tamanho + "px";
-        campoNovo.innerHTML = "X";
-        document.getElementById("novoLargura").value = 12;
-        document.getElementById("novoAltura").value = 12;
-    } else {
-        campoNovo.classList.remove("checkbox");
-        campoNovo.innerHTML = '<span class="cursor-digitacao"></span>';
-    }
-}
-
-function fecharModalNovo() {
-    modalNovoCampo.classList.remove("ativo");
-}
-
-function mostrarCopiarNovo() {
-    document.getElementById("novoBlocoCopiar").style.display = document.getElementById("novoCopiar").checked ? "block" : "none";
-}
-
-function abrirEditar(id) {
-    document.getElementById("editar" + id).classList.add("ativo");
-}
-
-function fecharEditar(id) {
-    document.getElementById("editar" + id).classList.remove("ativo");
-}
-
-imagemPdf.addEventListener("load", posicionarCamposExistentes);
-window.addEventListener("resize", posicionarCamposExistentes);
-setTimeout(posicionarCamposExistentes, 300);
+imagemPdf.addEventListener('load', posicionarCampos);
+window.addEventListener('resize', posicionarCampos);
+setTimeout(posicionarCampos, 350);
 </script>
 
 {% endblock %}
