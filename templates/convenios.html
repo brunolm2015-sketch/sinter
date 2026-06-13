@@ -96,9 +96,11 @@
                 <button type="button" class="btn-fechar" onclick="fecharModal('editar{{ convenio.id }}')">×</button>
             </div>
 
-            <form method="POST" action="/convenios/editar/{{ convenio.id }}" enctype="multipart/form-data" class="form-convenio">
+            <form method="POST" action="/convenios/editar/{{ convenio.id }}" class="form-convenio" onsubmit="prepararImagemAntesDeSalvar(this)">
 
                 <input type="hidden" name="imagem_atual" value="{{ convenio.imagem }}">
+                <input type="hidden" name="imagem_base64" class="imagem-base64">
+                <input type="hidden" name="imagem_link_final" class="imagem-link-final" value="{{ convenio.imagem or '' }}">
 
                 <div class="campo-modal">
                     <div class="linha-switch">
@@ -166,7 +168,7 @@
                     <input name="senha" value="{{ convenio.senha or '' }}">
                 </div>
 
-                <div class="campo-modal">
+                <div class="campo-modal campo-imagem-editor">
                     <div class="linha-switch">
                         <label>Imagem</label>
                         <label class="switch">
@@ -174,7 +176,28 @@
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <input type="file" name="imagem" accept="image/*">
+
+                    <input type="text" class="input-link-imagem" placeholder="Cole aqui o link da imagem" value="{{ convenio.imagem or '' }}" oninput="carregarImagemPorLink(this)">
+
+                    <div class="area-colar-imagem" tabindex="0" onclick="this.focus()">
+                        Clique aqui e cole uma imagem com CTRL + V
+                    </div>
+
+                    <div class="editor-imagem">
+                        <div class="preview-recorte">
+                            <canvas class="canvas-editor" width="220" height="90"></canvas>
+                        </div>
+
+                        <label>Zoom</label>
+                        <input type="range" min="0.3" max="3" step="0.05" value="1" class="zoom-imagem" oninput="atualizarCanvasEditor(this)">
+
+                        <div class="botoes-editor">
+                            <button type="button" onclick="centralizarImagem(this)">Centralizar</button>
+                            <button type="button" onclick="limparImagemEditor(this)">Limpar</button>
+                        </div>
+
+                        <small>Arraste a imagem dentro do quadro para ajustar o recorte.</small>
+                    </div>
                 </div>
 
                 <div class="campo-modal">
@@ -216,7 +239,10 @@
             <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoConvenio')">×</button>
         </div>
 
-        <form method="POST" action="/convenios/novo" enctype="multipart/form-data" class="form-convenio">
+        <form method="POST" action="/convenios/novo" class="form-convenio" onsubmit="prepararImagemAntesDeSalvar(this)">
+
+            <input type="hidden" name="imagem_base64" class="imagem-base64">
+            <input type="hidden" name="imagem_link_final" class="imagem-link-final">
 
             <div class="campo-modal">
                 <div class="linha-switch">
@@ -284,7 +310,7 @@
                 <input name="senha">
             </div>
 
-            <div class="campo-modal">
+            <div class="campo-modal campo-imagem-editor">
                 <div class="linha-switch">
                     <label>Imagem</label>
                     <label class="switch">
@@ -292,7 +318,28 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <input type="file" name="imagem" accept="image/*">
+
+                <input type="text" class="input-link-imagem" placeholder="Cole aqui o link da imagem" oninput="carregarImagemPorLink(this)">
+
+                <div class="area-colar-imagem" tabindex="0" onclick="this.focus()">
+                    Clique aqui e cole uma imagem com CTRL + V
+                </div>
+
+                <div class="editor-imagem">
+                    <div class="preview-recorte">
+                        <canvas class="canvas-editor" width="220" height="90"></canvas>
+                    </div>
+
+                    <label>Zoom</label>
+                    <input type="range" min="0.3" max="3" step="0.05" value="1" class="zoom-imagem" oninput="atualizarCanvasEditor(this)">
+
+                    <div class="botoes-editor">
+                        <button type="button" onclick="centralizarImagem(this)">Centralizar</button>
+                        <button type="button" onclick="limparImagemEditor(this)">Limpar</button>
+                    </div>
+
+                    <small>Arraste a imagem dentro do quadro para ajustar o recorte.</small>
+                </div>
             </div>
 
             <div class="campo-modal">
@@ -318,9 +365,98 @@
     Copiado!
 </div>
 
+<style>
+.campo-imagem-editor {
+    grid-column: span 2;
+}
+
+.input-link-imagem {
+    margin-bottom: 10px;
+}
+
+.area-colar-imagem {
+    border: 2px dashed #0077b6;
+    background: #f0f9ff;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    color: #0369a1;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+
+.area-colar-imagem:focus {
+    outline: 3px solid rgba(0,119,182,.25);
+}
+
+.editor-imagem {
+    background: white;
+    border: 1px solid #d1d5db;
+    padding: 14px;
+    border-radius: 14px;
+}
+
+.preview-recorte {
+    width: 220px;
+    height: 90px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #0077b6;
+    background: #e5e7eb;
+    margin-bottom: 12px;
+    cursor: grab;
+}
+
+.preview-recorte:active {
+    cursor: grabbing;
+}
+
+.canvas-editor {
+    display: block;
+    width: 220px;
+    height: 90px;
+    background: white;
+}
+
+.zoom-imagem {
+    padding: 0;
+}
+
+.botoes-editor {
+    display: flex;
+    gap: 10px;
+}
+
+.botoes-editor button {
+    margin-top: 10px;
+    width: auto;
+    padding: 9px 12px;
+}
+
+.link-imagem-convenio {
+    display: inline-block;
+    cursor: pointer;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.link-imagem-convenio:hover {
+    transform: scale(1.04);
+    opacity: .9;
+}
+</style>
+
 <script>
+const estadosImagem = new WeakMap();
+
 function abrirModal(id) {
-    document.getElementById(id).classList.add('ativo');
+    const modal = document.getElementById(id);
+    modal.classList.add('ativo');
+
+    modal.querySelectorAll('.campo-imagem-editor').forEach(editor => {
+        inicializarEditor(editor);
+    });
 }
 
 function fecharModal(id) {
@@ -337,6 +473,221 @@ function copiarTexto(texto) {
         aviso.classList.remove('mostrar');
     }, 1500);
 }
+
+function inicializarEditor(editor) {
+    if (estadosImagem.has(editor)) return;
+
+    const canvas = editor.querySelector('.canvas-editor');
+    const area = editor.querySelector('.preview-recorte');
+    const inputLink = editor.querySelector('.input-link-imagem');
+
+    const estado = {
+        img: null,
+        x: 0,
+        y: 0,
+        zoom: 1,
+        arrastando: false,
+        inicioX: 0,
+        inicioY: 0
+    };
+
+    estadosImagem.set(editor, estado);
+
+    area.addEventListener('mousedown', e => {
+        estado.arrastando = true;
+        estado.inicioX = e.clientX - estado.x;
+        estado.inicioY = e.clientY - estado.y;
+    });
+
+    window.addEventListener('mousemove', e => {
+        if (!estado.arrastando) return;
+        estado.x = e.clientX - estado.inicioX;
+        estado.y = e.clientY - estado.inicioY;
+        desenharImagem(editor);
+    });
+
+    window.addEventListener('mouseup', () => {
+        estado.arrastando = false;
+    });
+
+    editor.querySelector('.area-colar-imagem').addEventListener('paste', e => {
+        const itens = e.clipboardData.items;
+
+        for (const item of itens) {
+            if (item.type.indexOf('image') !== -1) {
+                const arquivo = item.getAsFile();
+                const leitor = new FileReader();
+
+                leitor.onload = evento => {
+                    carregarImagemNoEditor(editor, evento.target.result);
+                };
+
+                leitor.readAsDataURL(arquivo);
+                e.preventDefault();
+                return;
+            }
+        }
+
+        const texto = e.clipboardData.getData('text');
+        if (texto && texto.startsWith('http')) {
+            inputLink.value = texto;
+            carregarImagemNoEditor(editor, texto);
+            e.preventDefault();
+        }
+    });
+
+    if (inputLink && inputLink.value && inputLink.value.startsWith('http')) {
+        carregarImagemNoEditor(editor, inputLink.value);
+    } else {
+        desenharImagem(editor);
+    }
+}
+
+function carregarImagemPorLink(input) {
+    const editor = input.closest('.campo-imagem-editor');
+    inicializarEditor(editor);
+
+    const url = input.value.trim();
+
+    if (!url) return;
+
+    carregarImagemNoEditor(editor, url);
+}
+
+function carregarImagemNoEditor(editor, origem) {
+    const estado = estadosImagem.get(editor);
+    const img = new Image();
+
+    img.crossOrigin = 'anonymous';
+
+    img.onload = () => {
+        estado.img = img;
+        estado.zoom = 1;
+        estado.x = 0;
+        estado.y = 0;
+
+        const zoom = editor.querySelector('.zoom-imagem');
+        if (zoom) zoom.value = 1;
+
+        centralizarImagem(editor);
+    };
+
+    img.onerror = () => {
+        alert('Não foi possível carregar essa imagem. Tente colar outra imagem ou usar outro link.');
+    };
+
+    img.src = origem;
+}
+
+function desenharImagem(editor) {
+    const canvas = editor.querySelector('.canvas-editor');
+    const ctx = canvas.getContext('2d');
+    const estado = estadosImagem.get(editor);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (!estado || !estado.img) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Cole ou informe uma imagem', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    const largura = estado.img.width * estado.zoom;
+    const altura = estado.img.height * estado.zoom;
+
+    ctx.drawImage(estado.img, estado.x, estado.y, largura, altura);
+}
+
+function atualizarCanvasEditor(input) {
+    const editor = input.closest('.campo-imagem-editor');
+    const estado = estadosImagem.get(editor);
+
+    if (!estado) return;
+
+    estado.zoom = parseFloat(input.value || 1);
+    desenharImagem(editor);
+}
+
+function centralizarImagem(botaoOuEditor) {
+    const editor = botaoOuEditor.closest ? botaoOuEditor.closest('.campo-imagem-editor') : botaoOuEditor;
+    const estado = estadosImagem.get(editor);
+    const canvas = editor.querySelector('.canvas-editor');
+
+    if (!estado || !estado.img) {
+        desenharImagem(editor);
+        return;
+    }
+
+    const escalaX = canvas.width / estado.img.width;
+    const escalaY = canvas.height / estado.img.height;
+
+    estado.zoom = Math.max(escalaX, escalaY);
+
+    const zoomInput = editor.querySelector('.zoom-imagem');
+    if (zoomInput) zoomInput.value = estado.zoom;
+
+    const largura = estado.img.width * estado.zoom;
+    const altura = estado.img.height * estado.zoom;
+
+    estado.x = (canvas.width - largura) / 2;
+    estado.y = (canvas.height - altura) / 2;
+
+    desenharImagem(editor);
+}
+
+function limparImagemEditor(botao) {
+    const editor = botao.closest('.campo-imagem-editor');
+    const estado = estadosImagem.get(editor);
+
+    estado.img = null;
+    estado.x = 0;
+    estado.y = 0;
+    estado.zoom = 1;
+
+    const inputLink = editor.querySelector('.input-link-imagem');
+    const hiddenBase64 = editor.closest('form').querySelector('.imagem-base64');
+    const hiddenLink = editor.closest('form').querySelector('.imagem-link-final');
+
+    if (inputLink) inputLink.value = '';
+    if (hiddenBase64) hiddenBase64.value = '';
+    if (hiddenLink) hiddenLink.value = '';
+
+    desenharImagem(editor);
+}
+
+function prepararImagemAntesDeSalvar(form) {
+    const editor = form.querySelector('.campo-imagem-editor');
+    const hiddenBase64 = form.querySelector('.imagem-base64');
+    const hiddenLink = form.querySelector('.imagem-link-final');
+    const inputLink = form.querySelector('.input-link-imagem');
+
+    if (!editor) return true;
+
+    inicializarEditor(editor);
+
+    const estado = estadosImagem.get(editor);
+    const canvas = editor.querySelector('.canvas-editor');
+
+    if (estado && estado.img) {
+        hiddenBase64.value = canvas.toDataURL('image/png');
+        hiddenLink.value = '';
+    } else if (inputLink && inputLink.value.trim()) {
+        hiddenBase64.value = '';
+        hiddenLink.value = inputLink.value.trim();
+    }
+
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.campo-imagem-editor').forEach(editor => {
+        inicializarEditor(editor);
+    });
+});
 </script>
 
 {% endblock %}

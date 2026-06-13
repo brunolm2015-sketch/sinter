@@ -1,4 +1,7 @@
 import os
+import base64
+import uuid
+import re
 import fitz
 from flask import Flask, render_template, request, redirect, session, send_file, g
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -359,13 +362,103 @@ def inserir_permissoes_nos_templates():
     }
 
 
-def salvar_imagem(imagem):
+def url_publica_storage(bucket, caminho):
+    supabase_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    caminho_limpo = str(caminho or "").lstrip("/")
+    return f"{supabase_url}/storage/v1/object/public/{bucket}/{caminho_limpo}"
+
+
+def salvar_imagem_supabase_storage(conteudo_bytes, extensao="png", content_type="image/png"):
+    """Salva imagem no Supabase Storage e retorna URL pública."""
+    if not conteudo_bytes:
+        return None
+
+    extensao = (extensao or "png").lower().replace(".", "")
+    if extensao not in ("png", "jpg", "jpeg", "webp", "gif"):
+        extensao = "png"
+
+    nome_arquivo = f"convenio_{uuid.uuid4().hex}.{extensao}"
+
+    try:
+        bucket = supabase.storage.from_("convenios")
+
+        try:
+            bucket.upload(
+                nome_arquivo,
+                conteudo_bytes,
+                file_options={
+                    "content-type": content_type,
+                    "upsert": "true"
+                }
+            )
+        except TypeError:
+            bucket.upload(nome_arquivo, conteudo_bytes)
+
+        return url_publica_storage("convenios", nome_arquivo)
+
+    except Exception as erro:
+        print("Erro ao salvar imagem no Supabase Storage:", erro)
+        return None
+
+
+def salvar_imagem_base64_convenio(imagem_base64):
+    """Recebe data:image/png;base64,... gerado pelo editor de imagem."""
+    if not imagem_base64:
+        return None
+
+    imagem_base64 = imagem_base64.strip()
+
+    match = re.match(r"^data:(image/[a-zA-Z0-9.+-]+);base64,(.+)$", imagem_base64)
+    if not match:
+        return None
+
+    content_type = match.group(1)
+    dados_base64 = match.group(2)
+
+    extensao = content_type.split("/")[-1].replace("jpeg", "jpg")
+
+    try:
+        conteudo = base64.b64decode(dados_base64)
+    except Exception:
+        return None
+
+    return salvar_imagem_supabase_storage(conteudo, extensao, content_type)
+
+
+def salvar_imagem_upload_convenio(imagem):
+    """Fallback: aceita upload tradicional, mas salva no Supabase Storage."""
     if imagem and imagem.filename:
         filename = secure_filename(imagem.filename)
-        caminho = os.path.join(UPLOAD_FOLDER, filename)
-        imagem.save(caminho)
-        return "/" + caminho.replace("\\", "/")
+        extensao = filename.rsplit(".", 1)[-1].lower() if "." in filename else "png"
+        content_type = imagem.mimetype or "image/png"
+        conteudo = imagem.read()
+        return salvar_imagem_supabase_storage(conteudo, extensao, content_type)
     return None
+
+
+def salvar_imagem_convenio(imagem_atual=None):
+    """Pega imagem do editor, link colado ou upload antigo e retorna URL final."""
+    imagem_base64 = request.form.get("imagem_base64")
+    imagem_url = (request.form.get("imagem_url") or "").strip()
+
+    if imagem_base64:
+        url = salvar_imagem_base64_convenio(imagem_base64)
+        if url:
+            return url
+
+    if imagem_url:
+        return imagem_url
+
+    nova_imagem = salvar_imagem_upload_convenio(request.files.get("imagem"))
+    if nova_imagem:
+        return nova_imagem
+
+    return imagem_atual
+
+
+def salvar_imagem(imagem):
+    # Mantida para compatibilidade com outras partes antigas do sistema.
+    return salvar_imagem_upload_convenio(imagem)
 
 
 def salvar_pdf(arquivo):
@@ -662,7 +755,7 @@ def novo_convenio():
     if not usuario_logado():
         return redirect("/login")
 
-    imagem_path = salvar_imagem(request.files.get("imagem"))
+    imagem_path = salvar_imagem_convenio()
 
     dados = {
         "nome": request.form.get("nome"),
@@ -693,8 +786,7 @@ def editar_convenio(convenio_id):
         return redirect("/login")
 
     imagem_atual = request.form.get("imagem_atual")
-    nova_imagem = salvar_imagem(request.files.get("imagem"))
-    imagem_path = nova_imagem if nova_imagem else imagem_atual
+    imagem_path = salvar_imagem_convenio(imagem_atual)
 
     dados = {
         "nome": request.form.get("nome"),
