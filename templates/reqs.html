@@ -13,9 +13,13 @@
 
 <h2 style="margin-bottom: 15px;">REQs</h2>
 
-<section class="grid-reqs">
+<section class="grid-reqs lista-arrastavel" id="listaReqs">
     {% for req in reqs %}
-    <div class="card-req">
+    <div class="card-req card-arrastavel" draggable="true" data-id="{{ req.id }}">
+        {% if tem_permissao('editar_reqs') %}
+        <button type="button" class="drag-card-handle" title="Clique e segure para arrastar">⋮⋮</button>
+        {% endif %}
+
         {% if tem_permissao('editar_reqs') or tem_permissao('excluir_reqs') %}
         <div class="acoes-card">
             {% if tem_permissao('editar_reqs') %}
@@ -96,9 +100,112 @@
 </div>
 {% endif %}
 
+<style>
+.card-arrastavel {
+    position: relative;
+}
+
+.drag-card-handle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 8px;
+    background: #e0f2fe;
+    color: #0077b6;
+    font-weight: 900;
+    cursor: grab;
+    line-height: 1;
+    z-index: 5;
+}
+
+.drag-card-handle:active {
+    cursor: grabbing;
+}
+
+.card-arrastavel.arrastando {
+    opacity: .45;
+    transform: scale(.98);
+}
+
+.card-arrastavel.drag-over {
+    outline: 3px dashed #7cc242;
+    outline-offset: 4px;
+}
+</style>
+
 <script>
 function abrirModal(id) { document.getElementById(id).classList.add('ativo'); }
 function fecharModal(id) { document.getElementById(id).classList.remove('ativo'); }
+
+
+function iniciarCardsArrastaveis(containerId, urlSalvar) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let cardArrastado = null;
+
+    container.querySelectorAll('.card-arrastavel').forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            if (!e.target.closest('.drag-card-handle')) {
+                e.preventDefault();
+                return;
+            }
+
+            cardArrastado = this;
+            this.classList.add('arrastando');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+        });
+
+        card.addEventListener('dragend', function() {
+            this.classList.remove('arrastando');
+            container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            salvarOrdemCards(container, urlSalvar);
+        });
+
+        card.addEventListener('dragover', function(e) {
+            e.preventDefault();
+
+            if (!cardArrastado || cardArrastado === this) return;
+
+            this.classList.add('drag-over');
+
+            const box = this.getBoundingClientRect();
+            const metade = box.left + box.width / 2;
+
+            if (e.clientX < metade) {
+                container.insertBefore(cardArrastado, this);
+            } else {
+                container.insertBefore(cardArrastado, this.nextSibling);
+            }
+        });
+
+        card.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+    });
+}
+
+function salvarOrdemCards(container, urlSalvar) {
+    const ids = Array.from(container.querySelectorAll('.card-arrastavel'))
+        .map(card => card.dataset.id)
+        .filter(Boolean);
+
+    fetch(urlSalvar, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+    }).catch(() => {
+        console.log('Não foi possível salvar a ordem dos cards.');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    iniciarCardsArrastaveis('listaReqs', '/reqs/ordenar');
+});
 </script>
 
 {% endblock %}

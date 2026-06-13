@@ -3,7 +3,7 @@ import base64
 import uuid
 import re
 import fitz
-from flask import Flask, render_template, request, redirect, session, send_file, g
+from flask import Flask, render_template, request, redirect, session, send_file, g, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -304,11 +304,13 @@ def proteger_rotas_por_permissao():
         return redirect("/login")
 
     regras = [
+        ("/convenios/ordenar", ("editar_convenios", "editar_convenio")),
         ("/convenios/novo", ("criar_convenios", "criar_convenio")),
         ("/convenios/editar", ("editar_convenios", "editar_convenio")),
         ("/convenios/excluir", ("excluir_convenios", "excluir_convenio")),
         ("/convenios", ("ver_convenios",)),
 
+        ("/reqs/ordenar", ("editar_reqs", "editar_req")),
         ("/reqs/nova", ("criar_reqs", "criar_req")),
         ("/reqs/editar", ("editar_reqs", "editar_req")),
         ("/reqs/excluir", ("excluir_reqs", "excluir_req")),
@@ -460,6 +462,38 @@ def salvar_imagem_convenio(imagem_atual=None):
 def salvar_imagem(imagem):
     # Mantida para compatibilidade com outras partes antigas do sistema.
     return salvar_imagem_upload_convenio(imagem)
+
+
+def proxima_ordem(tabela):
+    """Retorna a próxima ordem para cards arrastáveis."""
+    try:
+        resultado = (
+            supabase.table(tabela)
+            .select("ordem")
+            .order("ordem", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if resultado.data and resultado.data[0].get("ordem") is not None:
+            return int(resultado.data[0].get("ordem") or 0) + 1
+    except Exception:
+        pass
+
+    return 1
+
+
+def atualizar_ordem_cards(tabela, ids):
+    """Atualiza a ordem dos cards no Supabase."""
+    if not isinstance(ids, list):
+        return False
+
+    for indice, item_id in enumerate(ids, start=1):
+        if not item_id:
+            continue
+        supabase.table(tabela).update({"ordem": indice}).eq("id", item_id).execute()
+
+    return True
 
 
 def salvar_pdf(arquivo):
@@ -740,7 +774,13 @@ def convenios():
     if not usuario_logado():
         return redirect("/login")
 
-    resultado = supabase.table("convenios").select("*").order("criado_em", desc=True).execute()
+    resultado = (
+        supabase.table("convenios")
+        .select("*")
+        .order("ordem")
+        .order("criado_em", desc=True)
+        .execute()
+    )
 
     return render_template(
         "convenios.html",
@@ -774,6 +814,7 @@ def novo_convenio():
         "imagem": imagem_path,
         "imagem_ativo": "imagem_ativo" in request.form,
         "link_site": request.form.get("link_site"),
+        "ordem": proxima_ordem("convenios"),
         "criado_por": session.get("usuario_id")
     }
 
@@ -820,6 +861,23 @@ def excluir_convenio(convenio_id):
     return redirect("/convenios")
 
 
+
+@app.route("/convenios/ordenar", methods=["POST"])
+def ordenar_convenios():
+    if not usuario_logado():
+        return jsonify({"ok": False, "erro": "nao_logado"}), 401
+
+    dados = request.get_json(silent=True) or {}
+    ids = dados.get("ids", [])
+
+    try:
+        atualizar_ordem_cards("convenios", ids)
+        return jsonify({"ok": True})
+    except Exception as erro:
+        print("Erro ao ordenar convênios:", erro)
+        return jsonify({"ok": False}), 500
+
+
 @app.route("/reqs-formularios")
 def reqs_formularios():
     if not usuario_logado():
@@ -846,6 +904,7 @@ def reqs():
     resultado = (
         supabase.table("reqs")
         .select("*")
+        .order("ordem")
         .order("criado_em", desc=True)
         .execute()
     )
@@ -857,6 +916,23 @@ def reqs():
         cargo=session.get("usuario_cargo"),
         permissoes=permissoes_usuario()
     )
+
+
+
+@app.route("/reqs/ordenar", methods=["POST"])
+def ordenar_reqs():
+    if not usuario_logado():
+        return jsonify({"ok": False, "erro": "nao_logado"}), 401
+
+    dados = request.get_json(silent=True) or {}
+    ids = dados.get("ids", [])
+
+    try:
+        atualizar_ordem_cards("reqs", ids)
+        return jsonify({"ok": True})
+    except Exception as erro:
+        print("Erro ao ordenar REQs:", erro)
+        return jsonify({"ok": False}), 500
 
 
 @app.route("/formularios")
@@ -888,6 +964,7 @@ def nova_req():
     supabase.table("reqs").insert({
         "nome": request.form.get("nome"),
         "link": request.form.get("link"),
+        "ordem": proxima_ordem("reqs"),
         "criado_por": session.get("usuario_id")
     }).execute()
 
