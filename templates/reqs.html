@@ -13,12 +13,10 @@
 
 <h2 style="margin-bottom: 15px;">REQs</h2>
 
-<section class="grid-reqs lista-arrastavel" id="listaReqs">
+<section class="grid-reqs cards-arrastaveis" id="listaReqs">
     {% for req in reqs %}
-    <div class="card-req card-arrastavel" draggable="false" data-id="{{ req.id }}">
-        {% if tem_permissao('editar_reqs') %}
-        <button type="button" class="drag-card-handle" title="Clique e segure para arrastar">⋮⋮</button>
-        {% endif %}
+    <div class="card-req card-arrastavel" draggable="true" data-id="{{ req.id }}">
+        <button type="button" class="drag-handle-card" title="Arrastar card">⋮⋮</button>
 
         {% if tem_permissao('editar_reqs') or tem_permissao('excluir_reqs') %}
         <div class="acoes-card">
@@ -34,10 +32,17 @@
         </div>
         {% endif %}
 
+        {% set icone_req = req.icone or 'documento.svg' %}
         {% if req.link %}
-        <a href="{{ req.link }}" target="_blank" class="botao-req">{{ req.nome }}</a>
+        <a href="{{ req.link }}" target="_blank" class="botao-req botao-req-com-icone">
+            <img src="/static/img/req_icons/{{ icone_req }}" class="req-icone-img" alt="">
+            <span>{{ req.nome }}</span>
+        </a>
         {% else %}
-        <div class="botao-req">{{ req.nome }}</div>
+        <div class="botao-req botao-req-com-icone">
+            <img src="/static/img/req_icons/{{ icone_req }}" class="req-icone-img" alt="">
+            <span>{{ req.nome }}</span>
+        </div>
         {% endif %}
     </div>
 
@@ -52,12 +57,75 @@
                 <button type="button" class="btn-fechar" onclick="fecharModal('editarReq{{ req.id }}')">×</button>
             </div>
 
-            <form method="POST" action="/reqs/editar/{{ req.id }}">
+            <form method="POST" action="/reqs/editar/{{ req.id }}" class="form-req-icone">
                 <label>Nome</label>
                 <input name="nome" value="{{ req.nome or '' }}" required>
 
                 <label>Link</label>
                 <input name="link" value="{{ req.link or '' }}">
+
+                <input type="hidden" name="icone" class="input-icone-req" value="{{ req.icone or 'documento.svg' }}">
+                <label>Ícone do botão</label>
+                <input type="text" class="pesquisa-icone" placeholder="Pesquisar ícone: urina, sangue, fezes, vacina..." oninput="filtrarIconesReq(this)">
+
+                <div class="grade-icones-req">
+                    <button type="button" class="icone-opcao" data-icone="documento.svg" data-termos="documento papel requerimento pedido sem pedido responsabilidade" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/documento.svg" alt="Documento">
+    <span>Documento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina.svg" data-termos="urina masculino feminino unidade residencia 24 horas" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina.svg" alt="Urina">
+    <span>Urina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="fezes.svg" data-termos="fezes cultura parasitologico calprotectina coprologico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/fezes.svg" alt="Fezes">
+    <span>Fezes</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sangue.svg" data-termos="sangue oculto exame coleta" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sangue.svg" alt="Sangue">
+    <span>Sangue</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vacina.svg" data-termos="vacina formulario imunizacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vacina.svg" alt="Vacina">
+    <span>Vacina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="dna.svg" data-termos="dna genetica genera cariotipo banda g" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/dna.svg" alt="DNA">
+    <span>DNA</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tubo.svg" data-termos="tubo exame laboratorio strepto coleta" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tubo.svg" alt="Tubo">
+    <span>Tubo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="saliva.svg" data-termos="salivar saliva boca" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/saliva.svg" alt="Saliva">
+    <span>Saliva</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hormonio.svg" data-termos="hormonio endocrino psa serotonina tireoide" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hormonio.svg" alt="Hormônio">
+    <span>Hormônio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cultura.svg" data-termos="cultura secrecao bacterias microbiologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cultura.svg" alt="Cultura">
+    <span>Cultura</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="toxico.svg" data-termos="toxicologico drogas urina toxico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/toxico.svg" alt="Toxicológico">
+    <span>Toxicológico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sexo.svg" data-termos="sexagem masculino feminino sexo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sexo.svg" alt="Sexagem">
+    <span>Sexagem</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="esperma.svg" data-termos="espermograma esperma fertilidade" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/esperma.svg" alt="Espermograma">
+    <span>Espermograma</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="nps.svg" data-termos="nps pesquisa satisfacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/nps.svg" alt="NPS">
+    <span>NPS</span>
+</button>
+                </div>
 
                 <div class="modal-botoes">
                     <button type="button" class="btn-cancelar" onclick="fecharModal('editarReq{{ req.id }}')">Cancelar</button>
@@ -84,12 +152,75 @@
             <button type="button" class="btn-fechar" onclick="fecharModal('modalNovaReq')">×</button>
         </div>
 
-        <form method="POST" action="/reqs/nova">
+        <form method="POST" action="/reqs/nova" class="form-req-icone">
             <label>Nome</label>
             <input name="nome" required>
 
             <label>Link</label>
             <input name="link">
+
+            <input type="hidden" name="icone" class="input-icone-req" value="documento.svg">
+            <label>Ícone do botão</label>
+            <input type="text" class="pesquisa-icone" placeholder="Pesquisar ícone: urina, sangue, fezes, vacina..." oninput="filtrarIconesReq(this)">
+
+            <div class="grade-icones-req">
+                <button type="button" class="icone-opcao" data-icone="documento.svg" data-termos="documento papel requerimento pedido sem pedido responsabilidade" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/documento.svg" alt="Documento">
+    <span>Documento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina.svg" data-termos="urina masculino feminino unidade residencia 24 horas" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina.svg" alt="Urina">
+    <span>Urina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="fezes.svg" data-termos="fezes cultura parasitologico calprotectina coprologico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/fezes.svg" alt="Fezes">
+    <span>Fezes</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sangue.svg" data-termos="sangue oculto exame coleta" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sangue.svg" alt="Sangue">
+    <span>Sangue</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vacina.svg" data-termos="vacina formulario imunizacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vacina.svg" alt="Vacina">
+    <span>Vacina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="dna.svg" data-termos="dna genetica genera cariotipo banda g" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/dna.svg" alt="DNA">
+    <span>DNA</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tubo.svg" data-termos="tubo exame laboratorio strepto coleta" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tubo.svg" alt="Tubo">
+    <span>Tubo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="saliva.svg" data-termos="salivar saliva boca" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/saliva.svg" alt="Saliva">
+    <span>Saliva</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hormonio.svg" data-termos="hormonio endocrino psa serotonina tireoide" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hormonio.svg" alt="Hormônio">
+    <span>Hormônio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cultura.svg" data-termos="cultura secrecao bacterias microbiologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cultura.svg" alt="Cultura">
+    <span>Cultura</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="toxico.svg" data-termos="toxicologico drogas urina toxico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/toxico.svg" alt="Toxicológico">
+    <span>Toxicológico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sexo.svg" data-termos="sexagem masculino feminino sexo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sexo.svg" alt="Sexagem">
+    <span>Sexagem</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="esperma.svg" data-termos="espermograma esperma fertilidade" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/esperma.svg" alt="Espermograma">
+    <span>Espermograma</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="nps.svg" data-termos="nps pesquisa satisfacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/nps.svg" alt="NPS">
+    <span>NPS</span>
+</button>
+            </div>
 
             <div class="modal-botoes">
                 <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovaReq')">Cancelar</button>
@@ -101,144 +232,199 @@
 {% endif %}
 
 <style>
-.card-arrastavel {
-    position: relative;
+.botao-req-com-icone{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    min-height:78px;
+    padding:12px 14px !important;
 }
 
-.drag-card-handle {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 7px;
-    background: #e0f2fe;
-    color: #0077b6;
-    font-weight: 900;
-    cursor: grab;
-    line-height: 1;
-    z-index: 5;
+.req-icone-img{
+    width:44px;
+    height:44px;
+    object-fit:contain;
+    flex:0 0 auto;
 }
 
-.drag-card-handle:active {
-    cursor: grabbing;
+.botao-req-com-icone span{
+    line-height:1.15;
 }
 
-.card-arrastavel.arrastando {
-    opacity: .45;
-    transform: scale(.98);
+.grade-icones-req{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(95px,1fr));
+    gap:10px;
+    max-height:260px;
+    overflow:auto;
+    padding:10px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+    margin-top:8px;
 }
 
-.card-arrastavel.drag-over {
-    outline: 3px dashed #7cc242;
-    outline-offset: 4px;
+.icone-opcao{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    border:2px solid transparent;
+    background:#fff;
+    border-radius:14px;
+    padding:10px 6px;
+    cursor:pointer;
+    color:#0f172a;
+    font-size:12px;
+    font-weight:700;
+    min-height:88px;
 }
+
+.icone-opcao:hover{
+    border-color:#7ac143;
+}
+
+.icone-opcao.selecionado{
+    border-color:#0077b6;
+    box-shadow:0 0 0 3px rgba(0,119,182,.12);
+}
+
+.icone-opcao img{
+    width:42px;
+    height:42px;
+    object-fit:contain;
+}
+
+.pesquisa-icone{
+    margin-bottom:8px;
+}
+
+.drag-handle-card{
+    position:absolute;
+    top:8px;
+    left:8px;
+    width:26px;
+    height:26px;
+    border:0;
+    border-radius:8px;
+    background:#e0f2fe;
+    color:#0077b6;
+    font-weight:900;
+    cursor:grab;
+    line-height:1;
+    z-index:5;
+}
+
+.drag-handle-card:active{cursor:grabbing;}
+.card-arrastavel{position:relative;}
+.card-arrastavel.dragging{opacity:.45; transform:scale(.98);}
+.card-arrastavel.drag-over{outline:3px dashed #7ac143; outline-offset:4px;}
 </style>
 
 <script>
-function abrirModal(id) { document.getElementById(id).classList.add('ativo'); }
-function fecharModal(id) { document.getElementById(id).classList.remove('ativo'); }
+function abrirModal(id) {
+    document.getElementById(id).classList.add('ativo');
+    marcarIconeAtual(document.getElementById(id));
+}
 
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('ativo');
+}
 
-function iniciarCardsArrastaveis(containerId, urlSalvar) {
+function selecionarIconeReq(botao) {
+    const form = botao.closest('form');
+    const input = form.querySelector('.input-icone-req');
+
+    input.value = botao.dataset.icone;
+
+    form.querySelectorAll('.icone-opcao').forEach(b => b.classList.remove('selecionado'));
+    botao.classList.add('selecionado');
+}
+
+function marcarIconeAtual(escopo) {
+    if(!escopo) return;
+
+    escopo.querySelectorAll('form.form-req-icone').forEach(form => {
+        const valor = form.querySelector('.input-icone-req')?.value || 'documento.svg';
+        form.querySelectorAll('.icone-opcao').forEach(botao => {
+            botao.classList.toggle('selecionado', botao.dataset.icone === valor);
+        });
+    });
+}
+
+function filtrarIconesReq(input) {
+    const termo = input.value.toLowerCase().trim();
+    const form = input.closest('form');
+
+    form.querySelectorAll('.icone-opcao').forEach(botao => {
+        const texto = (botao.innerText + ' ' + botao.dataset.termos).toLowerCase();
+        botao.style.display = texto.includes(termo) ? 'flex' : 'none';
+    });
+}
+
+function iniciarArrasteCards(containerId, endpoint) {
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if(!container) return;
 
-    let cardArrastado = null;
-    let ordemInicial = '';
+    let arrastado = null;
 
     container.querySelectorAll('.card-arrastavel').forEach(card => {
-        const handle = card.querySelector('.drag-card-handle');
-        card.setAttribute('draggable', 'false');
-
-        if (!handle) return;
-
-        handle.addEventListener('mousedown', function() {
-            card.setAttribute('draggable', 'true');
-        });
-
-        handle.addEventListener('mouseup', function() {
-            card.setAttribute('draggable', 'false');
-        });
-
-        card.addEventListener('dragstart', function(e) {
-            if (!e.target.closest('.card-arrastavel')) return;
-
-            cardArrastado = card;
-            ordemInicial = pegarOrdemCards(container).join('|');
-            card.classList.add('arrastando');
+        card.addEventListener('dragstart', (e) => {
+            if(!e.target.classList.contains('drag-handle-card')) {
+                e.preventDefault();
+                return;
+            }
+            arrastado = card;
+            card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', card.dataset.id);
         });
 
-        card.addEventListener('dragend', function() {
-            card.classList.remove('arrastando');
-            card.setAttribute('draggable', 'false');
-            container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            container.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+            salvarOrdemCards(container, endpoint);
+        });
 
-            const ordemFinal = pegarOrdemCards(container).join('|');
-            if (ordemFinal !== ordemInicial) {
-                salvarOrdemCards(container, urlSalvar);
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if(card !== arrastado) card.classList.add('drag-over');
+        });
+
+        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
+            if(!arrastado || arrastado === card) return;
+
+            const cards = Array.from(container.querySelectorAll('.card-arrastavel'));
+            const origem = cards.indexOf(arrastado);
+            const destino = cards.indexOf(card);
+
+            if(origem < destino) {
+                card.after(arrastado);
+            } else {
+                card.before(arrastado);
             }
-
-            cardArrastado = null;
         });
     });
-
-    container.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        if (!cardArrastado) return;
-
-        const cardDepois = buscarCardDepoisDoMouse(container, e.clientX, e.clientY);
-
-        if (cardDepois == null) {
-            container.appendChild(cardArrastado);
-        } else {
-            container.insertBefore(cardArrastado, cardDepois);
-        }
-    });
 }
 
-function buscarCardDepoisDoMouse(container, mouseX, mouseY) {
-    const cards = [...container.querySelectorAll('.card-arrastavel:not(.arrastando)')];
+function salvarOrdemCards(container, endpoint) {
+    const ids = Array.from(container.querySelectorAll('.card-arrastavel')).map(card => card.dataset.id);
 
-    return cards.reduce((maisProximo, card) => {
-        const box = card.getBoundingClientRect();
-        const centroX = box.left + box.width / 2;
-        const centroY = box.top + box.height / 2;
-        const distancia = Math.hypot(mouseX - centroX, mouseY - centroY);
-
-        if (mouseY < centroY || (Math.abs(mouseY - centroY) < box.height / 2 && mouseX < centroX)) {
-            if (distancia < maisProximo.distancia) {
-                return { distancia, elemento: card };
-            }
-        }
-
-        return maisProximo;
-    }, { distancia: Number.POSITIVE_INFINITY, elemento: null }).elemento;
-}
-
-function pegarOrdemCards(container) {
-    return Array.from(container.querySelectorAll('.card-arrastavel'))
-        .map(card => card.dataset.id)
-        .filter(Boolean);
-}
-
-function salvarOrdemCards(container, urlSalvar) {
-    const ids = pegarOrdemCards(container);
-
-    fetch(urlSalvar, {
+    fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-    }).catch(() => {
-        console.log('Não foi possível salvar a ordem dos cards.');
-    });
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ids})
+    }).catch(() => {});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    iniciarCardsArrastaveis('listaReqs', '/reqs/ordenar');
+    marcarIconeAtual(document);
+    iniciarArrasteCards('listaReqs', '/reqs/reordenar');
 });
 </script>
 

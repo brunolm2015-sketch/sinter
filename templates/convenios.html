@@ -11,14 +11,12 @@
     {% endif %}
 </section>
 
-<section class="grid-convenios lista-arrastavel" id="listaConvenios">
+<section class="grid-convenios cards-arrastaveis" id="listaConvenios">
 
     {% for convenio in convenios %}
-    <div class="card-convenio card-arrastavel" draggable="false" data-id="{{ convenio.id }}">
+    <div class="card-convenio card-arrastavel" draggable="true" data-id="{{ convenio.id }}">
 
-        {% if tem_permissao('editar_convenios') %}
-        <button type="button" class="drag-card-handle" title="Clique e segure para arrastar">⋮⋮</button>
-        {% endif %}
+        <button type="button" class="drag-handle-card" title="Arrastar card">⋮⋮</button>
 
         {% if tem_permissao('editar_convenios') or tem_permissao('excluir_convenios') %}
         <div class="acoes-card">
@@ -449,42 +447,6 @@
     transform: scale(1.04);
     opacity: .9;
 }
-
-
-.card-arrastavel {
-    position: relative;
-}
-
-.drag-card-handle {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 7px;
-    background: #e0f2fe;
-    color: #0077b6;
-    font-weight: 900;
-    cursor: grab;
-    line-height: 1;
-    z-index: 5;
-}
-
-.drag-card-handle:active {
-    cursor: grabbing;
-}
-
-.card-arrastavel.arrastando {
-    opacity: .45;
-    transform: scale(.98);
-}
-
-.card-arrastavel.drag-over {
-    outline: 3px dashed #7cc242;
-    outline-offset: 4px;
-}
-
 </style>
 
 <script>
@@ -728,108 +690,79 @@ document.addEventListener('DOMContentLoaded', () => {
         inicializarEditor(editor);
     });
 });
+</script>
 
 
-function iniciarCardsArrastaveis(containerId, urlSalvar) {
+<style>
+.drag-handle-card{position:absolute;top:8px;left:8px;width:26px;height:26px;border:0;border-radius:8px;background:#e0f2fe;color:#0077b6;font-weight:900;cursor:grab;line-height:1;z-index:5;}
+.drag-handle-card:active{cursor:grabbing;}
+.card-arrastavel{position:relative;}
+.card-arrastavel.dragging{opacity:.45;transform:scale(.98);}
+.card-arrastavel.drag-over{outline:3px dashed #7ac143;outline-offset:4px;}
+</style>
+
+<script>
+function iniciarArrasteCards(containerId, endpoint){
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if(!container) return;
 
-    let cardArrastado = null;
-    let ordemInicial = '';
+    let arrastado = null;
 
     container.querySelectorAll('.card-arrastavel').forEach(card => {
-        const handle = card.querySelector('.drag-card-handle');
-        card.setAttribute('draggable', 'false');
-
-        if (!handle) return;
-
-        handle.addEventListener('mousedown', function() {
-            card.setAttribute('draggable', 'true');
-        });
-
-        handle.addEventListener('mouseup', function() {
-            card.setAttribute('draggable', 'false');
-        });
-
-        card.addEventListener('dragstart', function(e) {
-            if (!e.target.closest('.card-arrastavel')) return;
-
-            cardArrastado = card;
-            ordemInicial = pegarOrdemCards(container).join('|');
-            card.classList.add('arrastando');
+        card.addEventListener('dragstart', (e) => {
+            if(!e.target.classList.contains('drag-handle-card')){
+                e.preventDefault();
+                return;
+            }
+            arrastado = card;
+            card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', card.dataset.id);
         });
 
-        card.addEventListener('dragend', function() {
-            card.classList.remove('arrastando');
-            card.setAttribute('draggable', 'false');
-            container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+            container.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+            salvarOrdemCards(container, endpoint);
+        });
 
-            const ordemFinal = pegarOrdemCards(container).join('|');
-            if (ordemFinal !== ordemInicial) {
-                salvarOrdemCards(container, urlSalvar);
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if(card !== arrastado) card.classList.add('drag-over');
+        });
+
+        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
+            if(!arrastado || arrastado === card) return;
+
+            const cards = Array.from(container.querySelectorAll('.card-arrastavel'));
+            const origem = cards.indexOf(arrastado);
+            const destino = cards.indexOf(card);
+
+            if(origem < destino){
+                card.after(arrastado);
+            }else{
+                card.before(arrastado);
             }
-
-            cardArrastado = null;
         });
     });
-
-    container.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        if (!cardArrastado) return;
-
-        const cardDepois = buscarCardDepoisDoMouse(container, e.clientX, e.clientY);
-
-        if (cardDepois == null) {
-            container.appendChild(cardArrastado);
-        } else {
-            container.insertBefore(cardArrastado, cardDepois);
-        }
-    });
 }
 
-function buscarCardDepoisDoMouse(container, mouseX, mouseY) {
-    const cards = [...container.querySelectorAll('.card-arrastavel:not(.arrastando)')];
+function salvarOrdemCards(container, endpoint){
+    const ids = Array.from(container.querySelectorAll('.card-arrastavel')).map(card => card.dataset.id);
 
-    return cards.reduce((maisProximo, card) => {
-        const box = card.getBoundingClientRect();
-        const centroX = box.left + box.width / 2;
-        const centroY = box.top + box.height / 2;
-        const distancia = Math.hypot(mouseX - centroX, mouseY - centroY);
-
-        if (mouseY < centroY || (Math.abs(mouseY - centroY) < box.height / 2 && mouseX < centroX)) {
-            if (distancia < maisProximo.distancia) {
-                return { distancia, elemento: card };
-            }
-        }
-
-        return maisProximo;
-    }, { distancia: Number.POSITIVE_INFINITY, elemento: null }).elemento;
-}
-
-function pegarOrdemCards(container) {
-    return Array.from(container.querySelectorAll('.card-arrastavel'))
-        .map(card => card.dataset.id)
-        .filter(Boolean);
-}
-
-function salvarOrdemCards(container, urlSalvar) {
-    const ids = pegarOrdemCards(container);
-
-    fetch(urlSalvar, {
+    fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-    }).catch(() => {
-        console.log('Não foi possível salvar a ordem dos cards.');
-    });
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ids})
+    }).catch(() => {});
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    iniciarCardsArrastaveis('listaConvenios', '/convenios/ordenar');
+    iniciarArrasteCards('listaConvenios', '/convenios/reordenar');
 });
-
 </script>
 
 {% endblock %}
