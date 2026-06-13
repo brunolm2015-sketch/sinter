@@ -1,56 +1,64 @@
-<div class="grid-permissoes">
-    <div class="campo-modal">
-        <h3>Menu lateral</h3>
-        <label><input type="checkbox" name="permissoes" value="ver_convenios" {% if p.get('ver_convenios') %}checked{% endif %}> Ver Convênios</label>
-        <label><input type="checkbox" name="permissoes" value="ver_reqs" {% if p.get('ver_reqs') %}checked{% endif %}> Ver REQs e Formulários</label>
-        <label><input type="checkbox" name="permissoes" value="ver_endocrinos" {% if p.get('ver_endocrinos') %}checked{% endif %}> Ver Endócrinos</label>
-        <label><input type="checkbox" name="permissoes" value="ver_usuarios_cargos" {% if p.get('ver_usuarios_cargos') %}checked{% endif %}> Ver Usuários e Cargos</label>
-    </div>
+{% set p = p|default({}) %}
 
-    <div class="campo-modal">
+<div class="permissoes-grid">
+
+    <div class="grupo-permissao">
         <h3>Convênios</h3>
-        <label><input type="checkbox" name="permissoes" value="ver_convenios" {% if p.get('ver_convenios') %}checked{% endif %}> Ver cards</label>
-        <label><input type="checkbox" name="permissoes" value="criar_convenios" {% if p.get('criar_convenios') %}checked{% endif %}> Ver botão Novo</label>
-        <label><input type="checkbox" name="permissoes" value="editar_convenios" {% if p.get('editar_convenios') %}checked{% endif %}> Editar</label>
-        <label><input type="checkbox" name="permissoes" value="excluir_convenios" {% if p.get('excluir_convenios') %}checked{% endif %}> Excluir</label>
+
+        <label><input type="checkbox" name="permissoes" value="ver_convenios" {% if p.get("ver_convenios") %}checked{% endif %}> Ver Convênios</label>
+        <label><input type="checkbox" name="permissoes" value="criar_convenios" {% if p.get("criar_convenios") %}checked{% endif %}> Criar Convênios</label>
+        <label><input type="checkbox" name="permissoes" value="editar_convenios" {% if p.get("editar_convenios") %}checked{% endif %}> Editar Convênios</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_convenios" {% if p.get("excluir_convenios") %}checked{% endif %}> Excluir Convênios</label>
     </div>
 
-    <div class="campo-modal">
+    <div class="grupo-permissao">
         <h3>REQs</h3>
-        <label><input type="checkbox" name="permissoes" value="ver_reqs" {% if p.get('ver_reqs') %}checked{% endif %}> Ver REQs</label>
-        <label><input type="checkbox" name="permissoes" value="criar_reqs" {% if p.get('criar_reqs') %}checked{% endif %}> Criar REQ</label>
-        <label><input type="checkbox" name="permissoes" value="editar_reqs" {% if p.get('editar_reqs') %}checked{% endif %}> Editar REQ</label>
-        <label><input type="checkbox" name="permissoes" value="excluir_reqs" {% if p.get('excluir_reqs') %}checked{% endif %}> Excluir REQ</label>
+
+        <label><input type="checkbox" name="permissoes" value="ver_reqs" {% if p.get("ver_reqs") %}checked{% endif %}> Ver REQs</label>
+        <label><input type="checkbox" name="permissoes" value="criar_reqs" {% if p.get("criar_reqs") %}checked{% endif %}> Criar REQs</label>
+        <label><input type="checkbox" name="permissoes" value="editar_reqs" {% if p.get("editar_reqs") %}checked{% endif %}> Editar REQs</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_reqs" {% if p.get("excluir_reqs") %}checked{% endif %}> Excluir REQs</label>
     </div>
 
-    <div class="campo-modal">
+    <div class="grupo-permissao">
         <h3>Formulários</h3>
-        <label><input type="checkbox" name="permissoes" value="ver_formularios" {% if p.get('ver_formularios') %}checked{% endif %}> Ver formulários</label>
-        <label><input type="checkbox" name="permissoes" value="criar_formularios" {% if p.get('criar_formularios') %}checked{% endif %}> Criar formulário</label>
-        <label><input type="checkbox" name="permissoes" value="configurar_formularios" {% if p.get('configurar_formularios') %}checked{% endif %}> Configurar formulário</label>
-        <label><input type="checkbox" name="permissoes" value="preencher_formularios" {% if p.get('preencher_formularios') %}checked{% endif %}> Preencher formulário</label>
-        <label><input type="checkbox" name="permissoes" value="excluir_formularios" {% if p.get('excluir_formularios') %}checked{% endif %}> Excluir formulário</label>
+
+        <label><input type="checkbox" name="permissoes" value="ver_formularios" {% if p.get("ver_formularios") %}checked{% endif %}> Ver Formulários</label>
+        <label><input type="checkbox" name="permissoes" value="criar_formularios" {% if p.get("criar_formularios") %}checked{% endif %}> Criar Formulários</label>
+        <label><input type="checkbox" name="permissoes" value="configurar_formularios" {% if p.get("configurar_formularios") %}checked{% endif %}> Configurar Formulários</label>
+        <label><input type="checkbox" name="permissoes" value="preencher_formularios" {% if p.get("preencher_formularios") %}checked{% endif %}> Preencher Formulários</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_formularios" {% if p.get("excluir_formularios") %}checked{% endif %}> Excluir Formulários</label>
     </div>
 
-    <div class="campo-modal">
+    <div class="grupo-permissao">
         <h3>Endócrinos</h3>
-        <label><input type="checkbox" name="permissoes" value="ver_endocrinos" {% if p.get('ver_endocrinos') %}checked{% endif %}> Ver agendamentos</label>
-        <label><input type="checkbox" name="permissoes" value="criar_agendamentos" {% if p.get('criar_agendamentos') %}checked{% endif %}> Novo agendamento</label>
-        <label><input type="checkbox" name="permissoes" value="editar_agendamentos" {% if p.get('editar_agendamentos') %}checked{% endif %}> Editar agendamento</label>
-        <label><input type="checkbox" name="permissoes" value="excluir_agendamentos" {% if p.get('excluir_agendamentos') %}checked{% endif %}> Excluir agendamento</label>
-        <label><input type="checkbox" name="permissoes" value="gerenciar_exames" {% if p.get('gerenciar_exames') %}checked{% endif %}> Gerenciar exames</label>
-        <label><input type="checkbox" name="permissoes" value="gerenciar_status" {% if p.get('gerenciar_status') %}checked{% endif %}> Gerenciar status</label>
+
+        <label><input type="checkbox" name="permissoes" value="ver_endocrinos" {% if p.get("ver_endocrinos") %}checked{% endif %}> Ver Endócrinos</label>
+        <label><input type="checkbox" name="permissoes" value="ver_agendamentos" {% if p.get("ver_agendamentos") %}checked{% endif %}> Ver Agendamentos</label>
+        <label><input type="checkbox" name="permissoes" value="criar_agendamentos" {% if p.get("criar_agendamentos") %}checked{% endif %}> Criar Agendamentos</label>
+        <label><input type="checkbox" name="permissoes" value="editar_agendamentos" {% if p.get("editar_agendamentos") %}checked{% endif %}> Editar Agendamentos</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_agendamentos" {% if p.get("excluir_agendamentos") %}checked{% endif %}> Excluir Agendamentos</label>
+        <label><input type="checkbox" name="permissoes" value="gerenciar_exames" {% if p.get("gerenciar_exames") %}checked{% endif %}> Gerenciar Exames</label>
+        <label><input type="checkbox" name="permissoes" value="gerenciar_status" {% if p.get("gerenciar_status") %}checked{% endif %}> Gerenciar Status</label>
     </div>
 
-    <div class="campo-modal">
-        <h3>Usuários e Cargos</h3>
-        <label><input type="checkbox" name="permissoes" value="ver_usuarios" {% if p.get('ver_usuarios') %}checked{% endif %}> Ver usuários</label>
-        <label><input type="checkbox" name="permissoes" value="aprovar_usuarios" {% if p.get('aprovar_usuarios') %}checked{% endif %}> Aprovar usuários</label>
-        <label><input type="checkbox" name="permissoes" value="editar_usuarios" {% if p.get('editar_usuarios') %}checked{% endif %}> Editar usuários</label>
-        <label><input type="checkbox" name="permissoes" value="excluir_usuarios" {% if p.get('excluir_usuarios') %}checked{% endif %}> Excluir usuários</label>
-        <label><input type="checkbox" name="permissoes" value="ver_cargos" {% if p.get('ver_cargos') %}checked{% endif %}> Ver cargos</label>
-        <label><input type="checkbox" name="permissoes" value="criar_cargos" {% if p.get('criar_cargos') %}checked{% endif %}> Criar cargos</label>
-        <label><input type="checkbox" name="permissoes" value="editar_cargos" {% if p.get('editar_cargos') %}checked{% endif %}> Editar cargos</label>
-        <label><input type="checkbox" name="permissoes" value="excluir_cargos" {% if p.get('excluir_cargos') %}checked{% endif %}> Excluir cargos</label>
+    <div class="grupo-permissao">
+        <h3>Usuários</h3>
+
+        <label><input type="checkbox" name="permissoes" value="ver_usuarios_cargos" {% if p.get("ver_usuarios_cargos") %}checked{% endif %}> Ver Usuários e Cargos</label>
+        <label><input type="checkbox" name="permissoes" value="ver_usuarios" {% if p.get("ver_usuarios") %}checked{% endif %}> Ver Usuários</label>
+        <label><input type="checkbox" name="permissoes" value="aprovar_usuarios" {% if p.get("aprovar_usuarios") %}checked{% endif %}> Aprovar Usuários</label>
+        <label><input type="checkbox" name="permissoes" value="editar_usuarios" {% if p.get("editar_usuarios") %}checked{% endif %}> Editar Usuários</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_usuarios" {% if p.get("excluir_usuarios") %}checked{% endif %}> Excluir Usuários</label>
     </div>
+
+    <div class="grupo-permissao">
+        <h3>Cargos</h3>
+
+        <label><input type="checkbox" name="permissoes" value="ver_cargos" {% if p.get("ver_cargos") %}checked{% endif %}> Ver Cargos</label>
+        <label><input type="checkbox" name="permissoes" value="criar_cargos" {% if p.get("criar_cargos") %}checked{% endif %}> Criar Cargos</label>
+        <label><input type="checkbox" name="permissoes" value="editar_cargos" {% if p.get("editar_cargos") %}checked{% endif %}> Editar Cargos</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_cargos" {% if p.get("excluir_cargos") %}checked{% endif %}> Excluir Cargos</label>
+    </div>
+
 </div>
