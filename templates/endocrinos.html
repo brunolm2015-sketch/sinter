@@ -128,7 +128,7 @@
 
                 <div class="campo-modal">
                     <label>Exame</label>
-                    <select name="exame_id">
+                    <select name="exame_id" class="select-bonito">
                         <option value="">Selecione</option>
                         {% for exame in exames %}
                         <option value="{{ exame.id }}" {% if ag.exame_id == exame.id %}selected{% endif %}>{{ exame.exame }}</option>
@@ -141,7 +141,7 @@
 
                 <div class="campo-modal">
                     <label>Status</label>
-                    <select name="status_id">
+                    <select name="status_id" class="select-bonito">
                         <option value="">Automático</option>
                         {% for st in status %}
                         <option value="{{ st.id }}" {% if ag.status_id == st.id %}selected{% endif %}>{{ st.nome }}</option>
@@ -196,7 +196,7 @@
 
             <div class="campo-modal">
                 <label>Exame</label>
-                <select name="exame_id">
+                <select name="exame_id" class="select-bonito">
                     <option value="">Selecione</option>
                     {% for exame in exames %}
                     <option value="{{ exame.id }}">{{ exame.exame }}</option>
@@ -209,7 +209,7 @@
 
             <div class="campo-modal">
                 <label>Status</label>
-                <select name="status_id">
+                <select name="status_id" class="select-bonito">
                     <option value="">Automático</option>
                     {% for st in status %}
                     <option value="{{ st.id }}">{{ st.nome }}</option>
@@ -251,11 +251,52 @@
 
         <div class="lista-gerenciamento-endocrino">
             {% for exame in exames %}
-            <div class="item-gerenciamento-endocrino" title="{{ exame.observacao or '' }}">
-                <strong>{{ exame.exame }}</strong>
-                <span>Sigla: {{ exame.sigla or '-' }}</span>
-                <span>Tempo médio: {{ exame.tempo_medio or '-' }}</span>
-                {% if exame.observacao %}<small>{{ exame.observacao }}</small>{% endif %}
+            <div class="item-gerenciamento-endocrino" title="{{ exame.observacao or 'Sem descrição cadastrada.' }}">
+                <div class="item-gerenciamento-topo">
+                    <div>
+                        <strong>{{ exame.exame }}</strong>
+                        <span>Sigla: {{ exame.sigla or '-' }}</span>
+                        <span>Tempo médio: {{ exame.tempo_medio or '-' }}</span>
+                    </div>
+
+                    <div class="item-gerenciamento-acoes">
+                        <button type="button" class="btn-mini-editar" onclick="abrirModal('editarExame{{ exame.id }}')" title="Editar exame">✏️</button>
+                        <form method="POST" action="/endocrinos/exame/excluir/{{ exame.id }}" onsubmit="return confirm('Deseja realmente excluir este exame?')">
+                            <button type="submit" class="btn-mini-excluir" title="Excluir exame">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editarExame{{ exame.id }}" class="modal-fundo">
+                <div class="modal-card modal-pequeno">
+                    <div class="modal-topo">
+                        <div>
+                            <h2>Editar Exame</h2>
+                            <p>Atualize as informações do exame.</p>
+                        </div>
+                        <button type="button" class="btn-fechar" onclick="fecharModal('editarExame{{ exame.id }}')">×</button>
+                    </div>
+
+                    <form method="POST" action="/endocrinos/exame/editar/{{ exame.id }}">
+                        <label>Exame</label>
+                        <input name="exame" value="{{ exame.exame or '' }}" required>
+
+                        <label>Sigla</label>
+                        <input name="sigla" value="{{ exame.sigla or '' }}">
+
+                        <label>Tempo médio</label>
+                        <input name="tempo_medio" value="{{ exame.tempo_medio or '' }}">
+
+                        <label>Descrição / observação</label>
+                        <textarea name="observacao" class="textarea-descricao-exame">{{ exame.observacao or '' }}</textarea>
+
+                        <div class="modal-botoes">
+                            <button type="button" class="btn-cancelar" onclick="fecharModal('editarExame{{ exame.id }}')">Cancelar</button>
+                            <button type="submit" class="btn-salvar">Salvar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
             {% else %}
             <div class="sem-registros">Nenhum exame cadastrado.</div>
@@ -269,7 +310,7 @@
             <div class="campo-modal"><label>Exame</label><input name="exame" required></div>
             <div class="campo-modal"><label>Sigla</label><input name="sigla"></div>
             <div class="campo-modal"><label>Tempo médio</label><input name="tempo_medio"></div>
-            <div class="campo-modal"><label>Descrição / observação</label><textarea name="observacao"></textarea></div>
+            <div class="campo-modal campo-descricao-exame"><label>Descrição / observação</label><textarea name="observacao" class="textarea-descricao-exame"></textarea></div>
             <div class="modal-botoes">
                 <button type="submit" class="btn-salvar">Salvar Exame</button>
             </div>
@@ -291,10 +332,48 @@
 
         <div class="lista-gerenciamento-endocrino">
             {% for st in status %}
-            <div class="item-gerenciamento-endocrino" title="{{ st.descricao_padrao or '' }}">
-                <strong>{{ st.nome }}</strong>
-                <span class="cor-status-lista" style="background: {{ st.cor or '#0077b6' }};"></span>
-                {% if st.descricao_padrao %}<small>{{ st.descricao_padrao }}</small>{% endif %}
+            <div class="item-gerenciamento-endocrino" title="{{ st.descricao_padrao or 'Sem descrição cadastrada.' }}">
+                <div class="item-gerenciamento-topo">
+                    <div>
+                        <strong>{{ st.nome }}</strong>
+                        <span class="cor-status-lista" style="background: {{ st.cor or '#0077b6' }};"></span>
+                    </div>
+
+                    <div class="item-gerenciamento-acoes">
+                        <button type="button" class="btn-mini-editar" onclick="abrirModal('editarStatus{{ st.id }}')" title="Editar status">✏️</button>
+                        <form method="POST" action="/endocrinos/status/excluir/{{ st.id }}" onsubmit="return confirm('Deseja realmente excluir este status?')">
+                            <button type="submit" class="btn-mini-excluir" title="Excluir status">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editarStatus{{ st.id }}" class="modal-fundo">
+                <div class="modal-card modal-pequeno">
+                    <div class="modal-topo">
+                        <div>
+                            <h2>Editar Status</h2>
+                            <p>Atualize o status.</p>
+                        </div>
+                        <button type="button" class="btn-fechar" onclick="fecharModal('editarStatus{{ st.id }}')">×</button>
+                    </div>
+
+                    <form method="POST" action="/endocrinos/status/editar/{{ st.id }}">
+                        <label>Nome</label>
+                        <input name="nome" value="{{ st.nome or '' }}" required>
+
+                        <label>Cor</label>
+                        <input name="cor" value="{{ st.cor or '' }}" placeholder="#0077b6">
+
+                        <label>Descrição padrão</label>
+                        <textarea name="descricao_padrao" class="textarea-descricao-exame">{{ st.descricao_padrao or '' }}</textarea>
+
+                        <div class="modal-botoes">
+                            <button type="button" class="btn-cancelar" onclick="fecharModal('editarStatus{{ st.id }}')">Cancelar</button>
+                            <button type="submit" class="btn-salvar">Salvar</button>
+                        </div>
+                    </form>
+                </div>
             </div>
             {% else %}
             <div class="sem-registros">Nenhum status cadastrado.</div>
@@ -307,7 +386,7 @@
         <form method="POST" action="/endocrinos/status/novo" class="form-convenio">
             <div class="campo-modal"><label>Nome</label><input name="nome" required></div>
             <div class="campo-modal"><label>Cor</label><input name="cor" placeholder="#0077b6"></div>
-            <div class="campo-modal"><label>Descrição padrão</label><textarea name="descricao_padrao"></textarea></div>
+            <div class="campo-modal campo-descricao-exame"><label>Descrição padrão</label><textarea name="descricao_padrao" class="textarea-descricao-exame"></textarea></div>
             <div class="modal-botoes">
                 <button type="submit" class="btn-salvar">Salvar Status</button>
             </div>
@@ -501,6 +580,104 @@
     border: none;
     border-top: 1px solid #e5e7eb;
     margin: 18px 0;
+}
+
+
+.select-bonito {
+    width: 100%;
+    padding: 12px 14px;
+    margin-top: 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: white;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.select-bonito:focus {
+    border-color: #0077b6;
+    box-shadow: 0 0 0 3px rgba(0,119,182,.15);
+}
+
+.item-gerenciamento-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.item-gerenciamento-topo > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.item-gerenciamento-acoes {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.item-gerenciamento-acoes form {
+    margin: 0;
+}
+
+.btn-mini-editar,
+.btn-mini-excluir {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-mini-editar {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.btn-mini-editar:hover {
+    background: #bae6fd;
+}
+
+.btn-mini-excluir {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-mini-excluir:hover {
+    background: #fecaca;
+}
+
+.campo-descricao-exame {
+    grid-column: span 2;
+}
+
+.textarea-descricao-exame {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    outline: none;
+}
+
+.textarea-descricao-exame:focus {
+    border-color: #0077b6;
+    box-shadow: 0 0 0 3px rgba(0,119,182,.15);
 }
 
 @media (max-width: 900px) {
