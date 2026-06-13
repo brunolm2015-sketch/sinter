@@ -15,7 +15,7 @@
 
 <section class="grid-reqs lista-arrastavel" id="listaReqs">
     {% for req in reqs %}
-    <div class="card-req card-arrastavel" draggable="true" data-id="{{ req.id }}">
+    <div class="card-req card-arrastavel" draggable="false" data-id="{{ req.id }}">
         {% if tem_permissao('editar_reqs') %}
         <button type="button" class="drag-card-handle" title="Clique e segure para arrastar">⋮⋮</button>
         {% endif %}
@@ -108,11 +108,11 @@
 .drag-card-handle {
     position: absolute;
     top: 10px;
-    right: 10px;
-    width: 26px;
-    height: 26px;
+    left: 10px;
+    width: 24px;
+    height: 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 7px;
     background: #e0f2fe;
     color: #0077b6;
     font-weight: 900;
@@ -146,53 +146,87 @@ function iniciarCardsArrastaveis(containerId, urlSalvar) {
     if (!container) return;
 
     let cardArrastado = null;
+    let ordemInicial = '';
 
     container.querySelectorAll('.card-arrastavel').forEach(card => {
-        card.addEventListener('dragstart', function(e) {
-            if (!e.target.closest('.drag-card-handle')) {
-                e.preventDefault();
-                return;
-            }
+        const handle = card.querySelector('.drag-card-handle');
+        card.setAttribute('draggable', 'false');
 
-            cardArrastado = this;
-            this.classList.add('arrastando');
+        if (!handle) return;
+
+        handle.addEventListener('mousedown', function() {
+            card.setAttribute('draggable', 'true');
+        });
+
+        handle.addEventListener('mouseup', function() {
+            card.setAttribute('draggable', 'false');
+        });
+
+        card.addEventListener('dragstart', function(e) {
+            if (!e.target.closest('.card-arrastavel')) return;
+
+            cardArrastado = card;
+            ordemInicial = pegarOrdemCards(container).join('|');
+            card.classList.add('arrastando');
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', this.dataset.id);
+            e.dataTransfer.setData('text/plain', card.dataset.id);
         });
 
         card.addEventListener('dragend', function() {
-            this.classList.remove('arrastando');
+            card.classList.remove('arrastando');
+            card.setAttribute('draggable', 'false');
             container.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-            salvarOrdemCards(container, urlSalvar);
-        });
 
-        card.addEventListener('dragover', function(e) {
-            e.preventDefault();
-
-            if (!cardArrastado || cardArrastado === this) return;
-
-            this.classList.add('drag-over');
-
-            const box = this.getBoundingClientRect();
-            const metade = box.left + box.width / 2;
-
-            if (e.clientX < metade) {
-                container.insertBefore(cardArrastado, this);
-            } else {
-                container.insertBefore(cardArrastado, this.nextSibling);
+            const ordemFinal = pegarOrdemCards(container).join('|');
+            if (ordemFinal !== ordemInicial) {
+                salvarOrdemCards(container, urlSalvar);
             }
-        });
 
-        card.addEventListener('dragleave', function() {
-            this.classList.remove('drag-over');
+            cardArrastado = null;
         });
+    });
+
+    container.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (!cardArrastado) return;
+
+        const cardDepois = buscarCardDepoisDoMouse(container, e.clientX, e.clientY);
+
+        if (cardDepois == null) {
+            container.appendChild(cardArrastado);
+        } else {
+            container.insertBefore(cardArrastado, cardDepois);
+        }
     });
 }
 
-function salvarOrdemCards(container, urlSalvar) {
-    const ids = Array.from(container.querySelectorAll('.card-arrastavel'))
+function buscarCardDepoisDoMouse(container, mouseX, mouseY) {
+    const cards = [...container.querySelectorAll('.card-arrastavel:not(.arrastando)')];
+
+    return cards.reduce((maisProximo, card) => {
+        const box = card.getBoundingClientRect();
+        const centroX = box.left + box.width / 2;
+        const centroY = box.top + box.height / 2;
+        const distancia = Math.hypot(mouseX - centroX, mouseY - centroY);
+
+        if (mouseY < centroY || (Math.abs(mouseY - centroY) < box.height / 2 && mouseX < centroX)) {
+            if (distancia < maisProximo.distancia) {
+                return { distancia, elemento: card };
+            }
+        }
+
+        return maisProximo;
+    }, { distancia: Number.POSITIVE_INFINITY, elemento: null }).elemento;
+}
+
+function pegarOrdemCards(container) {
+    return Array.from(container.querySelectorAll('.card-arrastavel'))
         .map(card => card.dataset.id)
         .filter(Boolean);
+}
+
+function salvarOrdemCards(container, urlSalvar) {
+    const ids = pegarOrdemCards(container);
 
     fetch(urlSalvar, {
         method: 'POST',
