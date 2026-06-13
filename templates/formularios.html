@@ -11,64 +11,97 @@
     {% endif %}
 </section>
 
-<h2 style="margin-bottom: 15px;">Formulários</h2>
+<h2 style="margin-bottom: 20px;">Formulários</h2>
 
 <section class="grid-reqs">
+
     {% for formulario in formularios %}
     <div class="card-req">
-        <h3 style="color:#0077b6; margin-bottom:12px;">{{ formulario.nome }}</h3>
 
-        <div class="info-convenio">
+        <a href="/formularios/preencher/{{ formulario.id }}" class="botao-req">
+            {{ formulario.nome }}
+        </a>
+
+        <div style="display:flex; gap:8px; margin-top:12px;">
+
             {% if tem_permissao('configurar_formularios') %}
-            <a href="/formularios/configurar/{{ formulario.id }}" class="botao-req" style="min-height:auto; padding:10px;">Configurar</a>
+            <a href="/formularios/configurar/{{ formulario.id }}?pagina=0" class="btn-card editar" title="Configurar">
+                ⚙️
+            </a>
             {% endif %}
 
             {% if tem_permissao('preencher_formularios') %}
-            <a href="/formularios/preencher/{{ formulario.id }}" class="botao-req" style="min-height:auto; padding:10px;">Preencher</a>
+            <a href="/formularios/preencher/{{ formulario.id }}" class="btn-card editar" title="Preencher">
+                📝
+            </a>
             {% endif %}
 
             {% if tem_permissao('excluir_formularios') %}
             <form method="POST" action="/formularios/excluir/{{ formulario.id }}" onsubmit="return confirm('Excluir formulário?')">
-                <button type="submit" class="btn-card excluir">🗑️</button>
+                <button type="submit" class="btn-card excluir" title="Excluir">
+                    🗑️
+                </button>
             </form>
             {% endif %}
+
         </div>
+
     </div>
     {% else %}
-    <div class="sem-registros">Nenhum formulário cadastrado.</div>
+    <div class="sem-registros">
+        Nenhum formulário cadastrado.
+    </div>
     {% endfor %}
+
 </section>
 
 {% if tem_permissao('criar_formularios') %}
 <div id="modalNovoFormulario" class="modal-fundo">
     <div class="modal-card modal-pequeno">
+
         <div class="modal-topo">
             <div>
                 <h2>Novo Formulário</h2>
-                <p>Envie um PDF para configurar perguntas.</p>
+                <p>Cadastre um novo formulário no sistema.</p>
             </div>
-            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoFormulario')">×</button>
+
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoFormulario')">
+                ×
+            </button>
         </div>
 
         <form method="POST" action="/formularios/novo" enctype="multipart/form-data">
-            <label>Nome</label>
+
+            <label>Nome do formulário</label>
             <input name="nome" required>
 
             <label>PDF</label>
             <input type="file" name="arquivo_pdf" accept="application/pdf" required>
 
             <div class="modal-botoes">
-                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoFormulario')">Cancelar</button>
-                <button type="submit" class="btn-salvar">Salvar</button>
+                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoFormulario')">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn-salvar">
+                    Salvar
+                </button>
             </div>
+
         </form>
+
     </div>
 </div>
 {% endif %}
 
 <script>
-function abrirModal(id) { document.getElementById(id).classList.add('ativo'); }
-function fecharModal(id) { document.getElementById(id).classList.remove('ativo'); }
+function abrirModal(id) {
+    document.getElementById(id).classList.add('ativo');
+}
+
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('ativo');
+}
 </script>
 
 {% endblock %}
