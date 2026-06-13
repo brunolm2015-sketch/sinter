@@ -3,191 +3,470 @@
 
 {% block conteudo %}
 
-<section class="barra-acoes">
+<section class="barra-acoes barra-usuarios-cargos">
     <div>
         <h1>Usuários e Cargos</h1>
         <p>Controle de aprovação, cargos e permissões do sistema.</p>
     </div>
 
-    {% if tem_permissao('criar_cargos') %}
-    <button type="button" onclick="abrirModal('modalNovoCargo')" class="btn-novo">+ Novo Cargo</button>
+    {% if tem_permissao('criar_cargos') or tem_permissao('ver_cargos') %}
+    <button type="button" onclick="abrirModal('modalCargos')" class="btn-novo">
+        Cargos
+    </button>
     {% endif %}
 </section>
 
 {% if tem_permissao('ver_usuarios') or tem_permissao('ver_usuarios_cargos') %}
-<h2 style="margin-bottom: 15px;">Usuários Pendentes</h2>
+<h2 class="titulo-secao">Usuários Pendentes</h2>
 
-<section class="grid-reqs">
-    {% for usuario in usuarios if usuario.status_cadastro == 'pendente' or not usuario.aprovado %}
-    <div class="card-req">
-        <h3 style="color:#0077b6;">{{ usuario.nome_completo }}</h3>
-        <p><strong>CPF:</strong> {{ usuario.cpf }}</p>
-        <p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
+<section class="lista-usuarios-cargos">
+    {% set encontrou_pendente = false %}
+
+    {% for usuario in usuarios %}
+        {% if not usuario.aprovado %}
+        {% set encontrou_pendente = true %}
+
+        <div class="card-usuario-lista card-pendente">
+            <div class="usuario-info-principal">
+                <h3>{{ usuario.nome_completo }}</h3>
+                <span class="badge-status pendente">Pendente</span>
+            </div>
+
+            <div class="usuario-info-grid">
+                <div>
+                    <strong>Cargo atual</strong>
+                    <span>{{ usuario.cargo or 'Sem cargo' }}</span>
+                </div>
+                <div>
+                    <strong>Status</strong>
+                    <span>{{ usuario.status_cadastro or 'pendente' }}</span>
+                </div>
+            </div>
+
+            <div class="usuario-acoes-lista">
+                {% if tem_permissao('aprovar_usuarios') %}
+                <button type="button" class="btn-lista btn-editar" onclick="abrirModal('aprovar{{ usuario.id }}')">
+                    Aprovar
+                </button>
+
+                <form method="POST" action="/usuarios/negar/{{ usuario.id }}" onsubmit="return confirm('Negar cadastro deste usuário?')">
+                    <button type="submit" class="btn-lista btn-excluir">
+                        Negar
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
 
         {% if tem_permissao('aprovar_usuarios') %}
-        <form method="POST" action="/usuarios/aprovar/{{ usuario.id }}">
-            <label>Cargo</label>
-            <select name="cargo_id">
-                {% for cargo_item in cargos %}
-                <option value="{{ cargo_item.id }}">{{ cargo_item.nome }}</option>
-                {% endfor %}
-            </select>
-            <input type="hidden" name="cargo_nome" value="">
-            <button type="submit" onclick="this.form.cargo_nome.value=this.form.cargo_id.options[this.form.cargo_id.selectedIndex].text">Aprovar</button>
-        </form>
+        <div id="aprovar{{ usuario.id }}" class="modal-fundo">
+            <div class="modal-card modal-pequeno">
+                <div class="modal-topo">
+                    <div>
+                        <h2>Aprovar Usuário</h2>
+                        <p>{{ usuario.nome_completo }}</p>
+                    </div>
+                    <button type="button" class="btn-fechar" onclick="fecharModal('aprovar{{ usuario.id }}')">×</button>
+                </div>
 
-        <form method="POST" action="/usuarios/negar/{{ usuario.id }}">
-            <button type="submit" class="btn-cancelar">Negar</button>
-        </form>
+                <form method="POST" action="/usuarios/aprovar/{{ usuario.id }}">
+                    <label>Cargo</label>
+                    <select name="cargo_id" class="select-bonito" required onchange="atualizarCargoNome(this)">
+                        <option value="">Selecione</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}" data-nome="{{ cargo.nome }}">{{ cargo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="cargo_nome" class="cargo-nome-hidden">
+
+                    <div class="modal-botoes">
+                        <button type="button" class="btn-cancelar" onclick="fecharModal('aprovar{{ usuario.id }}')">Cancelar</button>
+                        <button type="submit" class="btn-salvar">Aprovar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
         {% endif %}
-    </div>
-    {% else %}
+
+        {% endif %}
+    {% endfor %}
+
+    {% if not encontrou_pendente %}
     <div class="sem-registros">Nenhum usuário pendente.</div>
-    {% endfor %}
+    {% endif %}
 </section>
 
-<h2 style="margin: 25px 0 15px;">Usuários Aprovados</h2>
+<h2 class="titulo-secao">Usuários Aprovados</h2>
 
-<section class="grid-reqs">
-    {% for usuario in usuarios if usuario.aprovado %}
-    <div class="card-req">
-        {% if tem_permissao('editar_usuarios') or tem_permissao('excluir_usuarios') %}
-        <div class="acoes-card">
-            {% if tem_permissao('editar_usuarios') %}
-            <button type="button" onclick="abrirModal('editarUsuario{{ usuario.id }}')" class="btn-card editar">✏️</button>
-            {% endif %}
+<section class="lista-usuarios-cargos">
+    {% set encontrou_aprovado = false %}
 
-            {% if tem_permissao('excluir_usuarios') %}
-            <form method="POST" action="/usuarios/excluir/{{ usuario.id }}" onsubmit="return confirm('Excluir usuário?')">
-                <button type="submit" class="btn-card excluir">🗑️</button>
-            </form>
-            {% endif %}
+    {% for usuario in usuarios %}
+        {% if usuario.aprovado %}
+        {% set encontrou_aprovado = true %}
+
+        <div class="card-usuario-lista">
+            <div class="usuario-info-principal">
+                <h3>{{ usuario.nome_completo }}</h3>
+                <span class="badge-status aprovado">Aprovado</span>
+            </div>
+
+            <div class="usuario-info-grid">
+                <div>
+                    <strong>Cargo</strong>
+                    <span>{{ usuario.cargo or (usuario.cargos.nome if usuario.cargos else 'Sem cargo') }}</span>
+                </div>
+                <div>
+                    <strong>Status</strong>
+                    <span>{{ usuario.status_cadastro or 'aprovado' }}</span>
+                </div>
+            </div>
+
+            <div class="usuario-acoes-lista">
+                {% if tem_permissao('editar_usuarios') %}
+                <button type="button" class="btn-card editar" onclick="abrirModal('editarUsuario{{ usuario.id }}')" title="Editar usuário">
+                    ✏️
+                </button>
+                {% endif %}
+
+                {% if tem_permissao('excluir_usuarios') %}
+                <form method="POST" action="/usuarios/excluir/{{ usuario.id }}" onsubmit="return confirm('Excluir este usuário?')">
+                    <button type="submit" class="btn-card excluir" title="Excluir usuário">
+                        🗑️
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if tem_permissao('editar_usuarios') %}
+        <div id="editarUsuario{{ usuario.id }}" class="modal-fundo">
+            <div class="modal-card modal-pequeno">
+                <div class="modal-topo">
+                    <div>
+                        <h2>Editar Usuário</h2>
+                        <p>{{ usuario.nome_completo }}</p>
+                    </div>
+                    <button type="button" class="btn-fechar" onclick="fecharModal('editarUsuario{{ usuario.id }}')">×</button>
+                </div>
+
+                <form method="POST" action="/usuarios/editar/{{ usuario.id }}">
+                    <label>Nome completo</label>
+                    <input name="nome_completo" value="{{ usuario.nome_completo or '' }}" required>
+
+                    <label>CPF</label>
+                    <input name="cpf" value="{{ usuario.cpf or '' }}">
+
+                    <label>Cargo</label>
+                    <select name="cargo_id" class="select-bonito" onchange="atualizarCargoNome(this)">
+                        <option value="">Selecione</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.id }}" data-nome="{{ cargo.nome }}" {% if usuario.cargo_id == cargo.id %}selected{% endif %}>
+                            {{ cargo.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="cargo_nome" class="cargo-nome-hidden" value="{{ usuario.cargo or '' }}">
+
+                    <label class="check-linha">
+                        <input type="checkbox" name="aprovado" {% if usuario.aprovado %}checked{% endif %}>
+                        Usuário aprovado
+                    </label>
+
+                    <div class="modal-botoes">
+                        <button type="button" class="btn-cancelar" onclick="fecharModal('editarUsuario{{ usuario.id }}')">Cancelar</button>
+                        <button type="submit" class="btn-salvar">Salvar</button>
+                    </div>
+                </form>
+            </div>
         </div>
         {% endif %}
 
-        <h3 style="color:#0077b6;">{{ usuario.nome_completo }}</h3>
-        <p><strong>CPF:</strong> {{ usuario.cpf }}</p>
-        <p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
-        <span class="badge">Aprovado</span>
-    </div>
+        {% endif %}
+    {% endfor %}
 
-    {% if tem_permissao('editar_usuarios') %}
-    <div id="editarUsuario{{ usuario.id }}" class="modal-fundo">
-        <div class="modal-card modal-pequeno">
-            <div class="modal-topo">
-                <div><h2>Editar Usuário</h2><p>Atualize os dados do usuário.</p></div>
-                <button type="button" class="btn-fechar" onclick="fecharModal('editarUsuario{{ usuario.id }}')">×</button>
-            </div>
-
-            <form method="POST" action="/usuarios/editar/{{ usuario.id }}">
-                <label>Nome</label>
-                <input name="nome_completo" value="{{ usuario.nome_completo }}">
-
-                <label>CPF</label>
-                <input name="cpf" value="{{ usuario.cpf }}">
-
-                <label>Cargo</label>
-                <select name="cargo_id">
-                    {% for cargo_item in cargos %}
-                    <option value="{{ cargo_item.id }}" {% if usuario.cargo_id == cargo_item.id %}selected{% endif %}>{{ cargo_item.nome }}</option>
-                    {% endfor %}
-                </select>
-
-                <input type="hidden" name="cargo_nome">
-
-                <label><input type="checkbox" name="aprovado" {% if usuario.aprovado %}checked{% endif %}> Aprovado</label>
-
-                <div class="modal-botoes">
-                    <button type="button" class="btn-cancelar" onclick="fecharModal('editarUsuario{{ usuario.id }}')">Cancelar</button>
-                    <button type="submit" class="btn-salvar" onclick="this.form.cargo_nome.value=this.form.cargo_id.options[this.form.cargo_id.selectedIndex].text">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    {% endif %}
-
-    {% else %}
+    {% if not encontrou_aprovado %}
     <div class="sem-registros">Nenhum usuário aprovado.</div>
-    {% endfor %}
+    {% endif %}
 </section>
 {% endif %}
 
-{% if tem_permissao('ver_cargos') or tem_permissao('ver_usuarios_cargos') %}
-<h2 style="margin: 25px 0 15px;">Cargos</h2>
+<div id="modalCargos" class="modal-fundo">
+    <div class="modal-card modal-cargos">
+        <div class="modal-topo">
+            <div>
+                <h2>Cargos</h2>
+                <p>Gerencie os cargos e permissões do sistema.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalCargos')">×</button>
+        </div>
 
-<section class="grid-reqs">
-    {% for cargo_item in cargos %}
-    <div class="card-req">
-        {% if tem_permissao('editar_cargos') or tem_permissao('excluir_cargos') %}
-        <div class="acoes-card">
-            {% if tem_permissao('editar_cargos') %}
-            <button type="button" onclick="abrirModal('editarCargo{{ cargo_item.id }}')" class="btn-card editar">✏️</button>
-            {% endif %}
-
-            {% if tem_permissao('excluir_cargos') %}
-            <form method="POST" action="/cargos/excluir/{{ cargo_item.id }}" onsubmit="return confirm('Excluir cargo?')">
-                <button type="submit" class="btn-card excluir">🗑️</button>
-            </form>
-            {% endif %}
+        {% if tem_permissao('criar_cargos') %}
+        <div class="barra-cargos-modal">
+            <button type="button" class="btn-novo" onclick="abrirModal('modalNovoCargo')">
+                + Novo Cargo
+            </button>
         </div>
         {% endif %}
 
-        <h3 style="color:#0077b6;">{{ cargo_item.nome }}</h3>
-    </div>
+        <section class="lista-cargos-modal">
+            {% for cargo in cargos %}
+            <div class="cargo-linha-modal">
+                <strong>{{ cargo.nome }}</strong>
 
-    {% if tem_permissao('editar_cargos') %}
-    <div id="editarCargo{{ cargo_item.id }}" class="modal-fundo">
-        <div class="modal-card">
-            <div class="modal-topo">
-                <div><h2>Editar Cargo</h2><p>Configure as permissões do cargo.</p></div>
-                <button type="button" class="btn-fechar" onclick="fecharModal('editarCargo{{ cargo_item.id }}')">×</button>
-            </div>
+                <div class="acoes-cargo-modal">
+                    {% if tem_permissao('editar_cargos') %}
+                    <button type="button" class="btn-card editar" onclick="abrirModal('editarCargo{{ cargo.id }}')" title="Editar cargo">
+                        ✏️
+                    </button>
+                    {% endif %}
 
-            <form method="POST" action="/cargos/editar/{{ cargo_item.id }}">
-                <label>Nome do Cargo</label>
-                <input name="nome" value="{{ cargo_item.nome }}">
-
-                {% set p = cargo_item.permissoes or {} %}
-                {% include '_permissoes_checkboxes.html' %}
-
-                <div class="modal-botoes">
-                    <button type="button" class="btn-cancelar" onclick="fecharModal('editarCargo{{ cargo_item.id }}')">Cancelar</button>
-                    <button type="submit" class="btn-salvar">Salvar Cargo</button>
+                    {% if tem_permissao('excluir_cargos') %}
+                    <form method="POST" action="/cargos/excluir/{{ cargo.id }}" onsubmit="return confirm('Excluir este cargo?')">
+                        <button type="submit" class="btn-card excluir" title="Excluir cargo">
+                            🗑️
+                        </button>
+                    </form>
+                    {% endif %}
                 </div>
-            </form>
-        </div>
+            </div>
+            {% else %}
+            <div class="sem-registros">Nenhum cargo cadastrado.</div>
+            {% endfor %}
+        </section>
     </div>
-    {% endif %}
-
-    {% else %}
-    <div class="sem-registros">Nenhum cargo cadastrado.</div>
-    {% endfor %}
-</section>
-{% endif %}
+</div>
 
 {% if tem_permissao('criar_cargos') %}
 <div id="modalNovoCargo" class="modal-fundo">
-    <div class="modal-card">
+    <div class="modal-card modal-cargo-permissoes">
         <div class="modal-topo">
-            <div><h2>Novo Cargo</h2><p>Configure as permissões do novo cargo.</p></div>
+            <div>
+                <h2>Novo Cargo</h2>
+                <p>Cadastre um cargo e defina suas permissões.</p>
+            </div>
             <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoCargo')">×</button>
         </div>
 
         <form method="POST" action="/cargos/novo">
-            <label>Nome do Cargo</label>
+            <label>Nome do cargo</label>
             <input name="nome" required>
 
-            {% set p = {} %}
             {% include '_permissoes_checkboxes.html' %}
 
             <div class="modal-botoes">
                 <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoCargo')">Cancelar</button>
-                <button type="submit" class="btn-salvar">Salvar Cargo</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
             </div>
         </form>
     </div>
 </div>
 {% endif %}
+
+{% for cargo in cargos %}
+{% if tem_permissao('editar_cargos') %}
+<div id="editarCargo{{ cargo.id }}" class="modal-fundo">
+    <div class="modal-card modal-cargo-permissoes">
+        <div class="modal-topo">
+            <div>
+                <h2>Editar Cargo</h2>
+                <p>{{ cargo.nome }}</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('editarCargo{{ cargo.id }}')">×</button>
+        </div>
+
+        <form method="POST" action="/cargos/editar/{{ cargo.id }}">
+            <label>Nome do cargo</label>
+            <input name="nome" value="{{ cargo.nome or '' }}" required>
+
+            {% set permissoes_cargo = cargo.permissoes or {} %}
+            {% include '_permissoes_checkboxes.html' %}
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModal('editarCargo{{ cargo.id }}')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<style>
+.titulo-secao {
+    margin: 24px 0 14px 0;
+}
+
+.barra-usuarios-cargos {
+    justify-content: flex-start;
+    gap: 25px;
+}
+
+.lista-usuarios-cargos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.card-usuario-lista {
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    border-left: 6px solid #0077b6;
+    padding: 14px 18px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.06);
+    display: grid;
+    grid-template-columns: 260px 1fr auto;
+    align-items: center;
+    gap: 16px;
+}
+
+.card-pendente {
+    border-left-color: #f59e0b;
+}
+
+.usuario-info-principal h3 {
+    color: #0077b6;
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.badge-status {
+    display: inline-block;
+    font-size: 12px;
+    color: white;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-weight: bold;
+}
+
+.badge-status.aprovado {
+    background: #16a34a;
+}
+
+.badge-status.pendente {
+    background: #f59e0b;
+}
+
+.usuario-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.usuario-info-grid strong {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.usuario-info-grid span {
+    color: #111827;
+    font-size: 15px;
+}
+
+.usuario-acoes-lista {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.usuario-acoes-lista form,
+.acoes-cargo-modal form {
+    margin: 0;
+}
+
+.btn-lista {
+    width: auto;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.btn-editar {
+    background: #0077b6;
+}
+
+.btn-excluir {
+    background: #dc2626;
+}
+
+.modal-cargos {
+    width: 720px;
+}
+
+.barra-cargos-modal {
+    margin-bottom: 15px;
+}
+
+.lista-cargos-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cargo-linha-modal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-left: 5px solid #0077b6;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.cargo-linha-modal strong {
+    color: #0077b6;
+    font-size: 16px;
+}
+
+.acoes-cargo-modal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-cargo-permissoes {
+    width: 980px;
+}
+
+.select-bonito {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border: 1px solid #cfcfcf;
+    border-radius: 8px;
+    background: white;
+    outline: none;
+}
+
+.check-linha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.check-linha input {
+    width: auto;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .card-usuario-lista {
+        grid-template-columns: 1fr;
+    }
+
+    .usuario-acoes-lista {
+        justify-content: flex-start;
+    }
+}
+</style>
 
 <script>
 function abrirModal(id) {
@@ -196,6 +475,16 @@ function abrirModal(id) {
 
 function fecharModal(id) {
     document.getElementById(id).classList.remove('ativo');
+}
+
+function atualizarCargoNome(select) {
+    const option = select.options[select.selectedIndex];
+    const form = select.closest('form');
+    const hidden = form.querySelector('.cargo-nome-hidden');
+
+    if (hidden) {
+        hidden.value = option ? option.dataset.nome || option.textContent.trim() : '';
+    }
 }
 </script>
 
