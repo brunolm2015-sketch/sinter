@@ -327,6 +327,7 @@ def proteger_rotas_por_permissao():
         ("/endocrinos/status", ("gerenciar_status",)),
         ("/endocrinos/agendamento/novo", ("criar_agendamentos", "novo_agendamento", "criar_agendamento")),
         ("/endocrinos/agendamento/editar", ("editar_agendamentos", "editar_agendamento")),
+        ("/endocrinos/agendamento/finalizar", ("editar_agendamentos", "editar_agendamento")),
         ("/endocrinos/agendamento/excluir", ("excluir_agendamentos", "excluir_agendamento")),
         ("/endocrinos", ("ver_endocrinos", "ver_agendamentos")),
 
@@ -1305,6 +1306,7 @@ def endocrinos():
     agendamentos = (
         supabase.table("endocrino_agendamentos")
         .select("*, endocrino_exames(*), endocrino_status(*)")
+        .eq("finalizado", False)
         .order("data_agendamento")
         .order("horario")
         .execute()
@@ -1428,6 +1430,7 @@ def endocrino_agendamento_novo():
         "cip": request.form.get("cip"),
         "nome": request.form.get("nome"),
         "cpf": request.form.get("cpf"),
+        "celular": request.form.get("celular"),
         "data_nascimento": request.form.get("data_nascimento") or None,
         "exame_id": request.form.get("exame_id") or None,
         "data_agendamento": request.form.get("data_agendamento") or None,
@@ -1457,6 +1460,7 @@ def endocrino_agendamento_editar(agendamento_id):
         "cip": request.form.get("cip"),
         "nome": request.form.get("nome"),
         "cpf": request.form.get("cpf"),
+        "celular": request.form.get("celular"),
         "data_nascimento": request.form.get("data_nascimento") or None,
         "exame_id": request.form.get("exame_id") or None,
         "data_agendamento": request.form.get("data_agendamento") or None,
@@ -1480,6 +1484,18 @@ def endocrino_agendamento_excluir(agendamento_id):
         return redirect("/login")
 
     supabase.table("endocrino_agendamentos").delete().eq("id", agendamento_id).execute()
+
+    return redirect("/endocrinos")
+
+
+@app.route("/endocrinos/agendamento/finalizar/<agendamento_id>", methods=["POST"])
+def endocrino_agendamento_finalizar(agendamento_id):
+    if not usuario_logado():
+        return redirect("/login")
+
+    supabase.table("endocrino_agendamentos").update({
+        "finalizado": True
+    }).eq("id", agendamento_id).execute()
 
     return redirect("/endocrinos")
 
