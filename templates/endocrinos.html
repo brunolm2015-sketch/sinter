@@ -9,32 +9,46 @@
     {% endif %}
 
     {% if tem_permissao('gerenciar_exames') %}
-    <button type="button" onclick="abrirModal('modalNovoExame')" class="btn-novo">+ Exame</button>
+    <button type="button" onclick="abrirModal('modalExames')" class="btn-novo">Exames</button>
     {% endif %}
 
     {% if tem_permissao('gerenciar_status') %}
-    <button type="button" onclick="abrirModal('modalNovoStatus')" class="btn-novo">+ Status</button>
+    <button type="button" onclick="abrirModal('modalStatus')" class="btn-novo">Status</button>
     {% endif %}
 </section>
 
 {% if tem_permissao('ver_endocrinos') or tem_permissao('ver_agendamentos') %}
 <h2 class="titulo-secao-endocrino">Agendamentos</h2>
 
-<section class="lista-agendamentos">
+<section class="lista-agendamentos-endocrino">
     {% for ag in agendamentos %}
-    <div class="card-agendamento-grande">
+    <div class="card-agendamento-endocrino">
 
-        <div class="agendamento-topo">
+        <div class="agendamento-acoes-topo">
+            {% if tem_permissao('editar_agendamentos') %}
+            <button type="button" onclick="abrirModal('editarAgendamento{{ ag.id }}')" class="btn-card editar" title="Editar">
+                ✏️
+            </button>
+            {% endif %}
+
+            {% if tem_permissao('excluir_agendamentos') %}
+            <form method="POST" action="/endocrinos/agendamento/excluir/{{ ag.id }}" onsubmit="return confirm('Deseja realmente excluir este agendamento?')">
+                <button type="submit" class="btn-card excluir" title="Excluir">
+                    🗑️
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <div class="agendamento-cabecalho">
             <div>
                 <h3>{{ ag.nome }}</h3>
-                <span class="agendamento-subtitulo">
-                    {{ ag.data_agendamento or 'Sem data' }}{% if ag.horario %} às {{ ag.horario }}{% endif %}
-                </span>
+                <span>{{ ag.data_agendamento or '-' }}{% if ag.horario %} às {{ ag.horario }}{% endif %}</span>
             </div>
 
             {% if ag.endocrino_status %}
             <span
-                class="badge-status-agendamento"
+                class="badge-status-endocrino"
                 title="{{ ag.status_descricao or ag.endocrino_status.descricao_padrao or '' }}"
                 style="background: {{ ag.endocrino_status.cor or '#0077b6' }};">
                 {{ ag.endocrino_status.nome }}
@@ -42,40 +56,42 @@
             {% endif %}
         </div>
 
-        <div class="agendamento-dados">
-            <div>
-                <strong>CIP</strong>
-                <span>{{ ag.cip or '-' }}</span>
+        <div class="agendamento-blocos">
+            <div class="bloco-agendamento">
+                <h4>Informações do paciente</h4>
+                <div class="linha-dados-agendamento">
+                    <span><strong>CIP:</strong> {{ ag.cip or '-' }}</span>
+                    <span><strong>CPF:</strong> {{ ag.cpf or '-' }}</span>
+                    <span><strong>Celular:</strong> {{ ag.celular or '-' }}</span>
+                    <span><strong>Nascimento:</strong> {{ ag.data_nascimento or '-' }}</span>
+                </div>
             </div>
 
-            <div>
-                <strong>CPF</strong>
-                <span>{{ ag.cpf or '-' }}</span>
-            </div>
-
-            <div>
-                <strong>Celular</strong>
-                <span>{{ ag.celular or '-' }}</span>
-            </div>
-
-            <div>
-                <strong>Nascimento</strong>
-                <span>{{ ag.data_nascimento or '-' }}</span>
-            </div>
-
-            <div>
-                <strong>Exame</strong>
-                <span>{{ ag.endocrino_exames.exame if ag.endocrino_exames else '-' }}</span>
-            </div>
-
-            <div>
-                <strong>Horário</strong>
-                <span>{{ ag.horario or '-' }}</span>
+            <div class="bloco-agendamento">
+                <h4>Informações do agendamento</h4>
+                <div class="linha-dados-agendamento">
+                    <span><strong>Data:</strong> {{ ag.data_agendamento or '-' }}</span>
+                    <span><strong>Hora:</strong> {{ ag.horario or '-' }}</span>
+                    <span
+                        title="{% if ag.endocrino_exames %}{{ ag.endocrino_exames.observacao or '' }}{% endif %}">
+                        <strong>Exame:</strong>
+                        {{ ag.endocrino_exames.exame if ag.endocrino_exames else '-' }}
+                    </span>
+                    <span
+                        title="{% if ag.endocrino_exames %}Tempo médio: {{ ag.endocrino_exames.tempo_medio or '-' }} | Sigla: {{ ag.endocrino_exames.sigla or '-' }}{% endif %}">
+                        <strong>Detalhes:</strong>
+                        {% if ag.endocrino_exames %}
+                            {{ ag.endocrino_exames.sigla or '-' }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
             </div>
         </div>
 
         {% if anexos_por_agendamento.get(ag.id) %}
-        <div class="agendamento-anexos">
+        <div class="anexos-agendamento">
             <strong>Anexos:</strong>
             {% for anexo in anexos_por_agendamento.get(ag.id) %}
             <a href="{{ anexo.arquivo }}" target="_blank">{{ anexo.nome_arquivo }}</a>
@@ -83,27 +99,13 @@
         </div>
         {% endif %}
 
-        <div class="agendamento-acoes">
-            {% if tem_permissao('editar_agendamentos') %}
-            <button type="button" class="btn-agendamento editar" onclick="abrirModal('editarAgendamento{{ ag.id }}')">
-                ✏️ Editar
-            </button>
-
-            <form method="POST" action="/endocrinos/agendamento/finalizar/{{ ag.id }}" onsubmit="return confirm('Finalizar este agendamento? O exame sairá da lista de agendamentos.')">
-                <button type="submit" class="btn-agendamento finalizar">
-                    ✅ Finalizar
-                </button>
+        {% if tem_permissao('editar_agendamentos') %}
+        <div class="agendamento-rodape">
+            <form method="POST" action="/endocrinos/agendamento/finalizar/{{ ag.id }}" onsubmit="return confirm('Finalizar este agendamento? O exame será removido da lista de agendamentos ativos.')">
+                <button type="submit" class="btn-finalizar-agendamento">✅ Finalizar</button>
             </form>
-            {% endif %}
-
-            {% if tem_permissao('excluir_agendamentos') %}
-            <form method="POST" action="/endocrinos/agendamento/excluir/{{ ag.id }}" onsubmit="return confirm('Deseja realmente excluir este agendamento?')">
-                <button type="submit" class="btn-agendamento excluir">
-                    🗑️ Excluir
-                </button>
-            </form>
-            {% endif %}
         </div>
+        {% endif %}
     </div>
 
     {% if tem_permissao('editar_agendamentos') %}
@@ -152,9 +154,11 @@
                     <textarea name="status_descricao">{{ ag.status_descricao or '' }}</textarea>
                 </div>
 
-                <div class="campo-modal">
+                <div class="campo-modal campo-anexos-endocrino">
                     <label>Anexos</label>
-                    <input type="file" name="anexos" multiple>
+                    <div class="lista-novos-anexos"></div>
+                    <button type="button" class="btn-add-anexo" onclick="adicionarCampoAnexo(this)">+ Adicionar anexo</button>
+                    <small>O nome exibido no card será o nome informado no campo, não o nome original do arquivo.</small>
                 </div>
 
                 <div class="modal-botoes">
@@ -194,7 +198,9 @@
                 <label>Exame</label>
                 <select name="exame_id">
                     <option value="">Selecione</option>
-                    {% for exame in exames %}<option value="{{ exame.id }}">{{ exame.exame }}</option>{% endfor %}
+                    {% for exame in exames %}
+                    <option value="{{ exame.id }}">{{ exame.exame }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -205,7 +211,9 @@
                 <label>Status</label>
                 <select name="status_id">
                     <option value="">Automático</option>
-                    {% for st in status %}<option value="{{ st.id }}">{{ st.nome }}</option>{% endfor %}
+                    {% for st in status %}
+                    <option value="{{ st.id }}">{{ st.nome }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -214,9 +222,11 @@
                 <textarea name="status_descricao"></textarea>
             </div>
 
-            <div class="campo-modal">
+            <div class="campo-modal campo-anexos-endocrino">
                 <label>Anexos</label>
-                <input type="file" name="anexos" multiple>
+                <div class="lista-novos-anexos"></div>
+                <button type="button" class="btn-add-anexo" onclick="adicionarCampoAnexo(this)">+ Adicionar anexo</button>
+                <small>Você pode adicionar vários anexos e dar um nome para cada um.</small>
             </div>
 
             <div class="modal-botoes">
@@ -229,20 +239,39 @@
 {% endif %}
 
 {% if tem_permissao('gerenciar_exames') %}
-<div id="modalNovoExame" class="modal-fundo">
-    <div class="modal-card modal-pequeno">
+<div id="modalExames" class="modal-fundo">
+    <div class="modal-card">
         <div class="modal-topo">
-            <div><h2>Novo Exame</h2><p>Cadastre um novo exame.</p></div>
-            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoExame')">×</button>
+            <div>
+                <h2>Exames</h2>
+                <p>Veja os exames cadastrados e crie novos exames.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalExames')">×</button>
         </div>
-        <form method="POST" action="/endocrinos/exame/novo">
-            <label>Exame</label><input name="exame" required>
-            <label>Sigla</label><input name="sigla">
-            <label>Tempo médio</label><input name="tempo_medio">
-            <label>Observação</label><textarea name="observacao"></textarea>
+
+        <div class="lista-gerenciamento-endocrino">
+            {% for exame in exames %}
+            <div class="item-gerenciamento-endocrino" title="{{ exame.observacao or '' }}">
+                <strong>{{ exame.exame }}</strong>
+                <span>Sigla: {{ exame.sigla or '-' }}</span>
+                <span>Tempo médio: {{ exame.tempo_medio or '-' }}</span>
+                {% if exame.observacao %}<small>{{ exame.observacao }}</small>{% endif %}
+            </div>
+            {% else %}
+            <div class="sem-registros">Nenhum exame cadastrado.</div>
+            {% endfor %}
+        </div>
+
+        <hr class="separador-modal">
+
+        <h3>Novo Exame</h3>
+        <form method="POST" action="/endocrinos/exame/novo" class="form-convenio">
+            <div class="campo-modal"><label>Exame</label><input name="exame" required></div>
+            <div class="campo-modal"><label>Sigla</label><input name="sigla"></div>
+            <div class="campo-modal"><label>Tempo médio</label><input name="tempo_medio"></div>
+            <div class="campo-modal"><label>Descrição / observação</label><textarea name="observacao"></textarea></div>
             <div class="modal-botoes">
-                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoExame')">Cancelar</button>
-                <button type="submit" class="btn-salvar">Salvar</button>
+                <button type="submit" class="btn-salvar">Salvar Exame</button>
             </div>
         </form>
     </div>
@@ -250,19 +279,37 @@
 {% endif %}
 
 {% if tem_permissao('gerenciar_status') %}
-<div id="modalNovoStatus" class="modal-fundo">
-    <div class="modal-card modal-pequeno">
+<div id="modalStatus" class="modal-fundo">
+    <div class="modal-card">
         <div class="modal-topo">
-            <div><h2>Novo Status</h2><p>Cadastre um novo status.</p></div>
-            <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoStatus')">×</button>
+            <div>
+                <h2>Status</h2>
+                <p>Veja os status cadastrados e crie novos status.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalStatus')">×</button>
         </div>
-        <form method="POST" action="/endocrinos/status/novo">
-            <label>Nome</label><input name="nome" required>
-            <label>Cor</label><input name="cor" type="color" value="#0077b6">
-            <label>Descrição padrão</label><textarea name="descricao_padrao"></textarea>
+
+        <div class="lista-gerenciamento-endocrino">
+            {% for st in status %}
+            <div class="item-gerenciamento-endocrino" title="{{ st.descricao_padrao or '' }}">
+                <strong>{{ st.nome }}</strong>
+                <span class="cor-status-lista" style="background: {{ st.cor or '#0077b6' }};"></span>
+                {% if st.descricao_padrao %}<small>{{ st.descricao_padrao }}</small>{% endif %}
+            </div>
+            {% else %}
+            <div class="sem-registros">Nenhum status cadastrado.</div>
+            {% endfor %}
+        </div>
+
+        <hr class="separador-modal">
+
+        <h3>Novo Status</h3>
+        <form method="POST" action="/endocrinos/status/novo" class="form-convenio">
+            <div class="campo-modal"><label>Nome</label><input name="nome" required></div>
+            <div class="campo-modal"><label>Cor</label><input name="cor" placeholder="#0077b6"></div>
+            <div class="campo-modal"><label>Descrição padrão</label><textarea name="descricao_padrao"></textarea></div>
             <div class="modal-botoes">
-                <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovoStatus')">Cancelar</button>
-                <button type="submit" class="btn-salvar">Salvar</button>
+                <button type="submit" class="btn-salvar">Salvar Status</button>
             </div>
         </form>
     </div>
@@ -274,138 +321,201 @@
     margin-bottom: 15px;
 }
 
-.lista-agendamentos {
-    width: 100%;
+.lista-agendamentos-endocrino {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-}
-
-.card-agendamento-grande {
-    width: 100%;
-    background: #fff;
-    border-radius: 18px;
-    padding: 20px;
-    border-top: 5px solid #0077b6;
-    box-shadow: 0 8px 22px rgba(0,0,0,.08);
-}
-
-.agendamento-topo {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 18px;
-}
-
-.agendamento-topo h3 {
-    color: #0077b6;
-    font-size: 24px;
-    margin: 0;
-}
-
-.agendamento-subtitulo {
-    display: block;
-    margin-top: 4px;
-    color: #64748b;
-    font-weight: 600;
-}
-
-.badge-status-agendamento {
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 999px;
-    font-weight: 800;
-    min-width: 120px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,.15);
-}
-
-.agendamento-dados {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
 }
 
-.agendamento-dados div {
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px;
+.card-agendamento-endocrino {
+    width: 100%;
+    background: white;
+    border-radius: 16px;
+    padding: 14px 18px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    border-left: 6px solid #0077b6;
+    position: relative;
 }
 
-.agendamento-dados strong {
-    display: block;
-    color: #0f172a;
-    margin-bottom: 4px;
-}
-
-.agendamento-dados span {
-    color: #334155;
-}
-
-.agendamento-anexos {
-    margin-top: 15px;
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 12px;
-}
-
-.agendamento-anexos a {
-    display: inline-block;
-    margin-left: 8px;
-}
-
-.agendamento-acoes {
-    margin-top: 18px;
+.agendamento-acoes-topo {
+    position: absolute;
+    top: 12px;
+    right: 14px;
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
 }
 
-.agendamento-acoes form {
+.agendamento-acoes-topo form {
     margin: 0;
 }
 
-.btn-agendamento {
+.agendamento-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding-right: 90px;
+    margin-bottom: 10px;
+}
+
+.agendamento-cabecalho h3 {
+    color: #0077b6;
+    font-size: 22px;
+    margin-bottom: 3px;
+}
+
+.agendamento-cabecalho span {
+    color: #475569;
+    font-size: 14px;
+}
+
+.badge-status-endocrino {
+    color: white !important;
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 13px !important;
+    min-width: 100px;
+    text-align: center;
+}
+
+.agendamento-blocos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.bloco-agendamento h4 {
+    color: #0f172a;
+    font-size: 15px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 5px;
+}
+
+.linha-dados-agendamento {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px 16px;
+    font-size: 14px;
+}
+
+.linha-dados-agendamento span {
+    line-height: 1.35;
+}
+
+.anexos-agendamento {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    font-size: 13px;
+}
+
+.anexos-agendamento a {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 5px 8px;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.agendamento-rodape {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-finalizar-agendamento {
     width: auto;
     margin-top: 0;
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-weight: 800;
+    padding: 7px 12px;
+    background: #15803d;
+    border-radius: 8px;
+    font-size: 13px;
 }
 
-.btn-agendamento.editar {
-    background: #0077b6;
+.btn-finalizar-agendamento:hover {
+    background: #166534;
 }
 
-.btn-agendamento.finalizar {
-    background: #16a34a;
+.campo-anexos-endocrino {
+    grid-column: span 2;
 }
 
-.btn-agendamento.excluir {
+.linha-anexo-endocrino {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+.btn-add-anexo,
+.btn-remover-anexo {
+    width: auto;
+    margin-top: 8px;
+    padding: 9px 12px;
+    border-radius: 8px;
+}
+
+.btn-remover-anexo {
     background: #dc2626;
 }
 
-.btn-agendamento:hover {
-    opacity: .9;
+.lista-gerenciamento-endocrino {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
 }
 
-.campo-modal select,
-.campo-modal textarea {
-    width: 100%;
+.item-gerenciamento-endocrino {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
     padding: 12px;
-    margin-top: 6px;
-    border: 1px solid #cfcfcf;
-    border-radius: 8px;
-    outline: none;
-    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
-.campo-modal textarea {
-    min-height: 90px;
-    resize: vertical;
+.item-gerenciamento-endocrino strong {
+    color: #0077b6;
+}
+
+.item-gerenciamento-endocrino small {
+    color: #475569;
+}
+
+.cor-status-lista {
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    display: block;
+}
+
+.separador-modal {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 18px 0;
+}
+
+@media (max-width: 900px) {
+    .agendamento-blocos {
+        grid-template-columns: 1fr;
+    }
+
+    .agendamento-cabecalho {
+        flex-direction: column;
+        padding-right: 80px;
+    }
+
+    .linha-anexo-endocrino {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 
@@ -416,6 +526,27 @@ function abrirModal(id) {
 
 function fecharModal(id) {
     document.getElementById(id).classList.remove('ativo');
+}
+
+function adicionarCampoAnexo(botao) {
+    const container = botao.closest('.campo-anexos-endocrino').querySelector('.lista-novos-anexos');
+
+    const linha = document.createElement('div');
+    linha.className = 'linha-anexo-endocrino';
+
+    linha.innerHTML = `
+        <div>
+            <label>Nome do anexo</label>
+            <input type="text" name="nomes_anexos" placeholder="Ex: Pedido médico">
+        </div>
+        <div>
+            <label>Arquivo</label>
+            <input type="file" name="anexos">
+        </div>
+        <button type="button" class="btn-remover-anexo" onclick="this.closest('.linha-anexo-endocrino').remove()">Remover</button>
+    `;
+
+    container.appendChild(linha);
 }
 </script>
 
