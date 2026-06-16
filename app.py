@@ -490,6 +490,24 @@ def salvar_anexos_endocrino(arquivos, nomes_anexos, agendamento_id):
             }).execute()
 
 
+def proxima_ordem_tabela(nome_tabela):
+    try:
+        resultado = (
+            supabase.table(nome_tabela)
+            .select("ordem")
+            .order("ordem", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if resultado.data and resultado.data[0].get("ordem") is not None:
+            return int(resultado.data[0].get("ordem") or 0) + 1
+    except Exception as erro:
+        print(f"Erro ao calcular próxima ordem de {nome_tabela}:", erro)
+
+    return 1
+
+
 def contar_agendamentos_endocrino_no_dia(data_agendamento, ignorar_id=None):
     if not data_agendamento:
         return 0
@@ -758,7 +776,13 @@ def convenios():
     if not usuario_logado():
         return redirect("/login")
 
-    resultado = supabase.table("convenios").select("*").order("criado_em", desc=True).execute()
+    resultado = (
+        supabase.table("convenios")
+        .select("*")
+        .order("ordem")
+        .order("criado_em", desc=True)
+        .execute()
+    )
 
     return render_template(
         "convenios.html",
@@ -792,6 +816,7 @@ def novo_convenio():
         "imagem": imagem_path,
         "imagem_ativo": "imagem_ativo" in request.form,
         "link_site": request.form.get("link_site"),
+        "ordem": proxima_ordem_tabela("convenios"),
         "criado_por": session.get("usuario_id")
     }
 
@@ -836,6 +861,21 @@ def excluir_convenio(convenio_id):
 
     supabase.table("convenios").delete().eq("id", convenio_id).execute()
     return redirect("/convenios")
+
+
+@app.route("/convenios/reordenar", methods=["POST"])
+def reordenar_convenios():
+    if not usuario_logado():
+        return redirect("/login")
+
+    dados = request.get_json(silent=True) or {}
+    ids = dados.get("ids") or []
+
+    for posicao, convenio_id in enumerate(ids, start=1):
+        if convenio_id:
+            supabase.table("convenios").update({"ordem": posicao}).eq("id", convenio_id).execute()
+
+    return ("", 204)
 
 
 @app.route("/reqs-formularios")
