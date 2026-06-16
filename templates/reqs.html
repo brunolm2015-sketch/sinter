@@ -32,15 +32,15 @@
         </div>
         {% endif %}
 
-        {% set icone_req = req.icone or 'documento.svg' %}
+        {% set icone_req = (req.icone or 'documento.png')|replace('.svg', '.png') %}
         {% if req.link %}
         <a href="{{ req.link }}" target="_blank" class="botao-req botao-req-com-icone">
-            <img src="/static/img/req_icons/{{ icone_req }}" class="req-icone-img" alt="">
+            <img src="/static/img/req_icons/{{ icone_req }}" class="req-icone-img" alt="" onerror="this.src='/static/img/req_icons/documento.png'">
             <span>{{ req.nome }}</span>
         </a>
         {% else %}
         <div class="botao-req botao-req-com-icone">
-            <img src="/static/img/req_icons/{{ icone_req }}" class="req-icone-img" alt="">
+            <img src="/static/img/req_icons/{{ icone_req }}" class="req-icone-img" alt="" onerror="this.src='/static/img/req_icons/documento.png'">
             <span>{{ req.nome }}</span>
         </div>
         {% endif %}
@@ -64,66 +64,462 @@
                 <label>Link</label>
                 <input name="link" value="{{ req.link or '' }}">
 
-                <input type="hidden" name="icone" class="input-icone-req" value="{{ req.icone or 'documento.svg' }}">
+                <input type="hidden" name="icone" class="input-icone-req" value="{{ (req.icone or 'documento.png')|replace('.svg', '.png') }}">
                 <label>Ícone do botão</label>
                 <input type="text" class="pesquisa-icone" placeholder="Pesquisar ícone: urina, sangue, fezes, vacina..." oninput="filtrarIconesReq(this)">
 
                 <div class="grade-icones-req">
-                    <button type="button" class="icone-opcao" data-icone="documento.svg" data-termos="documento papel requerimento pedido sem pedido responsabilidade" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/documento.svg" alt="Documento">
-    <span>Documento</span>
-</button>
-<button type="button" class="icone-opcao" data-icone="urina.svg" data-termos="urina masculino feminino unidade residencia 24 horas" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/urina.svg" alt="Urina">
-    <span>Urina</span>
-</button>
-<button type="button" class="icone-opcao" data-icone="fezes.svg" data-termos="fezes cultura parasitologico calprotectina coprologico" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/fezes.svg" alt="Fezes">
-    <span>Fezes</span>
-</button>
-<button type="button" class="icone-opcao" data-icone="sangue.svg" data-termos="sangue oculto exame coleta" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/sangue.svg" alt="Sangue">
+<button type="button" class="icone-opcao" data-icone="sangue.png" data-termos="sangue medico sangue" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sangue.png" alt="Sangue" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Sangue</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="vacina.svg" data-termos="vacina formulario imunizacao" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/vacina.svg" alt="Vacina">
-    <span>Vacina</span>
+<button type="button" class="icone-opcao" data-icone="hemograma.png" data-termos="hemograma medico hemograma" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hemograma.png" alt="Hemograma" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hemograma</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="dna.svg" data-termos="dna genetica genera cariotipo banda g" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/dna.svg" alt="DNA">
-    <span>DNA</span>
+<button type="button" class="icone-opcao" data-icone="coleta_sangue.png" data-termos="coleta sangue medico coleta sangue" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coleta_sangue.png" alt="Coleta sangue" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coleta sangue</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="tubo.svg" data-termos="tubo exame laboratorio strepto coleta" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/tubo.svg" alt="Tubo">
-    <span>Tubo</span>
+<button type="button" class="icone-opcao" data-icone="bioquimica.png" data-termos="bioquímica medico bioquimica" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/bioquimica.png" alt="Bioquímica" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Bioquímica</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="saliva.svg" data-termos="salivar saliva boca" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/saliva.svg" alt="Saliva">
-    <span>Saliva</span>
+<button type="button" class="icone-opcao" data-icone="glicose.png" data-termos="glicose medico glicose" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/glicose.png" alt="Glicose" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Glicose</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="hormonio.svg" data-termos="hormonio endocrino psa serotonina tireoide" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/hormonio.svg" alt="Hormônio">
-    <span>Hormônio</span>
+<button type="button" class="icone-opcao" data-icone="colesterol.png" data-termos="colesterol medico colesterol" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/colesterol.png" alt="Colesterol" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Colesterol</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="cultura.svg" data-termos="cultura secrecao bacterias microbiologia" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/cultura.svg" alt="Cultura">
-    <span>Cultura</span>
+<button type="button" class="icone-opcao" data-icone="triglicerideos.png" data-termos="triglicerídeos medico triglicerideos" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/triglicerideos.png" alt="Triglicerídeos" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Triglicerídeos</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="toxico.svg" data-termos="toxicologico drogas urina toxico" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/toxico.svg" alt="Toxicológico">
+<button type="button" class="icone-opcao" data-icone="hormonios.png" data-termos="hormônios medico hormonios" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hormonios.png" alt="Hormônios" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hormônios</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="beta_hcg.png" data-termos="beta hcg medico beta hcg" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/beta_hcg.png" alt="Beta HCG" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Beta HCG</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tsh.png" data-termos="tsh medico tsh" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tsh.png" alt="TSH" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>TSH</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vitamina_d.png" data-termos="vitamina d medico vitamina d" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vitamina_d.png" alt="Vitamina D" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vitamina D</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ferro_ferritina.png" data-termos="ferritina medico ferro ferritina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ferro_ferritina.png" alt="Ferritina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Ferritina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="coagulograma.png" data-termos="coagulo medico coagulograma" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coagulograma.png" alt="Coagulo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coagulo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="plaquetas.png" data-termos="plaquetas medico plaquetas" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/plaquetas.png" alt="Plaquetas" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Plaquetas</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="anemia.png" data-termos="anemia medico anemia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/anemia.png" alt="Anemia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Anemia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina.png" data-termos="urina medico urina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina.png" alt="Urina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_24h.png" data-termos="urina 24h medico urina 24h" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_24h.png" alt="Urina 24h" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina 24h</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_feminina.png" data-termos="urina feminina medico urina feminina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_feminina.png" alt="Urina feminina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina feminina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_masculina.png" data-termos="urina masculina medico urina masculina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_masculina.png" alt="Urina masculina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina masculina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urocultura.png" data-termos="urocultura medico urocultura" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urocultura.png" alt="Urocultura" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urocultura</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_tipo_1.png" data-termos="urina tipo 1 medico urina tipo 1" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_tipo_1.png" alt="Urina tipo 1" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina tipo 1</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sedimento_urina.png" data-termos="sedimento medico sedimento urina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sedimento_urina.png" alt="Sedimento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Sedimento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tox_orina.png" data-termos="toxicológico medico tox orina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tox_orina.png" alt="Toxicológico" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Toxicológico</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="sexo.svg" data-termos="sexagem masculino feminino sexo" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/sexo.svg" alt="Sexagem">
+<button type="button" class="icone-opcao" data-icone="proteinuria.png" data-termos="proteinúria medico proteinuria" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/proteinuria.png" alt="Proteinúria" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Proteinúria</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="clearance_creatinina.png" data-termos="clearance medico clearance creatinina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/clearance_creatinina.png" alt="Clearance" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Clearance</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="fezes.png" data-termos="fezes medico fezes" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/fezes.png" alt="Fezes" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Fezes</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cultura_fezes.png" data-termos="cultura fezes medico cultura fezes" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cultura_fezes.png" alt="Cultura fezes" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cultura fezes</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="parasitologico.png" data-termos="parasitológico medico parasitologico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/parasitologico.png" alt="Parasitológico" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Parasitológico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sangue_oculto.png" data-termos="sangue oculto medico sangue oculto" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sangue_oculto.png" alt="Sangue oculto" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Sangue oculto</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="calprotectina.png" data-termos="calprotectina medico calprotectina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/calprotectina.png" alt="Calprotectina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Calprotectina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="coprologico.png" data-termos="coprológico medico coprologico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coprologico.png" alt="Coprológico" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coprológico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="rotavirus.png" data-termos="rotavírus medico rotavirus" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/rotavirus.png" alt="Rotavírus" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Rotavírus</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="gordura_fecal.png" data-termos="gordura fecal medico gordura fecal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/gordura_fecal.png" alt="Gordura fecal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gordura fecal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ph_fecal.png" data-termos="ph fecal medico ph fecal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ph_fecal.png" alt="pH fecal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>pH fecal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="dna.png" data-termos="dna medico dna" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/dna.png" alt="DNA" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>DNA</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cariotipo.png" data-termos="cariótipo medico cariotipo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cariotipo.png" alt="Cariótipo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cariótipo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="genetica.png" data-termos="genética medico genetica" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/genetica.png" alt="Genética" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Genética</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ancestralidade.png" data-termos="ancestralidade medico ancestralidade" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ancestralidade.png" alt="Ancestralidade" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Ancestralidade</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="genero_fetal.png" data-termos="gênero fetal medico genero fetal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/genero_fetal.png" alt="Gênero fetal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gênero fetal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sequenciamento.png" data-termos="sequenciamento medico sequenciamento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sequenciamento.png" alt="Sequenciamento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Sequenciamento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pcr.png" data-termos="pcr medico pcr" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pcr.png" alt="PCR" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>PCR</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="farmacogenetica.png" data-termos="farmacogenética medico farmacogenetica" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/farmacogenetica.png" alt="Farmacogenética" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Farmacogenética</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="mutacao.png" data-termos="mutação medico mutacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/mutacao.png" alt="Mutação" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Mutação</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="gene.png" data-termos="gene medico gene" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/gene.png" alt="Gene" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gene</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vacina.png" data-termos="vacina medico vacina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vacina.png" alt="Vacina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vacina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="calendario_vacinal.png" data-termos="calendário vacinal medico calendario vacinal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/calendario_vacinal.png" alt="Calendário vacinal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Calendário vacinal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="imunizacao.png" data-termos="imunização medico imunizacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/imunizacao.png" alt="Imunização" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Imunização</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="gripe.png" data-termos="gripe medico gripe" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/gripe.png" alt="Gripe" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gripe</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="covid.png" data-termos="covid medico covid" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/covid.png" alt="Covid" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Covid</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hepatite.png" data-termos="hepatite medico hepatite" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hepatite.png" alt="Hepatite" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hepatite</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="febre_amarela.png" data-termos="febre amarela medico febre amarela" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/febre_amarela.png" alt="Febre amarela" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Febre amarela</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hpv.png" data-termos="hpv medico hpv" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hpv.png" alt="HPV" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>HPV</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vacina_infantil.png" data-termos="vacina infantil medico vacina infantil" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vacina_infantil.png" alt="Vacina infantil" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vacina infantil</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="documento.png" data-termos="documento medico documento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/documento.png" alt="Documento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Documento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="formulario.png" data-termos="formulário medico formulario" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/formulario.png" alt="Formulário" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Formulário</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="req.png" data-termos="req medico req" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/req.png" alt="REQ" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>REQ</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="responsabilidade_financeira.png" data-termos="resp. financeira medico responsabilidade financeira" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/responsabilidade_financeira.png" alt="Resp. financeira" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Resp. financeira</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="termo.png" data-termos="termo medico termo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/termo.png" alt="Termo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Termo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="consentimento.png" data-termos="consentimento medico consentimento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/consentimento.png" alt="Consentimento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Consentimento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="autorizacao.png" data-termos="autorização medico autorizacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/autorizacao.png" alt="Autorização" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Autorização</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cadastro.png" data-termos="cadastro medico cadastro" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cadastro.png" alt="Cadastro" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cadastro</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pedido_medico.png" data-termos="pedido médico medico pedido medico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pedido_medico.png" alt="Pedido médico" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Pedido médico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="laudo.png" data-termos="laudo medico laudo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/laudo.png" alt="Laudo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Laudo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="protocolo.png" data-termos="protocolo medico protocolo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/protocolo.png" alt="Protocolo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Protocolo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="contrato.png" data-termos="contrato medico contrato" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/contrato.png" alt="Contrato" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Contrato</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="laboratorio.png" data-termos="laboratório medico laboratorio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/laboratorio.png" alt="Laboratório" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Laboratório</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="microscopio.png" data-termos="microscópio medico microscopio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/microscopio.png" alt="Microscópio" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Microscópio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tubo_ensaio.png" data-termos="tubo ensaio medico tubo ensaio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tubo_ensaio.png" alt="Tubo ensaio" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Tubo ensaio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="amostra.png" data-termos="amostra medico amostra" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/amostra.png" alt="Amostra" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Amostra</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="centrifuga.png" data-termos="centrífuga medico centrifuga" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/centrifuga.png" alt="Centrífuga" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Centrífuga</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="geladeira.png" data-termos="geladeira medico geladeira" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/geladeira.png" alt="Geladeira" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Geladeira</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="transporte.png" data-termos="transporte medico transporte" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/transporte.png" alt="Transporte" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Transporte</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="coleta.png" data-termos="coleta medico coleta" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coleta.png" alt="Coleta" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coleta</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="swab.png" data-termos="swab medico swab" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/swab.png" alt="Swab" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Swab</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="saliva.png" data-termos="saliva medico saliva" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/saliva.png" alt="Saliva" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Saliva</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="secrecao.png" data-termos="secreção medico secrecao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/secrecao.png" alt="Secreção" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Secreção</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cultura.png" data-termos="cultura medico cultura" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cultura.png" alt="Cultura" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cultura</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="bacteria.png" data-termos="bactéria medico bacteria" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/bacteria.png" alt="Bactéria" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Bactéria</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="fungos.png" data-termos="fungos medico fungos" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/fungos.png" alt="Fungos" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Fungos</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="virus.png" data-termos="vírus medico virus" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/virus.png" alt="Vírus" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vírus</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="endocrino.png" data-termos="endócrino medico endocrino" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/endocrino.png" alt="Endócrino" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Endócrino</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="psa.png" data-termos="psa medico psa" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/psa.png" alt="PSA" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>PSA</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sexagem.png" data-termos="sexagem medico sexagem" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sexagem.png" alt="Sexagem" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Sexagem</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="esperma.svg" data-termos="espermograma esperma fertilidade" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/esperma.svg" alt="Espermograma">
+<button type="button" class="icone-opcao" data-icone="strepto.png" data-termos="strepto medico strepto" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/strepto.png" alt="Strepto" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Strepto</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="serotonina.png" data-termos="serotonina medico serotonina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/serotonina.png" alt="Serotonina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Serotonina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="salivar.png" data-termos="salivar medico salivar" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/salivar.png" alt="Salivar" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Salivar</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="esperma.png" data-termos="espermograma medico esperma" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/esperma.png" alt="Espermograma" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Espermograma</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="nps.svg" data-termos="nps pesquisa satisfacao" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/nps.svg" alt="NPS">
-    <span>NPS</span>
+<button type="button" class="icone-opcao" data-icone="alergia.png" data-termos="alergia medico alergia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/alergia.png" alt="Alergia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Alergia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="respiratorio.png" data-termos="respiratório medico respiratorio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/respiratorio.png" alt="Respiratório" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Respiratório</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cardiologia.png" data-termos="cardiologia medico cardiologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cardiologia.png" alt="Cardiologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cardiologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="neurologia.png" data-termos="neurologia medico neurologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/neurologia.png" alt="Neurologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Neurologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pediatria.png" data-termos="pediatria medico pediatria" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pediatria.png" alt="Pediatria" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Pediatria</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ginecologia.png" data-termos="ginecologia medico ginecologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ginecologia.png" alt="Ginecologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Ginecologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urologia.png" data-termos="urologia medico urologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urologia.png" alt="Urologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="renal.png" data-termos="renal medico renal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/renal.png" alt="Renal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Renal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hepatico.png" data-termos="hepático medico hepatico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hepatico.png" alt="Hepático" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hepático</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tireoide.png" data-termos="tireoide medico tireoide" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tireoide.png" alt="Tireoide" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Tireoide</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="inflamacao.png" data-termos="inflamação medico inflamacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/inflamacao.png" alt="Inflamação" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Inflamação</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="marcador_tumoral.png" data-termos="marcador tumoral medico marcador tumoral" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/marcador_tumoral.png" alt="Marcador tumoral" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Marcador tumoral</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="atendimento.png" data-termos="atendimento medico atendimento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/atendimento.png" alt="Atendimento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Atendimento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="whatsapp.png" data-termos="whatsapp medico whatsapp" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/whatsapp.png" alt="WhatsApp" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>WhatsApp</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="agenda.png" data-termos="agenda medico agenda" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/agenda.png" alt="Agenda" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Agenda</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="horario.png" data-termos="horário medico horario" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/horario.png" alt="Horário" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Horário</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="retorno.png" data-termos="retorno medico retorno" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/retorno.png" alt="Retorno" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Retorno</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pendente.png" data-termos="pendente medico pendente" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pendente.png" alt="Pendente" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Pendente</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urgente.png" data-termos="urgente medico urgente" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urgente.png" alt="Urgente" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urgente</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="convenio.png" data-termos="convênio medico convenio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/convenio.png" alt="Convênio" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Convênio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="carteirinha.png" data-termos="carteirinha medico carteirinha" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/carteirinha.png" alt="Carteirinha" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Carteirinha</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="recepcao.png" data-termos="recepção medico recepcao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/recepcao.png" alt="Recepção" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Recepção</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="financeiro.png" data-termos="financeiro medico financeiro" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/financeiro.png" alt="Financeiro" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Financeiro</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="senha.png" data-termos="senha medico senha" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/senha.png" alt="Senha" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Senha</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="link.png" data-termos="link medico link" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/link.png" alt="Link" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Link</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="impressao.png" data-termos="impressão medico impressao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/impressao.png" alt="Impressão" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Impressão</span>
 </button>
                 </div>
 
@@ -159,70 +555,466 @@
             <label>Link</label>
             <input name="link">
 
-            <input type="hidden" name="icone" class="input-icone-req" value="documento.svg">
+            <input type="hidden" name="icone" class="input-icone-req" value="documento.png">
             <label>Ícone do botão</label>
             <input type="text" class="pesquisa-icone" placeholder="Pesquisar ícone: urina, sangue, fezes, vacina..." oninput="filtrarIconesReq(this)">
 
             <div class="grade-icones-req">
-                <button type="button" class="icone-opcao" data-icone="documento.svg" data-termos="documento papel requerimento pedido sem pedido responsabilidade" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/documento.svg" alt="Documento">
-    <span>Documento</span>
-</button>
-<button type="button" class="icone-opcao" data-icone="urina.svg" data-termos="urina masculino feminino unidade residencia 24 horas" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/urina.svg" alt="Urina">
-    <span>Urina</span>
-</button>
-<button type="button" class="icone-opcao" data-icone="fezes.svg" data-termos="fezes cultura parasitologico calprotectina coprologico" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/fezes.svg" alt="Fezes">
-    <span>Fezes</span>
-</button>
-<button type="button" class="icone-opcao" data-icone="sangue.svg" data-termos="sangue oculto exame coleta" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/sangue.svg" alt="Sangue">
+<button type="button" class="icone-opcao" data-icone="sangue.png" data-termos="sangue medico sangue" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sangue.png" alt="Sangue" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Sangue</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="vacina.svg" data-termos="vacina formulario imunizacao" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/vacina.svg" alt="Vacina">
-    <span>Vacina</span>
+<button type="button" class="icone-opcao" data-icone="hemograma.png" data-termos="hemograma medico hemograma" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hemograma.png" alt="Hemograma" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hemograma</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="dna.svg" data-termos="dna genetica genera cariotipo banda g" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/dna.svg" alt="DNA">
-    <span>DNA</span>
+<button type="button" class="icone-opcao" data-icone="coleta_sangue.png" data-termos="coleta sangue medico coleta sangue" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coleta_sangue.png" alt="Coleta sangue" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coleta sangue</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="tubo.svg" data-termos="tubo exame laboratorio strepto coleta" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/tubo.svg" alt="Tubo">
-    <span>Tubo</span>
+<button type="button" class="icone-opcao" data-icone="bioquimica.png" data-termos="bioquímica medico bioquimica" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/bioquimica.png" alt="Bioquímica" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Bioquímica</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="saliva.svg" data-termos="salivar saliva boca" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/saliva.svg" alt="Saliva">
-    <span>Saliva</span>
+<button type="button" class="icone-opcao" data-icone="glicose.png" data-termos="glicose medico glicose" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/glicose.png" alt="Glicose" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Glicose</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="hormonio.svg" data-termos="hormonio endocrino psa serotonina tireoide" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/hormonio.svg" alt="Hormônio">
-    <span>Hormônio</span>
+<button type="button" class="icone-opcao" data-icone="colesterol.png" data-termos="colesterol medico colesterol" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/colesterol.png" alt="Colesterol" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Colesterol</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="cultura.svg" data-termos="cultura secrecao bacterias microbiologia" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/cultura.svg" alt="Cultura">
-    <span>Cultura</span>
+<button type="button" class="icone-opcao" data-icone="triglicerideos.png" data-termos="triglicerídeos medico triglicerideos" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/triglicerideos.png" alt="Triglicerídeos" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Triglicerídeos</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="toxico.svg" data-termos="toxicologico drogas urina toxico" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/toxico.svg" alt="Toxicológico">
+<button type="button" class="icone-opcao" data-icone="hormonios.png" data-termos="hormônios medico hormonios" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hormonios.png" alt="Hormônios" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hormônios</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="beta_hcg.png" data-termos="beta hcg medico beta hcg" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/beta_hcg.png" alt="Beta HCG" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Beta HCG</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tsh.png" data-termos="tsh medico tsh" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tsh.png" alt="TSH" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>TSH</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vitamina_d.png" data-termos="vitamina d medico vitamina d" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vitamina_d.png" alt="Vitamina D" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vitamina D</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ferro_ferritina.png" data-termos="ferritina medico ferro ferritina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ferro_ferritina.png" alt="Ferritina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Ferritina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="coagulograma.png" data-termos="coagulo medico coagulograma" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coagulograma.png" alt="Coagulo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coagulo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="plaquetas.png" data-termos="plaquetas medico plaquetas" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/plaquetas.png" alt="Plaquetas" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Plaquetas</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="anemia.png" data-termos="anemia medico anemia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/anemia.png" alt="Anemia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Anemia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina.png" data-termos="urina medico urina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina.png" alt="Urina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_24h.png" data-termos="urina 24h medico urina 24h" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_24h.png" alt="Urina 24h" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina 24h</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_feminina.png" data-termos="urina feminina medico urina feminina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_feminina.png" alt="Urina feminina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina feminina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_masculina.png" data-termos="urina masculina medico urina masculina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_masculina.png" alt="Urina masculina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina masculina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urocultura.png" data-termos="urocultura medico urocultura" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urocultura.png" alt="Urocultura" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urocultura</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urina_tipo_1.png" data-termos="urina tipo 1 medico urina tipo 1" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urina_tipo_1.png" alt="Urina tipo 1" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urina tipo 1</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sedimento_urina.png" data-termos="sedimento medico sedimento urina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sedimento_urina.png" alt="Sedimento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Sedimento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tox_orina.png" data-termos="toxicológico medico tox orina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tox_orina.png" alt="Toxicológico" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Toxicológico</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="sexo.svg" data-termos="sexagem masculino feminino sexo" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/sexo.svg" alt="Sexagem">
+<button type="button" class="icone-opcao" data-icone="proteinuria.png" data-termos="proteinúria medico proteinuria" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/proteinuria.png" alt="Proteinúria" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Proteinúria</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="clearance_creatinina.png" data-termos="clearance medico clearance creatinina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/clearance_creatinina.png" alt="Clearance" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Clearance</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="fezes.png" data-termos="fezes medico fezes" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/fezes.png" alt="Fezes" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Fezes</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cultura_fezes.png" data-termos="cultura fezes medico cultura fezes" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cultura_fezes.png" alt="Cultura fezes" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cultura fezes</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="parasitologico.png" data-termos="parasitológico medico parasitologico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/parasitologico.png" alt="Parasitológico" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Parasitológico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sangue_oculto.png" data-termos="sangue oculto medico sangue oculto" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sangue_oculto.png" alt="Sangue oculto" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Sangue oculto</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="calprotectina.png" data-termos="calprotectina medico calprotectina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/calprotectina.png" alt="Calprotectina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Calprotectina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="coprologico.png" data-termos="coprológico medico coprologico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coprologico.png" alt="Coprológico" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coprológico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="rotavirus.png" data-termos="rotavírus medico rotavirus" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/rotavirus.png" alt="Rotavírus" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Rotavírus</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="gordura_fecal.png" data-termos="gordura fecal medico gordura fecal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/gordura_fecal.png" alt="Gordura fecal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gordura fecal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ph_fecal.png" data-termos="ph fecal medico ph fecal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ph_fecal.png" alt="pH fecal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>pH fecal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="dna.png" data-termos="dna medico dna" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/dna.png" alt="DNA" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>DNA</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cariotipo.png" data-termos="cariótipo medico cariotipo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cariotipo.png" alt="Cariótipo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cariótipo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="genetica.png" data-termos="genética medico genetica" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/genetica.png" alt="Genética" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Genética</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ancestralidade.png" data-termos="ancestralidade medico ancestralidade" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ancestralidade.png" alt="Ancestralidade" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Ancestralidade</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="genero_fetal.png" data-termos="gênero fetal medico genero fetal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/genero_fetal.png" alt="Gênero fetal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gênero fetal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sequenciamento.png" data-termos="sequenciamento medico sequenciamento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sequenciamento.png" alt="Sequenciamento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Sequenciamento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pcr.png" data-termos="pcr medico pcr" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pcr.png" alt="PCR" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>PCR</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="farmacogenetica.png" data-termos="farmacogenética medico farmacogenetica" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/farmacogenetica.png" alt="Farmacogenética" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Farmacogenética</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="mutacao.png" data-termos="mutação medico mutacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/mutacao.png" alt="Mutação" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Mutação</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="gene.png" data-termos="gene medico gene" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/gene.png" alt="Gene" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gene</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vacina.png" data-termos="vacina medico vacina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vacina.png" alt="Vacina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vacina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="calendario_vacinal.png" data-termos="calendário vacinal medico calendario vacinal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/calendario_vacinal.png" alt="Calendário vacinal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Calendário vacinal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="imunizacao.png" data-termos="imunização medico imunizacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/imunizacao.png" alt="Imunização" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Imunização</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="gripe.png" data-termos="gripe medico gripe" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/gripe.png" alt="Gripe" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Gripe</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="covid.png" data-termos="covid medico covid" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/covid.png" alt="Covid" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Covid</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hepatite.png" data-termos="hepatite medico hepatite" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hepatite.png" alt="Hepatite" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hepatite</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="febre_amarela.png" data-termos="febre amarela medico febre amarela" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/febre_amarela.png" alt="Febre amarela" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Febre amarela</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hpv.png" data-termos="hpv medico hpv" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hpv.png" alt="HPV" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>HPV</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="vacina_infantil.png" data-termos="vacina infantil medico vacina infantil" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/vacina_infantil.png" alt="Vacina infantil" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vacina infantil</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="documento.png" data-termos="documento medico documento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/documento.png" alt="Documento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Documento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="formulario.png" data-termos="formulário medico formulario" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/formulario.png" alt="Formulário" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Formulário</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="req.png" data-termos="req medico req" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/req.png" alt="REQ" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>REQ</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="responsabilidade_financeira.png" data-termos="resp. financeira medico responsabilidade financeira" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/responsabilidade_financeira.png" alt="Resp. financeira" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Resp. financeira</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="termo.png" data-termos="termo medico termo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/termo.png" alt="Termo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Termo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="consentimento.png" data-termos="consentimento medico consentimento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/consentimento.png" alt="Consentimento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Consentimento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="autorizacao.png" data-termos="autorização medico autorizacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/autorizacao.png" alt="Autorização" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Autorização</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cadastro.png" data-termos="cadastro medico cadastro" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cadastro.png" alt="Cadastro" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cadastro</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pedido_medico.png" data-termos="pedido médico medico pedido medico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pedido_medico.png" alt="Pedido médico" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Pedido médico</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="laudo.png" data-termos="laudo medico laudo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/laudo.png" alt="Laudo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Laudo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="protocolo.png" data-termos="protocolo medico protocolo" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/protocolo.png" alt="Protocolo" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Protocolo</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="contrato.png" data-termos="contrato medico contrato" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/contrato.png" alt="Contrato" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Contrato</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="laboratorio.png" data-termos="laboratório medico laboratorio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/laboratorio.png" alt="Laboratório" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Laboratório</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="microscopio.png" data-termos="microscópio medico microscopio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/microscopio.png" alt="Microscópio" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Microscópio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tubo_ensaio.png" data-termos="tubo ensaio medico tubo ensaio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tubo_ensaio.png" alt="Tubo ensaio" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Tubo ensaio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="amostra.png" data-termos="amostra medico amostra" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/amostra.png" alt="Amostra" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Amostra</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="centrifuga.png" data-termos="centrífuga medico centrifuga" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/centrifuga.png" alt="Centrífuga" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Centrífuga</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="geladeira.png" data-termos="geladeira medico geladeira" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/geladeira.png" alt="Geladeira" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Geladeira</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="transporte.png" data-termos="transporte medico transporte" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/transporte.png" alt="Transporte" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Transporte</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="coleta.png" data-termos="coleta medico coleta" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/coleta.png" alt="Coleta" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Coleta</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="swab.png" data-termos="swab medico swab" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/swab.png" alt="Swab" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Swab</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="saliva.png" data-termos="saliva medico saliva" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/saliva.png" alt="Saliva" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Saliva</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="secrecao.png" data-termos="secreção medico secrecao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/secrecao.png" alt="Secreção" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Secreção</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cultura.png" data-termos="cultura medico cultura" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cultura.png" alt="Cultura" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cultura</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="bacteria.png" data-termos="bactéria medico bacteria" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/bacteria.png" alt="Bactéria" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Bactéria</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="fungos.png" data-termos="fungos medico fungos" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/fungos.png" alt="Fungos" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Fungos</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="virus.png" data-termos="vírus medico virus" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/virus.png" alt="Vírus" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Vírus</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="endocrino.png" data-termos="endócrino medico endocrino" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/endocrino.png" alt="Endócrino" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Endócrino</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="psa.png" data-termos="psa medico psa" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/psa.png" alt="PSA" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>PSA</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="sexagem.png" data-termos="sexagem medico sexagem" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/sexagem.png" alt="Sexagem" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Sexagem</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="esperma.svg" data-termos="espermograma esperma fertilidade" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/esperma.svg" alt="Espermograma">
+<button type="button" class="icone-opcao" data-icone="strepto.png" data-termos="strepto medico strepto" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/strepto.png" alt="Strepto" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Strepto</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="serotonina.png" data-termos="serotonina medico serotonina" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/serotonina.png" alt="Serotonina" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Serotonina</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="salivar.png" data-termos="salivar medico salivar" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/salivar.png" alt="Salivar" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Salivar</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="esperma.png" data-termos="espermograma medico esperma" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/esperma.png" alt="Espermograma" onerror="this.src='/static/img/req_icons/documento.png'">
     <span>Espermograma</span>
 </button>
-<button type="button" class="icone-opcao" data-icone="nps.svg" data-termos="nps pesquisa satisfacao" onclick="selecionarIconeReq(this)">
-    <img src="/static/img/req_icons/nps.svg" alt="NPS">
-    <span>NPS</span>
+<button type="button" class="icone-opcao" data-icone="alergia.png" data-termos="alergia medico alergia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/alergia.png" alt="Alergia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Alergia</span>
 </button>
-            </div>
+<button type="button" class="icone-opcao" data-icone="respiratorio.png" data-termos="respiratório medico respiratorio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/respiratorio.png" alt="Respiratório" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Respiratório</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="cardiologia.png" data-termos="cardiologia medico cardiologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/cardiologia.png" alt="Cardiologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Cardiologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="neurologia.png" data-termos="neurologia medico neurologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/neurologia.png" alt="Neurologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Neurologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pediatria.png" data-termos="pediatria medico pediatria" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pediatria.png" alt="Pediatria" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Pediatria</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="ginecologia.png" data-termos="ginecologia medico ginecologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/ginecologia.png" alt="Ginecologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Ginecologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urologia.png" data-termos="urologia medico urologia" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urologia.png" alt="Urologia" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urologia</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="renal.png" data-termos="renal medico renal" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/renal.png" alt="Renal" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Renal</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="hepatico.png" data-termos="hepático medico hepatico" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/hepatico.png" alt="Hepático" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Hepático</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="tireoide.png" data-termos="tireoide medico tireoide" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/tireoide.png" alt="Tireoide" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Tireoide</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="inflamacao.png" data-termos="inflamação medico inflamacao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/inflamacao.png" alt="Inflamação" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Inflamação</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="marcador_tumoral.png" data-termos="marcador tumoral medico marcador tumoral" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/marcador_tumoral.png" alt="Marcador tumoral" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Marcador tumoral</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="atendimento.png" data-termos="atendimento medico atendimento" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/atendimento.png" alt="Atendimento" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Atendimento</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="whatsapp.png" data-termos="whatsapp medico whatsapp" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/whatsapp.png" alt="WhatsApp" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>WhatsApp</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="agenda.png" data-termos="agenda medico agenda" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/agenda.png" alt="Agenda" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Agenda</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="horario.png" data-termos="horário medico horario" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/horario.png" alt="Horário" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Horário</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="retorno.png" data-termos="retorno medico retorno" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/retorno.png" alt="Retorno" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Retorno</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="pendente.png" data-termos="pendente medico pendente" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/pendente.png" alt="Pendente" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Pendente</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="urgente.png" data-termos="urgente medico urgente" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/urgente.png" alt="Urgente" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Urgente</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="convenio.png" data-termos="convênio medico convenio" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/convenio.png" alt="Convênio" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Convênio</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="carteirinha.png" data-termos="carteirinha medico carteirinha" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/carteirinha.png" alt="Carteirinha" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Carteirinha</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="recepcao.png" data-termos="recepção medico recepcao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/recepcao.png" alt="Recepção" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Recepção</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="financeiro.png" data-termos="financeiro medico financeiro" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/financeiro.png" alt="Financeiro" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Financeiro</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="senha.png" data-termos="senha medico senha" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/senha.png" alt="Senha" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Senha</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="link.png" data-termos="link medico link" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/link.png" alt="Link" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Link</span>
+</button>
+<button type="button" class="icone-opcao" data-icone="impressao.png" data-termos="impressão medico impressao" onclick="selecionarIconeReq(this)">
+    <img src="/static/img/req_icons/impressao.png" alt="Impressão" onerror="this.src='/static/img/req_icons/documento.png'">
+    <span>Impressão</span>
+</button>
+                </div>
 
-            <div class="modal-botoes">
+                <div class="modal-botoes">
                 <button type="button" class="btn-cancelar" onclick="fecharModal('modalNovaReq')">Cancelar</button>
                 <button type="submit" class="btn-salvar">Salvar</button>
             </div>
@@ -256,7 +1048,7 @@
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(95px,1fr));
     gap:10px;
-    max-height:260px;
+    max-height:360px;
     overflow:auto;
     padding:10px;
     background:#f8fafc;
@@ -347,7 +1139,7 @@ function marcarIconeAtual(escopo) {
     if(!escopo) return;
 
     escopo.querySelectorAll('form.form-req-icone').forEach(form => {
-        const valor = form.querySelector('.input-icone-req')?.value || 'documento.svg';
+        const valor = form.querySelector('.input-icone-req')?.value || 'documento.png';
         form.querySelectorAll('.icone-opcao').forEach(botao => {
             botao.classList.toggle('selecionado', botao.dataset.icone === valor);
         });
