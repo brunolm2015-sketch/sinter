@@ -694,7 +694,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <style>
-.drag-handle-card{position:absolute;top:8px;left:8px;width:26px;height:26px;border:0;border-radius:8px;background:#e0f2fe;color:#0077b6;font-weight:900;cursor:grab;line-height:1;z-index:5;}
+.drag-handle-card{
+    position:absolute;
+    top:8px;
+    left:8px;
+    width:28px;
+    height:28px;
+    border:0;
+    border-radius:9px;
+    background:#e0f2fe;
+    color:#0077b6;
+    font-weight:900;
+    cursor:grab;
+    line-height:1;
+    z-index:20;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
 .drag-handle-card:active{cursor:grabbing;}
 .card-arrastavel{position:relative;}
 .card-arrastavel.dragging{opacity:.45;transform:scale(.98);}
@@ -707,39 +722,74 @@ function iniciarArrasteCards(containerId, endpoint){
     if(!container) return;
 
     let arrastado = null;
+    let salvando = false;
 
-    container.querySelectorAll('.card-arrastavel').forEach(card => {
+    function cards(){
+        return Array.from(container.querySelectorAll('.card-arrastavel'));
+    }
+
+    function habilitarCard(card){
+        const handle = card.querySelector('.drag-handle-card');
+        if(!handle) return;
+
+        card.setAttribute('draggable', 'false');
+
+        handle.addEventListener('mousedown', () => {
+            card.dataset.podeArrastar = 'sim';
+            card.setAttribute('draggable', 'true');
+        });
+
+        handle.addEventListener('mouseup', () => {
+            setTimeout(() => {
+                card.dataset.podeArrastar = '';
+                card.setAttribute('draggable', 'false');
+            }, 100);
+        });
+
+        handle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
         card.addEventListener('dragstart', (e) => {
-            if(!e.target.classList.contains('drag-handle-card')){
+            if(card.dataset.podeArrastar !== 'sim'){
                 e.preventDefault();
-                return;
+                return false;
             }
+
             arrastado = card;
             card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', card.dataset.id || '');
         });
 
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
-            container.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+            cards().forEach(c => c.classList.remove('drag-over'));
+            card.dataset.podeArrastar = '';
+            card.setAttribute('draggable', 'false');
             salvarOrdemCards(container, endpoint);
         });
 
         card.addEventListener('dragover', (e) => {
+            if(!arrastado || arrastado === card) return;
             e.preventDefault();
-            if(card !== arrastado) card.classList.add('drag-over');
+            card.classList.add('drag-over');
         });
 
-        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+        card.addEventListener('dragleave', () => {
+            card.classList.remove('drag-over');
+        });
 
         card.addEventListener('drop', (e) => {
             e.preventDefault();
             card.classList.remove('drag-over');
+
             if(!arrastado || arrastado === card) return;
 
-            const cards = Array.from(container.querySelectorAll('.card-arrastavel'));
-            const origem = cards.indexOf(arrastado);
-            const destino = cards.indexOf(card);
+            const lista = cards();
+            const origem = lista.indexOf(arrastado);
+            const destino = lista.indexOf(card);
 
             if(origem < destino){
                 card.after(arrastado);
@@ -747,7 +797,9 @@ function iniciarArrasteCards(containerId, endpoint){
                 card.before(arrastado);
             }
         });
-    });
+    }
+
+    cards().forEach(habilitarCard);
 }
 
 function salvarOrdemCards(container, endpoint){
