@@ -9,6 +9,7 @@
     {% endif %}
 
     <button type="button" onclick="abrirAgendaEndocrino()" class="btn-agenda-endocrino">📅 Agenda</button>
+    <button type="button" id="btnImprimirAgendamentos" onclick="imprimirAgendamentosSelecionados()" class="btn-imprimir-agendamentos" disabled>🖨️ Imprimir selecionados</button>
 
     {% if tem_permissao('gerenciar_exames') %}
     <button type="button" onclick="abrirModal('modalExames')" class="btn-novo">Exames</button>
@@ -28,6 +29,14 @@
         <span>Digite nome, exame, data, status, CIP, CPF, celular ou qualquer informação do card.</span>
     </div>
     <input type="text" id="filtroAgendamentos" placeholder="Pesquisar agendamento..." oninput="filtrarAgendamentosEndocrino()">
+
+    <div class="acoes-selecao-impressao">
+        <label class="check-selecionar-todos-agendamentos">
+            <input type="checkbox" id="checkTodosAgendamentos" onchange="selecionarTodosAgendamentosParaImpressao(this)">
+            Selecionar todos visíveis
+        </label>
+        <span id="contadorSelecionadosImpressao">0 selecionado(s)</span>
+    </div>
 </section>
 
 <section class="resumo-agenda-endocrino" id="resumoFiltroAgenda" style="display:none;">
@@ -41,6 +50,20 @@
          data-data="{{ ag.data_agendamento or '' }}"
          data-hora="{{ ag.horario or '' }}"
          data-busca="{{ (ag.nome ~ ' ' ~ (ag.cip or '') ~ ' ' ~ (ag.cpf or '') ~ ' ' ~ (ag.celular or '') ~ ' ' ~ (ag.data_nascimento or '') ~ ' ' ~ (ag.data_agendamento or '') ~ ' ' ~ (ag.horario or '') ~ ' ' ~ (ag.endocrino_exames.exame if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_exames.sigla if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_status.nome if ag.endocrino_status else '') ~ ' ' ~ (ag.status_descricao or ''))|lower }}">
+
+        <label class="selecionar-agendamento-impressao" title="Selecionar para impressão">
+            <input
+                type="checkbox"
+                class="check-print-agendamento"
+                onchange="atualizarBotaoImpressaoEndocrino()"
+                data-nome="{{ ag.nome or '' }}"
+                data-cip="{{ ag.cip or '' }}"
+                data-cpf="{{ ag.cpf or '' }}"
+                data-exame="{{ ag.endocrino_exames.exame if ag.endocrino_exames else '' }}"
+                data-data="{{ ag.data_agendamento or '' }}"
+                data-hora="{{ ag.horario or '' }}">
+            <span></span>
+        </label>
 
         <div class="agendamento-acoes-topo">
             {% if tem_permissao('editar_agendamentos') %}
@@ -969,6 +992,102 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+.btn-imprimir-agendamentos {
+    background: #64748b !important;
+    color: white !important;
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-weight: 700;
+    cursor: pointer;
+    width: auto;
+}
+
+.btn-imprimir-agendamentos:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.acoes-selecao-impressao {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.check-selecionar-todos-agendamentos {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #fff;
+    border: 1px solid #dbe3ea;
+    border-radius: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+}
+
+.check-selecionar-todos-agendamentos input {
+    width: 18px;
+    height: 18px;
+}
+
+#contadorSelecionadosImpressao {
+    background: #e2e8f0;
+    color: #334155;
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.selecionar-agendamento-impressao {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.selecionar-agendamento-impressao input {
+    display: none;
+}
+
+.selecionar-agendamento-impressao span {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 2px solid #0ea5e9;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selecionar-agendamento-impressao input:checked + span {
+    background: #0ea5e9;
+    border-color: #0ea5e9;
+}
+
+.selecionar-agendamento-impressao input:checked + span::after {
+    content: '✓';
+    color: white;
+    font-weight: 900;
+    font-size: 15px;
+}
+
+.card-agendamento-endocrino.card-selecionado-impressao {
+    box-shadow: 0 0 0 3px rgba(14,165,233,.25), 0 8px 22px rgba(0,0,0,.08);
+}
 </style>
 
 <script>
@@ -1068,6 +1187,8 @@ function filtrarAgendamentosEndocrino() {
         card.classList.toggle('oculto-filtro', !mostrar);
         if (mostrar) visiveis++;
     });
+
+    atualizarBotaoImpressaoEndocrino();
 }
 
 function abrirAgendaEndocrino() {
@@ -1183,6 +1304,182 @@ function limparFiltroAgendaEndocrino() {
     if (input) input.value = '';
 }
 
+
+
+function formatarDataImpressaoEndocrino(data) {
+    if (!data) return '-';
+    const partes = String(data).split('-');
+    if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    return data;
+}
+
+function atualizarBotaoImpressaoEndocrino() {
+    const selecionados = document.querySelectorAll('.check-print-agendamento:checked');
+    const botao = document.getElementById('btnImprimirAgendamentos');
+    const contador = document.getElementById('contadorSelecionadosImpressao');
+    const checkTodos = document.getElementById('checkTodosAgendamentos');
+
+    document.querySelectorAll('.card-agendamento-endocrino').forEach(card => {
+        const marcado = card.querySelector('.check-print-agendamento')?.checked;
+        card.classList.toggle('card-selecionado-impressao', !!marcado);
+    });
+
+    if (botao) {
+        botao.disabled = selecionados.length === 0;
+        botao.textContent = selecionados.length > 0
+            ? `🖨️ Imprimir ${selecionados.length} selecionado(s)`
+            : '🖨️ Imprimir selecionados';
+    }
+
+    if (contador) {
+        contador.textContent = `${selecionados.length} selecionado(s)`;
+    }
+
+    if (checkTodos) {
+        const visiveis = Array.from(document.querySelectorAll('.card-agendamento-endocrino:not(.oculto-filtro) .check-print-agendamento'));
+        const marcadosVisiveis = visiveis.filter(c => c.checked);
+        checkTodos.checked = visiveis.length > 0 && marcadosVisiveis.length === visiveis.length;
+        checkTodos.indeterminate = marcadosVisiveis.length > 0 && marcadosVisiveis.length < visiveis.length;
+    }
+}
+
+function selecionarTodosAgendamentosParaImpressao(check) {
+    const marcar = check.checked;
+    document.querySelectorAll('.card-agendamento-endocrino:not(.oculto-filtro) .check-print-agendamento').forEach(campo => {
+        campo.checked = marcar;
+    });
+    atualizarBotaoImpressaoEndocrino();
+}
+
+function imprimirAgendamentosSelecionados() {
+    const selecionados = Array.from(document.querySelectorAll('.check-print-agendamento:checked'));
+
+    if (!selecionados.length) {
+        alert('Selecione pelo menos um agendamento para imprimir.');
+        return;
+    }
+
+    const cards = selecionados.map(campo => {
+        const nome = campo.dataset.nome || '-';
+        const cip = campo.dataset.cip || '-';
+        const cpf = campo.dataset.cpf || '-';
+        const exame = campo.dataset.exame || '-';
+        const data = formatarDataImpressaoEndocrino(campo.dataset.data || '');
+        const hora = campo.dataset.hora || '-';
+
+        return `
+            <article class="print-card-agendamento">
+                <h2>${nome}</h2>
+                <div class="print-exame">${exame}</div>
+                <div class="print-info"><strong>CIP:</strong> ${cip}</div>
+                <div class="print-info"><strong>CPF:</strong> ${cpf}</div>
+                <div class="print-info"><strong>Data:</strong> ${data}</div>
+                <div class="print-info"><strong>Horário:</strong> ${hora}</div>
+            </article>
+        `;
+    }).join('');
+
+    const janela = window.open('', '_blank', 'width=1200,height=800');
+    if (!janela) {
+        alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.');
+        return;
+    }
+
+    janela.document.open();
+    janela.document.write(`
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Impressão de Agendamentos</title>
+            <style>
+                * { box-sizing: border-box; }
+                body {
+                    font-family: Arial, Helvetica, sans-serif;
+                    margin: 16px;
+                    color: #111827;
+                    background: #fff;
+                }
+                .print-topo {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    border-bottom: 2px solid #111827;
+                    padding-bottom: 8px;
+                    margin-bottom: 14px;
+                }
+                .print-topo h1 {
+                    font-size: 22px;
+                    margin: 0;
+                }
+                .print-topo span {
+                    font-size: 12px;
+                    color: #475569;
+                }
+                .print-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                }
+                .print-card-agendamento {
+                    border: 2px solid #111827;
+                    border-radius: 8px;
+                    padding: 12px;
+                    min-height: 175px;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+                .print-card-agendamento h2 {
+                    margin: 0 0 8px 0;
+                    font-size: 23px;
+                    line-height: 1.05;
+                    text-transform: uppercase;
+                    color: #000;
+                }
+                .print-exame {
+                    border: 1px solid #111827;
+                    border-radius: 6px;
+                    padding: 7px;
+                    margin-bottom: 8px;
+                    font-size: 17px;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    background: #f3f4f6;
+                    color: #000;
+                }
+                .print-info {
+                    font-size: 14px;
+                    margin: 5px 0;
+                    line-height: 1.25;
+                }
+                .print-info strong {
+                    font-size: 13px;
+                    text-transform: uppercase;
+                }
+                @media print {
+                    body { margin: 8mm; }
+                    .print-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+                    .print-card-agendamento { min-height: 165px; }
+                    @page { size: A4 portrait; margin: 8mm; }
+                }
+            </style>
+        </head>
+        <body>
+            <header class="print-topo">
+                <h1>Agendamentos de Endócrino</h1>
+                <span>${selecionados.length} agendamento(s) selecionado(s)</span>
+            </header>
+            <main class="print-grid">
+                ${cards}
+            </main>
+            <script>
+                window.onload = function(){ window.print(); };
+            <\/script>
+        </body>
+        </html>
+    `);
+    janela.document.close();
+}
 </script>
 
 {% endblock %}

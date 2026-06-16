@@ -758,13 +758,7 @@ def convenios():
     if not usuario_logado():
         return redirect("/login")
 
-    resultado = (
-        supabase.table("convenios")
-        .select("*")
-        .order("ordem")
-        .order("criado_em", desc=True)
-        .execute()
-    )
+    resultado = supabase.table("convenios").select("*").order("criado_em", desc=True).execute()
 
     return render_template(
         "convenios.html",
@@ -842,24 +836,6 @@ def excluir_convenio(convenio_id):
 
     supabase.table("convenios").delete().eq("id", convenio_id).execute()
     return redirect("/convenios")
-
-
-@app.route("/convenios/reordenar", methods=["POST"])
-def reordenar_convenios():
-    if not usuario_logado():
-        return ("", 401)
-
-    if not tem_permissao("editar_convenios"):
-        return ("", 403)
-
-    dados = request.get_json(silent=True) or {}
-    ids = dados.get("ids") or []
-
-    for ordem, convenio_id in enumerate(ids, start=1):
-        if convenio_id:
-            supabase.table("convenios").update({"ordem": ordem}).eq("id", convenio_id).execute()
-
-    return ("", 204)
 
 
 @app.route("/reqs-formularios")
