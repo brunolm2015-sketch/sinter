@@ -3,7 +3,7 @@ import base64
 import uuid
 import re
 import fitz
-from flask import Flask, render_template, request, redirect, session, send_file, g, jsonify
+from flask import Flask, render_template, request, redirect, session, send_file, g
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -490,6 +490,24 @@ def salvar_anexos_endocrino(arquivos, nomes_anexos, agendamento_id):
             }).execute()
 
 
+def contar_agendamentos_endocrino_no_dia(data_agendamento, ignorar_id=None):
+    if not data_agendamento:
+        return 0
+
+    consulta = (
+        supabase.table("endocrino_agendamentos")
+        .select("id")
+        .eq("data_agendamento", data_agendamento)
+        .eq("finalizado", False)
+    )
+
+    if ignorar_id:
+        consulta = consulta.neq("id", ignorar_id)
+
+    resultado = consulta.execute()
+    return len(resultado.data or [])
+
+
 def caminho_local(caminho_web):
     return caminho_web.replace("/", "", 1)
 
@@ -740,13 +758,7 @@ def convenios():
     if not usuario_logado():
         return redirect("/login")
 
-    resultado = (
-        supabase.table("convenios")
-        .select("*")
-        .order("ordem")
-        .order("criado_em", desc=True)
-        .execute()
-    )
+    resultado = supabase.table("convenios").select("*").order("criado_em", desc=True).execute()
 
     return render_template(
         "convenios.html",
@@ -826,19 +838,6 @@ def excluir_convenio(convenio_id):
     return redirect("/convenios")
 
 
-@app.route("/convenios/reordenar", methods=["POST"])
-def convenios_reordenar():
-    if not usuario_logado():
-        return jsonify({"ok": False}), 401
-
-    ids = (request.get_json(silent=True) or {}).get("ids", [])
-
-    for ordem, convenio_id in enumerate(ids, start=1):
-        supabase.table("convenios").update({"ordem": ordem}).eq("id", convenio_id).execute()
-
-    return jsonify({"ok": True})
-
-
 @app.route("/reqs-formularios")
 def reqs_formularios():
     if not usuario_logado():
@@ -865,7 +864,6 @@ def reqs():
     resultado = (
         supabase.table("reqs")
         .select("*")
-        .order("ordem")
         .order("criado_em", desc=True)
         .execute()
     )
@@ -908,7 +906,6 @@ def nova_req():
     supabase.table("reqs").insert({
         "nome": request.form.get("nome"),
         "link": request.form.get("link"),
-        "icone": request.form.get("icone") or "documento.png",
         "criado_por": session.get("usuario_id")
     }).execute()
 
@@ -922,8 +919,7 @@ def editar_req(req_id):
 
     supabase.table("reqs").update({
         "nome": request.form.get("nome"),
-        "link": request.form.get("link"),
-        "icone": request.form.get("icone") or "documento.png"
+        "link": request.form.get("link")
     }).eq("id", req_id).execute()
 
     return redirect("/reqs")
@@ -936,19 +932,6 @@ def excluir_req(req_id):
 
     supabase.table("reqs").delete().eq("id", req_id).execute()
     return redirect("/reqs")
-
-
-@app.route("/reqs/reordenar", methods=["POST"])
-def reqs_reordenar():
-    if not usuario_logado():
-        return jsonify({"ok": False}), 401
-
-    ids = (request.get_json(silent=True) or {}).get("ids", [])
-
-    for ordem, req_id in enumerate(ids, start=1):
-        supabase.table("reqs").update({"ordem": ordem}).eq("id", req_id).execute()
-
-    return jsonify({"ok": True})
 
 
 @app.route("/formularios/novo", methods=["POST"])
@@ -1461,6 +1444,15 @@ def endocrino_agendamento_novo():
         status_id = status_novo.data[0]["id"]
         status_descricao = status_novo.data[0].get("descricao_padrao") or "Novo agendamento"
 
+    data_agendamento = request.form.get("data_agendamento") or None
+
+    if (
+        data_agendamento
+        and contar_agendamentos_endocrino_no_dia(data_agendamento) >= 5
+        and request.form.get("confirmar_limite") != "sim"
+    ):
+        return "Esse dia já possui 5 agendamentos. Volte e confirme o agendamento caso realmente queira ultrapassar o limite.", 400
+
     resultado = supabase.table("endocrino_agendamentos").insert({
         "cip": request.form.get("cip"),
         "nome": request.form.get("nome"),
@@ -1468,7 +1460,7 @@ def endocrino_agendamento_novo():
         "celular": request.form.get("celular"),
         "data_nascimento": request.form.get("data_nascimento") or None,
         "exame_id": request.form.get("exame_id") or None,
-        "data_agendamento": request.form.get("data_agendamento") or None,
+        "data_agendamento": data_agendamento,
         "horario": request.form.get("horario"),
         "status_id": status_id or None,
         "status_descricao": status_descricao,
@@ -1491,6 +1483,15 @@ def endocrino_agendamento_editar(agendamento_id):
     if not usuario_logado():
         return redirect("/login")
 
+    data_agendamento = request.form.get("data_agendamento") or None
+
+    if (
+        data_agendamento
+        and contar_agendamentos_endocrino_no_dia(data_agendamento, agendamento_id) >= 5
+        and request.form.get("confirmar_limite") != "sim"
+    ):
+        return "Esse dia já possui 5 agendamentos. Volte e confirme o agendamento caso realmente queira ultrapassar o limite.", 400
+
     supabase.table("endocrino_agendamentos").update({
         "cip": request.form.get("cip"),
         "nome": request.form.get("nome"),
@@ -1498,7 +1499,7 @@ def endocrino_agendamento_editar(agendamento_id):
         "celular": request.form.get("celular"),
         "data_nascimento": request.form.get("data_nascimento") or None,
         "exame_id": request.form.get("exame_id") or None,
-        "data_agendamento": request.form.get("data_agendamento") or None,
+        "data_agendamento": data_agendamento,
         "horario": request.form.get("horario"),
         "status_id": request.form.get("status_id") or None,
         "status_descricao": request.form.get("status_descricao")

@@ -8,6 +8,8 @@
     <button type="button" onclick="abrirModal('modalNovoAgendamento')" class="btn-novo">+ Novo Agendamento</button>
     {% endif %}
 
+    <button type="button" onclick="abrirAgendaEndocrino()" class="btn-agenda-endocrino">📅 Agenda</button>
+
     {% if tem_permissao('gerenciar_exames') %}
     <button type="button" onclick="abrirModal('modalExames')" class="btn-novo">Exames</button>
     {% endif %}
@@ -20,9 +22,25 @@
 {% if tem_permissao('ver_endocrinos') or tem_permissao('ver_agendamentos') %}
 <h2 class="titulo-secao-endocrino">Agendamentos</h2>
 
-<section class="lista-agendamentos-endocrino">
+<section class="painel-filtro-endocrino">
+    <div>
+        <strong>Filtro rápido</strong>
+        <span>Digite nome, exame, data, status, CIP, CPF, celular ou qualquer informação do card.</span>
+    </div>
+    <input type="text" id="filtroAgendamentos" placeholder="Pesquisar agendamento..." oninput="filtrarAgendamentosEndocrino()">
+</section>
+
+<section class="resumo-agenda-endocrino" id="resumoFiltroAgenda" style="display:none;">
+    <span id="textoResumoAgenda"></span>
+    <button type="button" onclick="limparFiltroAgendaEndocrino()">Limpar filtro</button>
+</section>
+
+<section class="lista-agendamentos-endocrino" id="listaAgendamentosEndocrino">
     {% for ag in agendamentos %}
-    <div class="card-agendamento-endocrino">
+    <div class="card-agendamento-endocrino"
+         data-data="{{ ag.data_agendamento or '' }}"
+         data-hora="{{ ag.horario or '' }}"
+         data-busca="{{ (ag.nome ~ ' ' ~ (ag.cip or '') ~ ' ' ~ (ag.cpf or '') ~ ' ' ~ (ag.celular or '') ~ ' ' ~ (ag.data_nascimento or '') ~ ' ' ~ (ag.data_agendamento or '') ~ ' ' ~ (ag.horario or '') ~ ' ' ~ (ag.endocrino_exames.exame if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_exames.sigla if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_status.nome if ag.endocrino_status else '') ~ ' ' ~ (ag.status_descricao or ''))|lower }}">
 
         <div class="agendamento-acoes-topo">
             {% if tem_permissao('editar_agendamentos') %}
@@ -119,7 +137,8 @@
                 <button type="button" class="btn-fechar" onclick="fecharModal('editarAgendamento{{ ag.id }}')">×</button>
             </div>
 
-            <form method="POST" action="/endocrinos/agendamento/editar/{{ ag.id }}" enctype="multipart/form-data" class="form-convenio">
+            <form method="POST" action="/endocrinos/agendamento/editar/{{ ag.id }}" enctype="multipart/form-data" class="form-convenio form-agendamento-endocrino" data-agendamento-id="{{ ag.id }}" onsubmit="return confirmarLimiteAgendamento(this)">
+                <input type="hidden" name="confirmar_limite" value="nao">
                 <div class="campo-modal"><label>CIP</label><input name="cip" value="{{ ag.cip or '' }}"></div>
                 <div class="campo-modal"><label>Nome</label><input name="nome" value="{{ ag.nome or '' }}" required></div>
                 <div class="campo-modal"><label>CPF</label><input name="cpf" value="{{ ag.cpf or '' }}"></div>
@@ -187,7 +206,8 @@
             <button type="button" class="btn-fechar" onclick="fecharModal('modalNovoAgendamento')">×</button>
         </div>
 
-        <form method="POST" action="/endocrinos/agendamento/novo" enctype="multipart/form-data" class="form-convenio">
+        <form method="POST" action="/endocrinos/agendamento/novo" enctype="multipart/form-data" class="form-convenio form-agendamento-endocrino" data-agendamento-id="" onsubmit="return confirmarLimiteAgendamento(this)">
+            <input type="hidden" name="confirmar_limite" value="nao">
             <div class="campo-modal"><label>CIP</label><input name="cip"></div>
             <div class="campo-modal"><label>Nome</label><input name="nome" required></div>
             <div class="campo-modal"><label>CPF</label><input name="cpf"></div>
@@ -395,7 +415,259 @@
 </div>
 {% endif %}
 
+<div id="modalAgendaEndocrino" class="modal-fundo">
+    <div class="modal-card modal-agenda-endocrino">
+        <div class="modal-topo">
+            <div>
+                <h2>Agenda de Endócrino</h2>
+                <p>Controle visual dos dias com agendamentos. O limite recomendado é de 5 agendamentos por dia.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModal('modalAgendaEndocrino')">×</button>
+        </div>
+
+        <div class="agenda-controles-endocrino">
+            <button type="button" onclick="mudarMesAgendaEndocrino(-1)">← Mês anterior</button>
+            <strong id="tituloMesAgendaEndocrino"></strong>
+            <button type="button" onclick="mudarMesAgendaEndocrino(1)">Próximo mês →</button>
+        </div>
+
+        <div class="agenda-legenda-endocrino">
+            <span><i class="livre"></i> Livre</span>
+            <span><i class="parcial"></i> Com agendamento</span>
+            <span><i class="cheio"></i> 5 ou mais agendamentos</span>
+        </div>
+
+        <div class="calendario-endocrino" id="calendarioEndocrino"></div>
+
+        <div class="agenda-detalhes-dia" id="detalhesDiaAgendaEndocrino">
+            Clique em um dia para ver os agendamentos.
+        </div>
+    </div>
+</div>
+
 <style>
+
+.btn-agenda-endocrino {
+    width: auto;
+    margin-top: 0;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: #0077b6;
+    color: #fff;
+    font-weight: 800;
+}
+
+.btn-agenda-endocrino:hover {
+    background: #005f92;
+}
+
+.painel-filtro-endocrino {
+    display: grid;
+    grid-template-columns: 1fr minmax(280px, 460px);
+    gap: 16px;
+    align-items: center;
+    background: #fff;
+    border-left: 5px solid #0077b6;
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.06);
+}
+
+.painel-filtro-endocrino strong {
+    display: block;
+    color: #0f172a;
+    font-size: 17px;
+}
+
+.painel-filtro-endocrino span {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.painel-filtro-endocrino input {
+    margin: 0;
+    border-radius: 999px;
+    padding: 13px 18px;
+    border: 1px solid #cbd5e1;
+    font-weight: 700;
+}
+
+.resumo-agenda-endocrino {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: #e0f2fe;
+    border: 1px solid #7dd3fc;
+    color: #075985;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-weight: 700;
+}
+
+.resumo-agenda-endocrino button {
+    width: auto;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #0077b6;
+}
+
+.modal-agenda-endocrino {
+    max-width: 980px;
+}
+
+.agenda-controles-endocrino {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.agenda-controles-endocrino button {
+    width: auto;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: #0077b6;
+}
+
+.agenda-controles-endocrino strong {
+    font-size: 20px;
+    color: #0f172a;
+    text-transform: capitalize;
+}
+
+.agenda-legenda-endocrino {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.agenda-legenda-endocrino span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.agenda-legenda-endocrino i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.agenda-legenda-endocrino .livre { background: #e5e7eb; }
+.agenda-legenda-endocrino .parcial { background: #7ac143; }
+.agenda-legenda-endocrino .cheio { background: #dc2626; }
+
+.calendario-endocrino {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.dia-semana-agenda,
+.dia-agenda-endocrino {
+    border-radius: 12px;
+    min-height: 82px;
+    padding: 8px;
+}
+
+.dia-semana-agenda {
+    min-height: auto;
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 800;
+    text-align: center;
+}
+
+.dia-agenda-endocrino {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+
+.dia-agenda-endocrino:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    border-color: #0077b6;
+}
+
+.dia-agenda-endocrino.vazio {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+}
+
+.dia-agenda-endocrino.vazio:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.numero-dia-agenda {
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.contador-dia-agenda {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    color: white;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 4px 8px;
+}
+
+.contador-dia-agenda.livre { background: #94a3b8; }
+.contador-dia-agenda.parcial { background: #7ac143; }
+.contador-dia-agenda.cheio { background: #dc2626; }
+
+.lista-nomes-dia-agenda {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    color: #475569;
+    font-size: 11px;
+    line-height: 1.15;
+}
+
+.agenda-detalhes-dia {
+    margin-top: 14px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    color: #334155;
+}
+
+.agenda-detalhes-dia strong {
+    color: #0077b6;
+}
+
+.agenda-detalhes-dia button {
+    width: auto;
+    margin: 8px 0 0 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #0077b6;
+}
+
+.card-agendamento-endocrino.oculto-filtro {
+    display: none;
+}
 .titulo-secao-endocrino {
     margin-bottom: 15px;
 }
@@ -681,6 +953,9 @@
 }
 
 @media (max-width: 900px) {
+    .painel-filtro-endocrino { grid-template-columns: 1fr; }
+    .calendario-endocrino { gap: 5px; }
+    .dia-agenda-endocrino { min-height: 70px; padding: 6px; }
     .agendamento-blocos {
         grid-template-columns: 1fr;
     }
@@ -725,6 +1000,189 @@ function adicionarCampoAnexo(botao) {
 
     container.appendChild(linha);
 }
+
+const agendaEndocrinoBase = [
+    {% for ag in agendamentos %}
+    {
+        id: {{ ag.id|tojson }},
+        nome: {{ (ag.nome or '')|tojson }},
+        data: {{ (ag.data_agendamento or '')|tojson }},
+        hora: {{ (ag.horario or '')|tojson }},
+        cip: {{ (ag.cip or '')|tojson }},
+        cpf: {{ (ag.cpf or '')|tojson }},
+        celular: {{ (ag.celular or '')|tojson }},
+        exame: {{ (ag.endocrino_exames.exame if ag.endocrino_exames else '')|tojson }},
+        status: {{ (ag.endocrino_status.nome if ag.endocrino_status else '')|tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+let dataAgendaAtual = new Date();
+
+function normalizarBuscaEndocrino(valor) {
+    return String(valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+function contarAgendamentosPorData(data, ignorarId) {
+    return agendaEndocrinoBase.filter(item => {
+        if (!item.data || item.data !== data) return false;
+        if (ignorarId && String(item.id) === String(ignorarId)) return false;
+        return true;
+    }).length;
+}
+
+function confirmarLimiteAgendamento(form) {
+    const campoData = form.querySelector('input[name="data_agendamento"]');
+    const data = campoData ? campoData.value : '';
+    const ignorarId = form.dataset.agendamentoId || '';
+    const campoConfirmacao = form.querySelector('input[name="confirmar_limite"]');
+
+    if (!data) return true;
+
+    const total = contarAgendamentosPorData(data, ignorarId);
+
+    if (total >= 5 && campoConfirmacao && campoConfirmacao.value !== 'sim') {
+        const mensagem = `Já existem ${total} agendamentos para esse dia. O limite recomendado é de 5.\n\nDeseja realmente salvar mais um agendamento nesse dia?`;
+        if (confirm(mensagem)) {
+            campoConfirmacao.value = 'sim';
+            return true;
+        }
+        return false;
+    }
+
+    return true;
+}
+
+function filtrarAgendamentosEndocrino() {
+    const input = document.getElementById('filtroAgendamentos');
+    const termo = normalizarBuscaEndocrino(input ? input.value : '');
+    const cards = document.querySelectorAll('.card-agendamento-endocrino');
+    let visiveis = 0;
+
+    cards.forEach(card => {
+        const texto = normalizarBuscaEndocrino(card.dataset.busca || card.innerText);
+        const mostrar = !termo || texto.includes(termo);
+        card.classList.toggle('oculto-filtro', !mostrar);
+        if (mostrar) visiveis++;
+    });
+}
+
+function abrirAgendaEndocrino() {
+    abrirModal('modalAgendaEndocrino');
+    montarCalendarioEndocrino();
+}
+
+function mudarMesAgendaEndocrino(delta) {
+    dataAgendaAtual.setMonth(dataAgendaAtual.getMonth() + delta);
+    montarCalendarioEndocrino();
+}
+
+function montarCalendarioEndocrino() {
+    const container = document.getElementById('calendarioEndocrino');
+    const titulo = document.getElementById('tituloMesAgendaEndocrino');
+    if (!container || !titulo) return;
+
+    container.innerHTML = '';
+
+    const ano = dataAgendaAtual.getFullYear();
+    const mes = dataAgendaAtual.getMonth();
+    const primeiroDia = new Date(ano, mes, 1);
+    const ultimoDia = new Date(ano, mes + 1, 0);
+    const nomesSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    titulo.textContent = primeiroDia.toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
+
+    nomesSemana.forEach(nome => {
+        const el = document.createElement('div');
+        el.className = 'dia-semana-agenda';
+        el.textContent = nome;
+        container.appendChild(el);
+    });
+
+    for (let i = 0; i < primeiroDia.getDay(); i++) {
+        const vazio = document.createElement('div');
+        vazio.className = 'dia-agenda-endocrino vazio';
+        container.appendChild(vazio);
+    }
+
+    for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+        const data = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const ags = agendaEndocrinoBase.filter(item => item.data === data);
+        const total = ags.length;
+        const classe = total >= 5 ? 'cheio' : (total > 0 ? 'parcial' : 'livre');
+
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'dia-agenda-endocrino';
+        el.onclick = () => selecionarDiaAgendaEndocrino(data);
+
+        el.innerHTML = `
+            <span class="numero-dia-agenda">${dia}</span>
+            <span class="contador-dia-agenda ${classe}">${total}</span>
+            <div class="lista-nomes-dia-agenda">
+                ${ags.slice(0, 3).map(a => `<span>${a.hora || '--:--'} ${a.nome}</span>`).join('')}
+                ${ags.length > 3 ? `<span>+ ${ags.length - 3} outros</span>` : ''}
+            </div>
+        `;
+
+        container.appendChild(el);
+    }
+}
+
+function selecionarDiaAgendaEndocrino(data) {
+    const ags = agendaEndocrinoBase.filter(item => item.data === data);
+    const detalhes = document.getElementById('detalhesDiaAgendaEndocrino');
+    const dataBR = data.split('-').reverse().join('/');
+
+    if (detalhes) {
+        if (!ags.length) {
+            detalhes.innerHTML = `<strong>${dataBR}</strong><br>Nenhum agendamento nesse dia.<br><button type="button" onclick="filtrarPorDiaAgendaEndocrino('${data}')">Filtrar esse dia</button>`;
+        } else {
+            detalhes.innerHTML = `
+                <strong>${dataBR}</strong> — ${ags.length} agendamento(s)
+                <ul>
+                    ${ags.map(a => `<li>${a.hora || '--:--'} — ${a.nome} ${a.exame ? ' | ' + a.exame : ''} ${a.status ? ' | ' + a.status : ''}</li>`).join('')}
+                </ul>
+                <button type="button" onclick="filtrarPorDiaAgendaEndocrino('${data}')">Mostrar somente esse dia na lista</button>
+            `;
+        }
+    }
+}
+
+function filtrarPorDiaAgendaEndocrino(data) {
+    const resumo = document.getElementById('resumoFiltroAgenda');
+    const texto = document.getElementById('textoResumoAgenda');
+    const dataBR = data.split('-').reverse().join('/');
+    let total = 0;
+
+    document.querySelectorAll('.card-agendamento-endocrino').forEach(card => {
+        const mostrar = card.dataset.data === data;
+        card.classList.toggle('oculto-filtro', !mostrar);
+        if (mostrar) total++;
+    });
+
+    const input = document.getElementById('filtroAgendamentos');
+    if (input) input.value = '';
+
+    if (resumo && texto) {
+        resumo.style.display = 'flex';
+        texto.textContent = `Mostrando ${total} agendamento(s) do dia ${dataBR}.`;
+    }
+
+    fecharModal('modalAgendaEndocrino');
+}
+
+function limparFiltroAgendaEndocrino() {
+    document.querySelectorAll('.card-agendamento-endocrino').forEach(card => card.classList.remove('oculto-filtro'));
+    const resumo = document.getElementById('resumoFiltroAgenda');
+    if (resumo) resumo.style.display = 'none';
+    const input = document.getElementById('filtroAgendamentos');
+    if (input) input.value = '';
+}
+
 </script>
 
 {% endblock %}
