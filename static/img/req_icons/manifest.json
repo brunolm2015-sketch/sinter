@@ -1,0 +1,632 @@
+[
+  {
+    "file": "documento.png",
+    "label": "DOC",
+    "terms": "documento formulario req requerimento pedido"
+  },
+  {
+    "file": "formulario.png",
+    "label": "FORM",
+    "terms": "formulario cadastro ficha"
+  },
+  {
+    "file": "termo.png",
+    "label": "TERMO",
+    "terms": "termo responsabilidade consentimento"
+  },
+  {
+    "file": "responsabilidade_financeira.png",
+    "label": "FIN",
+    "terms": "responsabilidade financeira dinheiro termo"
+  },
+  {
+    "file": "assinatura.png",
+    "label": "ASS",
+    "terms": "assinatura termo"
+  },
+  {
+    "file": "autorizacao.png",
+    "label": "AUT",
+    "terms": "autorizacao consentimento"
+  },
+  {
+    "file": "urina.png",
+    "label": "URINA",
+    "terms": "urina"
+  },
+  {
+    "file": "urina_24h.png",
+    "label": "24H",
+    "terms": "urina 24 horas"
+  },
+  {
+    "file": "urina_feminina.png",
+    "label": "UR FEM",
+    "terms": "urina feminina mulher"
+  },
+  {
+    "file": "urina_masculina.png",
+    "label": "UR MASC",
+    "terms": "urina masculina homem"
+  },
+  {
+    "file": "urina_fem_unidade.png",
+    "label": "FEM UN",
+    "terms": "urina feminino unidade"
+  },
+  {
+    "file": "urina_fem_residencia.png",
+    "label": "FEM RES",
+    "terms": "urina feminino residencia"
+  },
+  {
+    "file": "urina_masc_unidade.png",
+    "label": "MASC UN",
+    "terms": "urina masculino unidade"
+  },
+  {
+    "file": "urina_masc_residencia.png",
+    "label": "MASC RES",
+    "terms": "urina masculino residencia"
+  },
+  {
+    "file": "urocultura.png",
+    "label": "URO",
+    "terms": "urocultura urina cultura"
+  },
+  {
+    "file": "sedimento_urina.png",
+    "label": "SED",
+    "terms": "sedimento urina"
+  },
+  {
+    "file": "tox_urina.png",
+    "label": "TOX",
+    "terms": "toxicologico toxico droga urina"
+  },
+  {
+    "file": "sangue.png",
+    "label": "SANG",
+    "terms": "sangue coleta"
+  },
+  {
+    "file": "coleta_sangue.png",
+    "label": "COLETA",
+    "terms": "coleta sangue"
+  },
+  {
+    "file": "hemograma.png",
+    "label": "HEMO",
+    "terms": "hemograma sangue"
+  },
+  {
+    "file": "sangue_oculto.png",
+    "label": "OCULTO",
+    "terms": "sangue oculto fezes"
+  },
+  {
+    "file": "plaquetas.png",
+    "label": "PLAQ",
+    "terms": "plaquetas"
+  },
+  {
+    "file": "coagulograma.png",
+    "label": "COAG",
+    "terms": "coagulograma coag"
+  },
+  {
+    "file": "anemia.png",
+    "label": "ANEMIA",
+    "terms": "anemia"
+  },
+  {
+    "file": "bioquimica.png",
+    "label": "BIO",
+    "terms": "bioquimica"
+  },
+  {
+    "file": "glicose.png",
+    "label": "GLIC",
+    "terms": "glicose"
+  },
+  {
+    "file": "glicose_pos_prandial.png",
+    "label": "PÓS",
+    "terms": "glicose pos prandial comida"
+  },
+  {
+    "file": "colesterol.png",
+    "label": "COL",
+    "terms": "colesterol"
+  },
+  {
+    "file": "triglicerideos.png",
+    "label": "TRIG",
+    "terms": "triglicerideos"
+  },
+  {
+    "file": "beta_hcg.png",
+    "label": "βHCG",
+    "terms": "beta hcg gravidez"
+  },
+  {
+    "file": "fezes.png",
+    "label": "FEZES",
+    "terms": "fezes"
+  },
+  {
+    "file": "cultura_fezes.png",
+    "label": "CULT",
+    "terms": "cultura de fezes"
+  },
+  {
+    "file": "parasitol_fezes.png",
+    "label": "PARA",
+    "terms": "parasitologico fezes"
+  },
+  {
+    "file": "coprologico.png",
+    "label": "COPRO",
+    "terms": "coprologico funcional"
+  },
+  {
+    "file": "calprotectina.png",
+    "label": "CALP",
+    "terms": "calprotectina fecal"
+  },
+  {
+    "file": "ph_fecal.png",
+    "label": "pH",
+    "terms": "ph fecal"
+  },
+  {
+    "file": "dna.png",
+    "label": "DNA",
+    "terms": "dna genetica"
+  },
+  {
+    "file": "genetica.png",
+    "label": "GEN",
+    "terms": "genetica"
+  },
+  {
+    "file": "genera.png",
+    "label": "GENERA",
+    "terms": "genera dna genetica"
+  },
+  {
+    "file": "cariotipo.png",
+    "label": "CARIO",
+    "terms": "cariotipo banda g cromossomo"
+  },
+  {
+    "file": "cariotipo_banda_g.png",
+    "label": "BANDA G",
+    "terms": "cariotipo banda g"
+  },
+  {
+    "file": "ancestralidade.png",
+    "label": "ANCEST",
+    "terms": "ancestralidade dna"
+  },
+  {
+    "file": "sequenciamento.png",
+    "label": "SEQ",
+    "terms": "sequenciamento dna"
+  },
+  {
+    "file": "mutacao.png",
+    "label": "MUT",
+    "terms": "mutacao genetica"
+  },
+  {
+    "file": "pcr.png",
+    "label": "PCR",
+    "terms": "pcr"
+  },
+  {
+    "file": "vacina.png",
+    "label": "VAC",
+    "terms": "vacina"
+  },
+  {
+    "file": "vacina_infantil.png",
+    "label": "VAC INF",
+    "terms": "vacina infantil"
+  },
+  {
+    "file": "calendario_vacinal.png",
+    "label": "VAC",
+    "terms": "calendario vacinal formulario vacina"
+  },
+  {
+    "file": "imunizacao.png",
+    "label": "IMUN",
+    "terms": "imunizacao vacina"
+  },
+  {
+    "file": "gripe.png",
+    "label": "GRIPE",
+    "terms": "gripe"
+  },
+  {
+    "file": "covid.png",
+    "label": "COVID",
+    "terms": "covid vacina"
+  },
+  {
+    "file": "sexagem.png",
+    "label": "SEX",
+    "terms": "sexagem fetal bebe masculino feminino"
+  },
+  {
+    "file": "sexagem_fetal.png",
+    "label": "BEBÊ",
+    "terms": "sexagem fetal bebe sexo masculino feminino"
+  },
+  {
+    "file": "genero_fetal.png",
+    "label": "M/F",
+    "terms": "genero fetal masculino feminino"
+  },
+  {
+    "file": "sexo_bebe.png",
+    "label": "BEBÊ",
+    "terms": "sexo bebe"
+  },
+  {
+    "file": "masculino.png",
+    "label": "MASC",
+    "terms": "masculino homem"
+  },
+  {
+    "file": "feminino.png",
+    "label": "FEM",
+    "terms": "feminino mulher"
+  },
+  {
+    "file": "endocrino.png",
+    "label": "ENDO",
+    "terms": "endocrino"
+  },
+  {
+    "file": "endocrino_infantil.png",
+    "label": "INF",
+    "terms": "endocrino infantil"
+  },
+  {
+    "file": "pediatria.png",
+    "label": "PED",
+    "terms": "pediatria infantil"
+  },
+  {
+    "file": "psa.png",
+    "label": "PSA",
+    "terms": "psa prostata masculino"
+  },
+  {
+    "file": "prostata.png",
+    "label": "PROST",
+    "terms": "prostata psa"
+  },
+  {
+    "file": "tireoide.png",
+    "label": "TIR",
+    "terms": "tireoide hormonio"
+  },
+  {
+    "file": "hormonio.png",
+    "label": "HORM",
+    "terms": "hormonio endocrino"
+  },
+  {
+    "file": "tsh.png",
+    "label": "TSH",
+    "terms": "tsh tireoide"
+  },
+  {
+    "file": "serotonina.png",
+    "label": "SERO",
+    "terms": "serotonina"
+  },
+  {
+    "file": "saliva.png",
+    "label": "SALIVA",
+    "terms": "saliva salivar"
+  },
+  {
+    "file": "salivar.png",
+    "label": "SALIV",
+    "terms": "salivar saliva"
+  },
+  {
+    "file": "strepto.png",
+    "label": "STREP",
+    "terms": "strepto bacteria"
+  },
+  {
+    "file": "swab.png",
+    "label": "SWAB",
+    "terms": "swab cotonete"
+  },
+  {
+    "file": "cultura.png",
+    "label": "CULT",
+    "terms": "cultura secrecao"
+  },
+  {
+    "file": "cultura_secrecao.png",
+    "label": "SECR",
+    "terms": "cultura de secrecao"
+  },
+  {
+    "file": "bacteria.png",
+    "label": "BACT",
+    "terms": "bacteria"
+  },
+  {
+    "file": "fungos.png",
+    "label": "FUNGO",
+    "terms": "fungos"
+  },
+  {
+    "file": "rotavirus.png",
+    "label": "ROTA",
+    "terms": "rotavirus virus"
+  },
+  {
+    "file": "virus.png",
+    "label": "VIRUS",
+    "terms": "virus"
+  },
+  {
+    "file": "laboratorio.png",
+    "label": "LAB",
+    "terms": "laboratorio"
+  },
+  {
+    "file": "microscopio.png",
+    "label": "MICRO",
+    "terms": "microscopio"
+  },
+  {
+    "file": "tubo_ensaio.png",
+    "label": "TUBO",
+    "terms": "tubo ensaio coleta"
+  },
+  {
+    "file": "tubo.png",
+    "label": "TUBO",
+    "terms": "tubo exame"
+  },
+  {
+    "file": "amostra.png",
+    "label": "AMOSTRA",
+    "terms": "amostra coleta"
+  },
+  {
+    "file": "coleta.png",
+    "label": "COLETA",
+    "terms": "coleta amostra"
+  },
+  {
+    "file": "geladeira.png",
+    "label": "FRIO",
+    "terms": "geladeira transporte frio"
+  },
+  {
+    "file": "transporte.png",
+    "label": "TRANS",
+    "terms": "transporte amostra"
+  },
+  {
+    "file": "refrigerado.png",
+    "label": "FRIO",
+    "terms": "refrigerado"
+  },
+  {
+    "file": "atendimento.png",
+    "label": "ATEND",
+    "terms": "atendimento recepcao"
+  },
+  {
+    "file": "recepcao.png",
+    "label": "RECEP",
+    "terms": "recepcao"
+  },
+  {
+    "file": "whatsapp.png",
+    "label": "WPP",
+    "terms": "whatsapp atendimento"
+  },
+  {
+    "file": "agenda.png",
+    "label": "AGENDA",
+    "terms": "agenda agendamento"
+  },
+  {
+    "file": "horario.png",
+    "label": "HORA",
+    "terms": "horario"
+  },
+  {
+    "file": "pendente.png",
+    "label": "PEND",
+    "terms": "pendente alerta"
+  },
+  {
+    "file": "urgente.png",
+    "label": "URG",
+    "terms": "urgente"
+  },
+  {
+    "file": "retorno.png",
+    "label": "RET",
+    "terms": "retorno"
+  },
+  {
+    "file": "link.png",
+    "label": "LINK",
+    "terms": "link"
+  },
+  {
+    "file": "renal.png",
+    "label": "RENAL",
+    "terms": "renal urina"
+  },
+  {
+    "file": "clearance_creatinina.png",
+    "label": "CLEAR",
+    "terms": "clearance creatinina urina"
+  },
+  {
+    "file": "proteinuria.png",
+    "label": "PROT",
+    "terms": "proteinuria urina"
+  },
+  {
+    "file": "uroanalise.png",
+    "label": "URO",
+    "terms": "uroanalise urina"
+  },
+  {
+    "file": "balanca.png",
+    "label": "BAL",
+    "terms": "financeiro balanca"
+  },
+  {
+    "file": "financeiro.png",
+    "label": "R$",
+    "terms": "financeiro dinheiro"
+  },
+  {
+    "file": "contrato.png",
+    "label": "CONT",
+    "terms": "contrato"
+  },
+  {
+    "file": "laudo.png",
+    "label": "LAUDO",
+    "terms": "laudo"
+  },
+  {
+    "file": "protocolo.png",
+    "label": "PROTO",
+    "terms": "protocolo"
+  },
+  {
+    "file": "cadastro.png",
+    "label": "CAD",
+    "terms": "cadastro"
+  },
+  {
+    "file": "carteirinha.png",
+    "label": "CART",
+    "terms": "carteirinha convenio"
+  },
+  {
+    "file": "convenio.png",
+    "label": "CONV",
+    "terms": "convenio"
+  },
+  {
+    "file": "farmacogenetica.png",
+    "label": "FARM",
+    "terms": "farmacogenetica"
+  },
+  {
+    "file": "hepatite.png",
+    "label": "HEP",
+    "terms": "hepatite"
+  },
+  {
+    "file": "hepatite_b.png",
+    "label": "HEP B",
+    "terms": "hepatite b"
+  },
+  {
+    "file": "hpv.png",
+    "label": "HPV",
+    "terms": "hpv"
+  },
+  {
+    "file": "febre_amarela.png",
+    "label": "FEBRE",
+    "terms": "febre amarela"
+  },
+  {
+    "file": "cartao_vacina.png",
+    "label": "VAC",
+    "terms": "cartao vacina"
+  },
+  {
+    "file": "consentimento.png",
+    "label": "CONS",
+    "terms": "consentimento"
+  },
+  {
+    "file": "secrecao.png",
+    "label": "SEC",
+    "terms": "secrecao"
+  },
+  {
+    "file": "cultura_feridas.png",
+    "label": "FERIDA",
+    "terms": "cultura feridas"
+  },
+  {
+    "file": "ferro_ferritina.png",
+    "label": "FERRO",
+    "terms": "ferro ferritina"
+  },
+  {
+    "file": "cortisol.png",
+    "label": "CORT",
+    "terms": "cortisol"
+  },
+  {
+    "file": "vitamina_d.png",
+    "label": "VIT D",
+    "terms": "vitamina d"
+  },
+  {
+    "file": "inflamacao.png",
+    "label": "PCR",
+    "terms": "inflamacao pcr"
+  },
+  {
+    "file": "alergia.png",
+    "label": "ALERG",
+    "terms": "alergia"
+  },
+  {
+    "file": "cardiologia.png",
+    "label": "CARD",
+    "terms": "cardiologia"
+  },
+  {
+    "file": "neurologia.png",
+    "label": "NEURO",
+    "terms": "neurologia"
+  },
+  {
+    "file": "urologia.png",
+    "label": "URO",
+    "terms": "urologia"
+  },
+  {
+    "file": "ginecologia.png",
+    "label": "GINE",
+    "terms": "ginecologia"
+  },
+  {
+    "file": "respiratorio.png",
+    "label": "RESP",
+    "terms": "respiratorio"
+  },
+  {
+    "file": "hepatico.png",
+    "label": "HEP",
+    "terms": "hepatico figado"
+  }
+]

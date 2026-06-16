@@ -307,13 +307,11 @@ def proteger_rotas_por_permissao():
         ("/convenios/novo", ("criar_convenios", "criar_convenio")),
         ("/convenios/editar", ("editar_convenios", "editar_convenio")),
         ("/convenios/excluir", ("excluir_convenios", "excluir_convenio")),
-        ("/convenios/reordenar", ("editar_convenios", "editar_convenio")),
         ("/convenios", ("ver_convenios",)),
 
         ("/reqs/nova", ("criar_reqs", "criar_req")),
         ("/reqs/editar", ("editar_reqs", "editar_req")),
         ("/reqs/excluir", ("excluir_reqs", "excluir_req")),
-        ("/reqs/reordenar", ("editar_reqs", "editar_req")),
         ("/reqs", ("ver_reqs",)),
 
         ("/formularios/novo", ("criar_formularios", "criar_formulario")),
@@ -742,7 +740,13 @@ def convenios():
     if not usuario_logado():
         return redirect("/login")
 
-    resultado = supabase.table("convenios").select("*").order("ordem").order("criado_em", desc=True).execute()
+    resultado = (
+        supabase.table("convenios")
+        .select("*")
+        .order("ordem")
+        .order("criado_em", desc=True)
+        .execute()
+    )
 
     return render_template(
         "convenios.html",
@@ -823,15 +827,14 @@ def excluir_convenio(convenio_id):
 
 
 @app.route("/convenios/reordenar", methods=["POST"])
-def reordenar_convenios():
+def convenios_reordenar():
     if not usuario_logado():
-        return jsonify({"ok": False, "erro": "login"}), 401
+        return jsonify({"ok": False}), 401
 
-    dados = request.get_json(silent=True) or {}
-    ids = dados.get("ids") or []
+    ids = (request.get_json(silent=True) or {}).get("ids", [])
 
-    for posicao, convenio_id in enumerate(ids, start=1):
-        supabase.table("convenios").update({"ordem": posicao}).eq("id", convenio_id).execute()
+    for ordem, convenio_id in enumerate(ids, start=1):
+        supabase.table("convenios").update({"ordem": ordem}).eq("id", convenio_id).execute()
 
     return jsonify({"ok": True})
 
@@ -905,7 +908,7 @@ def nova_req():
     supabase.table("reqs").insert({
         "nome": request.form.get("nome"),
         "link": request.form.get("link"),
-        "icone": request.form.get("icone") or "documento.svg",
+        "icone": request.form.get("icone") or "documento.png",
         "criado_por": session.get("usuario_id")
     }).execute()
 
@@ -920,7 +923,7 @@ def editar_req(req_id):
     supabase.table("reqs").update({
         "nome": request.form.get("nome"),
         "link": request.form.get("link"),
-        "icone": request.form.get("icone") or "documento.svg"
+        "icone": request.form.get("icone") or "documento.png"
     }).eq("id", req_id).execute()
 
     return redirect("/reqs")
@@ -936,15 +939,14 @@ def excluir_req(req_id):
 
 
 @app.route("/reqs/reordenar", methods=["POST"])
-def reordenar_reqs():
+def reqs_reordenar():
     if not usuario_logado():
-        return jsonify({"ok": False, "erro": "login"}), 401
+        return jsonify({"ok": False}), 401
 
-    dados = request.get_json(silent=True) or {}
-    ids = dados.get("ids") or []
+    ids = (request.get_json(silent=True) or {}).get("ids", [])
 
-    for posicao, req_id in enumerate(ids, start=1):
-        supabase.table("reqs").update({"ordem": posicao}).eq("id", req_id).execute()
+    for ordem, req_id in enumerate(ids, start=1):
+        supabase.table("reqs").update({"ordem": ordem}).eq("id", req_id).execute()
 
     return jsonify({"ok": True})
 
