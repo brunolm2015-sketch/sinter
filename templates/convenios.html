@@ -694,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <style>
-.drag-handle-card{position:absolute;top:8px;left:8px;width:26px;height:26px;border:0;border-radius:8px;background:#e0f2fe;color:#0077b6;font-weight:900;cursor:grab;line-height:1;z-index:5;}
+.drag-handle-card{position:absolute;top:8px;left:8px;width:26px;height:26px;border:0;border-radius:8px;background:#e0f2fe;color:#0077b6;font-weight:900;cursor:grab;line-height:1;z-index:50;touch-action:none;}
 .drag-handle-card:active{cursor:grabbing;}
 .card-arrastavel{position:relative;}
 .card-arrastavel.dragging{opacity:.45;transform:scale(.98);}
@@ -707,45 +707,80 @@ function iniciarArrasteCards(containerId, endpoint){
     if(!container) return;
 
     let arrastado = null;
+    let podeArrastar = false;
 
-    container.querySelectorAll('.card-arrastavel').forEach(card => {
+    const cards = () => Array.from(container.querySelectorAll('.card-arrastavel'));
+
+    cards().forEach(card => {
+        const handle = card.querySelector('.drag-handle-card');
+
+        card.setAttribute('draggable', 'false');
+
+        if(handle){
+            handle.setAttribute('draggable', 'true');
+
+            handle.addEventListener('mousedown', (e) => {
+                podeArrastar = true;
+                card.setAttribute('draggable', 'true');
+                e.stopPropagation();
+            });
+
+            handle.addEventListener('touchstart', (e) => {
+                podeArrastar = true;
+                card.setAttribute('draggable', 'true');
+                e.stopPropagation();
+            }, {passive:true});
+        }
+
         card.addEventListener('dragstart', (e) => {
-            if(!e.target.classList.contains('drag-handle-card')){
+            if(!podeArrastar){
                 e.preventDefault();
                 return;
             }
+
             arrastado = card;
             card.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
+
+            if(e.dataTransfer){
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', card.dataset.id || '');
+            }
         });
 
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
+            card.setAttribute('draggable', 'false');
+            podeArrastar = false;
+            arrastado = null;
+
             container.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
             salvarOrdemCards(container, endpoint);
         });
 
         card.addEventListener('dragover', (e) => {
             e.preventDefault();
-            if(card !== arrastado) card.classList.add('drag-over');
-        });
 
-        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+            if(!arrastado || card === arrastado) return;
 
-        card.addEventListener('drop', (e) => {
-            e.preventDefault();
-            card.classList.remove('drag-over');
-            if(!arrastado || arrastado === card) return;
+            card.classList.add('drag-over');
 
-            const cards = Array.from(container.querySelectorAll('.card-arrastavel'));
-            const origem = cards.indexOf(arrastado);
-            const destino = cards.indexOf(card);
+            const rect = card.getBoundingClientRect();
+            const metade = rect.left + rect.width / 2;
 
-            if(origem < destino){
+            if(e.clientX > metade){
                 card.after(arrastado);
             }else{
                 card.before(arrastado);
             }
+        });
+
+        card.addEventListener('dragleave', () => {
+            card.classList.remove('drag-over');
+        });
+
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
         });
     });
 }
