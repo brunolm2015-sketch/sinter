@@ -1,0 +1,100 @@
+{% set status_chave = exame.status if exame.status in status_ccp else 'entrada' %}
+{% set nasc_partes = (exame.data_nascimento|string).split('-') if exame.data_nascimento else [] %}
+{% set exame_partes = (exame.data_exame|string).split('-') if exame.data_exame else [] %}
+{% set nascimento_br = nasc_partes[2] ~ '/' ~ nasc_partes[1] ~ '/' ~ nasc_partes[0] if nasc_partes|length == 3 else '-' %}
+{% set data_exame_br = exame_partes[2] ~ '/' ~ exame_partes[1] ~ '/' ~ exame_partes[0] if exame_partes|length == 3 else '-' %}
+
+<article class="ccp-card status-{{ status_chave }}">
+    <button type="button" class="ccp-card-resumo" onclick="alternarCcpCard(this)" aria-expanded="false">
+        <span class="ccp-seta">&gt;</span>
+        <span class="ccp-resumo-nome">
+            <small>Paciente</small>
+            <strong>{{ exame.nome_paciente or '-' }}</strong>
+        </span>
+        <span class="badge-ccp" style="background: {{ status_ccp[status_chave].cor }}; color: {{ '#111827' if status_chave == 'aguardando_pagamento' else '#fff' }};">
+            {{ status_ccp[status_chave].nome }}
+        </span>
+    </button>
+
+    <div class="ccp-card-detalhes">
+        <div class="ccp-dados">
+            <span><strong>Exame:</strong> {{ exame.exame or '-' }}</span>
+            <span><strong>Convênio:</strong> {{ exame.convenio or '-' }}</span>
+            <span><strong>CIP:</strong> {{ exame.cip or '-' }}</span>
+            <span><strong>CPF:</strong> {{ exame.cpf or '-' }}</span>
+            <span><strong>Celular:</strong> {{ exame.celular or '-' }}</span>
+            <span><strong>Valor:</strong> {{ exame.valor or '-' }}</span>
+            <span><strong>Nascimento:</strong> {{ nascimento_br }}</span>
+            <span><strong>Data do Exame:</strong> {{ data_exame_br }}</span>
+            <span><strong>Observação:</strong> {{ exame.observacao or '-' }}</span>
+        </div>
+
+        {% if tem_permissao('editar_ccp_exames') %}
+        <form method="POST" action="/ccp/exame/status/{{ exame.id }}" class="ccp-status-form">
+            <div>
+                <label>Status</label>
+                <select name="status" class="select-bonito">
+                    {% for chave, st in status_ccp.items() %}
+                    <option value="{{ chave }}" {% if status_chave == chave %}selected{% endif %}>{{ st.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit">Atualizar</button>
+        </form>
+        {% endif %}
+
+        <div class="ccp-acoes-card">
+            {% if tem_permissao('editar_ccp_exames') %}
+            <button type="button" class="btn-ccp-editar" onclick="abrirModalCcp('editarCcp{{ exame.id }}')">Editar</button>
+            {% endif %}
+
+            {% if tem_permissao('excluir_ccp_exames') and status_chave == 'finalizado' %}
+            <form method="POST" action="/ccp/exame/excluir/{{ exame.id }}" onsubmit="return confirm('Deseja excluir este exame finalizado?')">
+                <button type="submit" class="btn-ccp-excluir">Excluir</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</article>
+
+{% if tem_permissao('editar_ccp_exames') %}
+<div id="editarCcp{{ exame.id }}" class="modal-fundo">
+    <div class="modal-card">
+        <div class="modal-topo">
+            <div>
+                <h2>Editar Exame CCP</h2>
+                <p>Atualize os dados e o status do exame.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModalCcp('editarCcp{{ exame.id }}')">×</button>
+        </div>
+
+        <form method="POST" action="/ccp/exame/editar/{{ exame.id }}" class="form-convenio form-ccp">
+            <div class="campo-modal"><label>Paciente</label><input name="nome_paciente" value="{{ exame.nome_paciente or '' }}" required></div>
+            <div class="campo-modal"><label>Exame</label><input name="exame" value="{{ exame.exame or '' }}" required></div>
+            <div class="campo-modal"><label>CIP</label><input name="cip" value="{{ exame.cip or '' }}"></div>
+            <div class="campo-modal"><label>CPF</label><input name="cpf" value="{{ exame.cpf or '' }}"></div>
+            <div class="campo-modal"><label>Celular</label><input name="celular" value="{{ exame.celular or '' }}" placeholder="(00) 00000-0000"></div>
+            <div class="campo-modal"><label>Convênio</label><input name="convenio" value="{{ exame.convenio or '' }}"></div>
+            <div class="campo-modal"><label>Valor</label><input name="valor" value="{{ exame.valor or '' }}" placeholder="R$ 0,00"></div>
+            <div class="campo-modal"><label>Nascimento</label><input type="date" name="data_nascimento" value="{{ exame.data_nascimento or '' }}"></div>
+            <div class="campo-modal"><label>Data do Exame</label><input type="date" name="data_exame" value="{{ exame.data_exame or '' }}"></div>
+
+            <div class="campo-modal">
+                <label>Status</label>
+                <select name="status" class="select-bonito">
+                    {% for chave, st in status_ccp.items() %}
+                    <option value="{{ chave }}" {% if status_chave == chave %}selected{% endif %}>{{ st.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="campo-modal campo-ccp-observacao"><label>Observação</label><textarea name="observacao">{{ exame.observacao or '' }}</textarea></div>
+
+            <div class="modal-botoes">
+                <button type="button" class="btn-cancelar" onclick="fecharModalCcp('editarCcp{{ exame.id }}')">Cancelar</button>
+                <button type="submit" class="btn-salvar">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}

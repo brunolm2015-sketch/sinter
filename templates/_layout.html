@@ -41,6 +41,12 @@
                 </a>
                 {% endif %}
 
+                {% if tem_permissao('ver_ccp') %}
+                <a href="/ccp" class="{% if request.path.startswith('/ccp') %}ativo{% endif %}">
+                    CCP
+                </a>
+                {% endif %}
+
                 {% if tem_permissao('ver_usuarios_cargos') or tem_permissao('ver_usuarios') or tem_permissao('ver_cargos') %}
                 <a href="/usuarios-cargos" class="{% if request.path.startswith('/usuarios-cargos') or request.path.startswith('/usuarios') or request.path.startswith('/cargos') %}ativo{% endif %}">
                     Usuários e Cargos

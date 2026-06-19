@@ -202,6 +202,11 @@ PERMISSOES_ALIAS = {
     "gerenciar_exames": ["gerenciar_exames", "endocrinos_gerenciar_exames"],
     "gerenciar_status": ["gerenciar_status", "endocrinos_gerenciar_status"],
 
+    "ver_ccp": ["ver_ccp", "menu_ccp", "ccp"],
+    "criar_ccp_exames": ["criar_ccp_exames", "criar_exame_ccp", "novo_ccp_exame", "ccp_criar"],
+    "editar_ccp_exames": ["editar_ccp_exames", "editar_exame_ccp", "ccp_editar"],
+    "excluir_ccp_exames": ["excluir_ccp_exames", "excluir_exame_ccp", "ccp_excluir"],
+
     "ver_usuarios_cargos": [
         "ver_usuarios_cargos", "menu_usuarios_cargos", "usuarios_cargos",
         "usuarios_e_cargos", "ver_usuarios_e_cargos"
@@ -262,6 +267,7 @@ def primeira_pagina_permitida():
         ("/reqs", ("ver_reqs",)),
         ("/formularios", ("ver_formularios",)),
         ("/endocrinos", ("ver_endocrinos", "ver_agendamentos")),
+        ("/ccp", ("ver_ccp",)),
         ("/usuarios-cargos", ("ver_usuarios_cargos", "ver_usuarios", "ver_cargos")),
     ]
 
@@ -330,6 +336,12 @@ def proteger_rotas_por_permissao():
         ("/endocrinos/agendamento/finalizar", ("editar_agendamentos", "editar_agendamento")),
         ("/endocrinos/agendamento/excluir", ("excluir_agendamentos", "excluir_agendamento")),
         ("/endocrinos", ("ver_endocrinos", "ver_agendamentos")),
+
+        ("/ccp/exame/novo", ("criar_ccp_exames",)),
+        ("/ccp/exame/editar", ("editar_ccp_exames",)),
+        ("/ccp/exame/status", ("editar_ccp_exames",)),
+        ("/ccp/exame/excluir", ("excluir_ccp_exames",)),
+        ("/ccp", ("ver_ccp",)),
 
         ("/usuarios/aprovar", ("aprovar_usuarios",)),
         ("/usuarios/negar", ("aprovar_usuarios",)),
@@ -1574,6 +1586,122 @@ def endocrino_agendamento_finalizar(agendamento_id):
     }).eq("id", agendamento_id).execute()
 
     return redirect("/endocrinos")
+
+
+CCP_STATUS = {
+    "entrada": {
+        "nome": "ENTRADA",
+        "cor": "#0ea5e9",
+        "descricao": "Exame recem cadastrado."
+    },
+    "aguardando_pagamento": {
+        "nome": "AGUARDANDO PAGAMENTO",
+        "cor": "#facc15",
+        "descricao": "Mensagem enviada e aguardando pagamento."
+    },
+    "pago": {
+        "nome": "PAGO",
+        "cor": "#22c55e",
+        "descricao": "Pagamento confirmado."
+    },
+    "finalizado": {
+        "nome": "FINALIZADO",
+        "cor": "#64748b",
+        "descricao": "Processo finalizado, liberado para exclusao."
+    },
+}
+
+
+def normalizar_status_ccp(status):
+    status = (status or "entrada").strip().lower().replace(" ", "_").replace("-", "_")
+    return status if status in CCP_STATUS else "entrada"
+
+
+def dados_formulario_ccp(status_padrao="entrada"):
+    return {
+        "nome_paciente": request.form.get("nome_paciente"),
+        "cpf": request.form.get("cpf"),
+        "cip": request.form.get("cip"),
+        "celular": request.form.get("celular"),
+        "exame": request.form.get("exame"),
+        "convenio": request.form.get("convenio"),
+        "valor": request.form.get("valor") or None,
+        "data_nascimento": request.form.get("data_nascimento") or None,
+        "data_exame": request.form.get("data_exame") or None,
+        "observacao": request.form.get("observacao"),
+        "status": normalizar_status_ccp(request.form.get("status") or status_padrao),
+    }
+
+
+@app.route("/ccp")
+def ccp():
+    if not usuario_logado():
+        return redirect("/login")
+
+    resultado = (
+        supabase.table("ccp_exames")
+        .select("*")
+        .order("criado_em", desc=True)
+        .execute()
+    )
+
+    exames = resultado.data or []
+    ativos = [exame for exame in exames if normalizar_status_ccp(exame.get("status")) in ("entrada", "aguardando_pagamento")]
+    finalizados = [exame for exame in exames if normalizar_status_ccp(exame.get("status")) in ("pago", "finalizado")]
+
+    return render_template(
+        "ccp.html",
+        exames_ativos=ativos,
+        exames_finalizados=finalizados,
+        status_ccp=CCP_STATUS,
+        aba=request.args.get("aba", "ativos"),
+        nome=session.get("usuario_nome"),
+        cargo=session.get("usuario_cargo"),
+        permissoes=permissoes_usuario()
+    )
+
+
+@app.route("/ccp/exame/novo", methods=["POST"])
+def ccp_exame_novo():
+    if not usuario_logado():
+        return redirect("/login")
+
+    dados = dados_formulario_ccp("entrada")
+    dados["status"] = "entrada"
+    dados["criado_por"] = session.get("usuario_id")
+
+    supabase.table("ccp_exames").insert(dados).execute()
+    return redirect("/ccp")
+
+
+@app.route("/ccp/exame/editar/<exame_id>", methods=["POST"])
+def ccp_exame_editar(exame_id):
+    if not usuario_logado():
+        return redirect("/login")
+
+    supabase.table("ccp_exames").update(dados_formulario_ccp()).eq("id", exame_id).execute()
+    aba = "finalizados" if normalizar_status_ccp(request.form.get("status")) in ("pago", "finalizado") else "ativos"
+    return redirect(f"/ccp?aba={aba}")
+
+
+@app.route("/ccp/exame/status/<exame_id>", methods=["POST"])
+def ccp_exame_status(exame_id):
+    if not usuario_logado():
+        return redirect("/login")
+
+    status = normalizar_status_ccp(request.form.get("status"))
+    supabase.table("ccp_exames").update({"status": status}).eq("id", exame_id).execute()
+    aba = "finalizados" if status in ("pago", "finalizado") else "ativos"
+    return redirect(f"/ccp?aba={aba}")
+
+
+@app.route("/ccp/exame/excluir/<exame_id>", methods=["POST"])
+def ccp_exame_excluir(exame_id):
+    if not usuario_logado():
+        return redirect("/login")
+
+    supabase.table("ccp_exames").delete().eq("id", exame_id).execute()
+    return redirect("/ccp?aba=finalizados")
 
 
 @app.route("/usuarios-cargos")

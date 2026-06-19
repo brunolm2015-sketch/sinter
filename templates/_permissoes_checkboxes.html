@@ -43,6 +43,15 @@
     </div>
 
     <div class="grupo-permissao">
+        <h3>CCP</h3>
+
+        <label><input type="checkbox" name="permissoes" value="ver_ccp" {% if p.get("ver_ccp") %}checked{% endif %}> Ver CCP</label>
+        <label><input type="checkbox" name="permissoes" value="criar_ccp_exames" {% if p.get("criar_ccp_exames") %}checked{% endif %}> Criar Exames CCP</label>
+        <label><input type="checkbox" name="permissoes" value="editar_ccp_exames" {% if p.get("editar_ccp_exames") %}checked{% endif %}> Editar Exames CCP</label>
+        <label><input type="checkbox" name="permissoes" value="excluir_ccp_exames" {% if p.get("excluir_ccp_exames") %}checked{% endif %}> Excluir Exames CCP</label>
+    </div>
+
+    <div class="grupo-permissao">
         <h3>Usuários</h3>
 
         <label><input type="checkbox" name="permissoes" value="ver_usuarios_cargos" {% if p.get("ver_usuarios_cargos") %}checked{% endif %}> Ver Usuários e Cargos</label>
