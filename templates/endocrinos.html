@@ -1517,12 +1517,20 @@ function imprimirAgendamentosSelecionados() {
 
         return `
             <article class="print-card-agendamento">
-                <h2>${nome}</h2>
-                <div class="print-exame">${exame}</div>
-                <div class="print-info"><strong>CIP:</strong> ${cip}</div>
-                <div class="print-info"><strong>CPF:</strong> ${cpf}</div>
-                <div class="print-info"><strong>Data:</strong> ${data}</div>
-                <div class="print-info"><strong>Horário:</strong> ${hora}</div>
+                <header class="print-card-topo">
+                    <span>Paciente</span>
+                    <h2>${nome}</h2>
+                </header>
+                <div class="print-exame">
+                    <span>Exame agendado</span>
+                    <strong>${exame}</strong>
+                </div>
+                <div class="print-dados-grid">
+                    <div class="print-info"><strong>CIP</strong><span>${cip}</span></div>
+                    <div class="print-info"><strong>CPF</strong><span>${cpf}</span></div>
+                    <div class="print-info"><strong>Data</strong><span>${data}</span></div>
+                    <div class="print-info"><strong>Horário</strong><span>${hora}</span></div>
+                </div>
             </article>
         `;
     }).join('');
@@ -1566,48 +1574,81 @@ function imprimirAgendamentosSelecionados() {
                 }
                 .print-grid {
                     display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 10px;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
                 }
                 .print-card-agendamento {
                     border: 2px solid #111827;
                     border-radius: 8px;
-                    padding: 12px;
-                    min-height: 175px;
+                    padding: 13px;
+                    min-height: 205px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 9px;
                     page-break-inside: avoid;
                     break-inside: avoid;
                 }
-                .print-card-agendamento h2 {
-                    margin: 0 0 8px 0;
-                    font-size: 23px;
-                    line-height: 1.05;
+                .print-card-topo span,
+                .print-exame span {
+                    display: block;
+                    margin-bottom: 3px;
+                    font-size: 10px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    color: #334155;
+                    letter-spacing: .02em;
+                }
+                .print-card-topo h2 {
+                    margin: 0;
+                    font-size: 24px;
+                    line-height: 1.08;
                     text-transform: uppercase;
                     color: #000;
                 }
                 .print-exame {
                     border: 1px solid #111827;
                     border-radius: 6px;
-                    padding: 7px;
-                    margin-bottom: 8px;
+                    padding: 8px 9px;
                     font-size: 17px;
                     font-weight: 900;
+                    line-height: 1.1;
                     text-transform: uppercase;
                     background: #f3f4f6;
                     color: #000;
                 }
+                .print-exame strong {
+                    display: block;
+                    font-size: 18px;
+                }
+                .print-dados-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    margin-top: auto;
+                }
                 .print-info {
-                    font-size: 14px;
-                    margin: 5px 0;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 6px;
+                    padding: 7px 8px;
                     line-height: 1.25;
                 }
                 .print-info strong {
-                    font-size: 13px;
+                    display: block;
+                    margin-bottom: 2px;
+                    font-size: 10px;
                     text-transform: uppercase;
+                    color: #334155;
+                }
+                .print-info span {
+                    display: block;
+                    font-size: 15px;
+                    font-weight: 800;
+                    color: #000;
                 }
                 @media print {
                     body { margin: 8mm; }
-                    .print-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
-                    .print-card-agendamento { min-height: 165px; }
+                    .print-grid { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+                    .print-card-agendamento { min-height: 205px; }
                     @page { size: A4 portrait; margin: 8mm; }
                 }
             </style>
