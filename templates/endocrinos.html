@@ -3,6 +3,19 @@
 
 {% block conteudo %}
 
+{% macro data_br(valor) -%}
+    {%- if valor -%}
+        {%- set partes = (valor|string).split('-') -%}
+        {%- if partes|length == 3 -%}
+            {{- partes[2] ~ '/' ~ partes[1] ~ '/' ~ partes[0] -}}
+        {%- else -%}
+            {{- valor -}}
+        {%- endif -%}
+    {%- else -%}
+        -
+    {%- endif -%}
+{%- endmacro %}
+
 <section class="barra-acoes">
     {% if tem_permissao('criar_agendamentos') %}
     <button type="button" onclick="abrirModal('modalNovoAgendamento')" class="btn-novo">+ Novo Agendamento</button>
@@ -49,7 +62,7 @@
     <div class="card-agendamento-endocrino"
          data-data="{{ ag.data_agendamento or '' }}"
          data-hora="{{ ag.horario or '' }}"
-         data-busca="{{ (ag.nome ~ ' ' ~ (ag.cip or '') ~ ' ' ~ (ag.cpf or '') ~ ' ' ~ (ag.celular or '') ~ ' ' ~ (ag.data_nascimento or '') ~ ' ' ~ (ag.data_agendamento or '') ~ ' ' ~ (ag.horario or '') ~ ' ' ~ (ag.endocrino_exames.exame if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_exames.sigla if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_status.nome if ag.endocrino_status else '') ~ ' ' ~ (ag.status_descricao or ''))|lower }}">
+         data-busca="{{ (ag.nome ~ ' ' ~ (ag.cip or '') ~ ' ' ~ (ag.cpf or '') ~ ' ' ~ (ag.celular or '') ~ ' ' ~ (ag.data_nascimento or '') ~ ' ' ~ data_br(ag.data_nascimento) ~ ' ' ~ (ag.data_agendamento or '') ~ ' ' ~ data_br(ag.data_agendamento) ~ ' ' ~ (ag.horario or '') ~ ' ' ~ (ag.endocrino_exames.exame if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_exames.sigla if ag.endocrino_exames else '') ~ ' ' ~ (ag.endocrino_status.nome if ag.endocrino_status else '') ~ ' ' ~ (ag.status_descricao or ''))|lower }}">
 
         <label class="selecionar-agendamento-impressao" title="Selecionar para impressão">
             <input
@@ -77,7 +90,7 @@
             </span>
             <span class="resumo-campo">
                 <small>Data</small>
-                <strong>{{ ag.data_agendamento or '-' }}{% if ag.horario %} às {{ ag.horario }}{% endif %}</strong>
+                <strong>{{ data_br(ag.data_agendamento) }}{% if ag.horario %} às {{ ag.horario }}{% endif %}</strong>
             </span>
             <span class="resumo-campo resumo-exame">
                 <small>Exame</small>
@@ -119,7 +132,7 @@
         <div class="agendamento-cabecalho">
             <div>
                 <h3>{{ ag.nome }}</h3>
-                <span>{{ ag.data_agendamento or '-' }}{% if ag.horario %} às {{ ag.horario }}{% endif %}</span>
+                <span>{{ data_br(ag.data_agendamento) }}{% if ag.horario %} às {{ ag.horario }}{% endif %}</span>
             </div>
 
             {% if ag.endocrino_status %}
@@ -139,14 +152,14 @@
                     <span><strong>CIP:</strong> {{ ag.cip or '-' }}</span>
                     <span><strong>CPF:</strong> {{ ag.cpf or '-' }}</span>
                     <span><strong>Celular:</strong> {{ ag.celular or '-' }}</span>
-                    <span><strong>Nascimento:</strong> {{ ag.data_nascimento or '-' }}</span>
+                    <span><strong>Nascimento:</strong> {{ data_br(ag.data_nascimento) }}</span>
                 </div>
             </div>
 
             <div class="bloco-agendamento">
                 <h4>Informações do agendamento</h4>
                 <div class="linha-dados-agendamento">
-                    <span><strong>Data:</strong> {{ ag.data_agendamento or '-' }}</span>
+                    <span><strong>Data:</strong> {{ data_br(ag.data_agendamento) }}</span>
                     <span><strong>Hora:</strong> {{ ag.horario or '-' }}</span>
                     <span
                         title="{% if ag.endocrino_exames %}{{ ag.endocrino_exames.observacao or '' }}{% endif %}">
