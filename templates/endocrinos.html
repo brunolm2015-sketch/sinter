@@ -65,6 +65,41 @@
             <span></span>
         </label>
 
+        <button
+            type="button"
+            class="agendamento-resumo-toggle"
+            onclick="alternarDetalhesAgendamento(this)"
+            aria-expanded="false">
+            <span class="seta-resumo-agendamento">&gt;</span>
+            <span class="resumo-campo resumo-paciente">
+                <small>Paciente</small>
+                <strong>{{ ag.nome or '-' }}</strong>
+            </span>
+            <span class="resumo-campo">
+                <small>Data</small>
+                <strong>{{ ag.data_agendamento or '-' }}{% if ag.horario %} às {{ ag.horario }}{% endif %}</strong>
+            </span>
+            <span class="resumo-campo resumo-exame">
+                <small>Exame</small>
+                <strong>{{ ag.endocrino_exames.exame if ag.endocrino_exames else '-' }}</strong>
+            </span>
+            <span class="resumo-campo resumo-status">
+                <small>Status</small>
+                {% if ag.endocrino_status %}
+                <strong
+                    class="badge-status-endocrino badge-status-resumo"
+                    title="{{ ag.status_descricao or ag.endocrino_status.descricao_padrao or '' }}"
+                    style="background: {{ ag.endocrino_status.cor or '#0077b6' }};">
+                    {{ ag.endocrino_status.nome }}
+                </strong>
+                {% else %}
+                <strong>-</strong>
+                {% endif %}
+            </span>
+        </button>
+
+        <div class="agendamento-detalhes-completos">
+
         <div class="agendamento-acoes-topo">
             {% if tem_permissao('editar_agendamentos') %}
             <button type="button" onclick="abrirModal('editarAgendamento{{ ag.id }}')" class="btn-card editar" title="Editar">
@@ -147,6 +182,7 @@
             </form>
         </div>
         {% endif %}
+        </div>
     </div>
 
     {% if tem_permissao('editar_agendamentos') %}
@@ -704,11 +740,97 @@
 .card-agendamento-endocrino {
     width: 100%;
     background: white;
-    border-radius: 16px;
-    padding: 14px 18px 14px 58px;
-    box-shadow: 0 8px 22px rgba(0,0,0,.08);
-    border-left: 6px solid #0077b6;
+    border-radius: 10px;
+    padding: 0;
+    box-shadow: 0 4px 14px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #0077b6;
     position: relative;
+    overflow: hidden;
+}
+
+.agendamento-resumo-toggle {
+    width: 100%;
+    min-height: 58px;
+    margin: 0;
+    padding: 10px 16px 10px 54px;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    color: #0f172a;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 30px minmax(180px, 1.4fr) minmax(135px, .8fr) minmax(180px, 1.2fr) minmax(120px, .7fr);
+    gap: 12px;
+    align-items: center;
+    text-align: left;
+}
+
+.agendamento-resumo-toggle:hover {
+    background: #f8fafc;
+}
+
+.seta-resumo-agendamento {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #e0f2fe;
+    color: #0369a1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    transform: rotate(90deg);
+    transition: transform .18s ease;
+}
+
+.card-agendamento-endocrino.agendamento-aberto .seta-resumo-agendamento {
+    transform: rotate(-90deg);
+}
+
+.resumo-campo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.resumo-campo small {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.resumo-campo strong {
+    color: #0f172a;
+    font-size: 14px;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-status-endocrino.badge-status-resumo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    max-width: 100%;
+    color: white;
+}
+
+.agendamento-detalhes-completos {
+    display: none;
+    padding: 14px 18px 14px 58px;
+    border-top: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.card-agendamento-endocrino.agendamento-aberto .agendamento-detalhes-completos {
+    display: block;
 }
 
 .agendamento-acoes-topo {
@@ -979,6 +1101,24 @@
     .painel-filtro-endocrino { grid-template-columns: 1fr; }
     .calendario-endocrino { gap: 5px; }
     .dia-agenda-endocrino { min-height: 70px; padding: 6px; }
+    .agendamento-resumo-toggle {
+        grid-template-columns: 28px 1fr;
+        padding-right: 12px;
+    }
+
+    .resumo-campo {
+        grid-column: 2;
+    }
+
+    .seta-resumo-agendamento {
+        grid-row: 1 / span 4;
+        align-self: center;
+    }
+
+    .agendamento-detalhes-completos {
+        padding-right: 14px;
+    }
+
     .agendamento-blocos {
         grid-template-columns: 1fr;
     }
@@ -1097,6 +1237,14 @@ function abrirModal(id) {
 
 function fecharModal(id) {
     document.getElementById(id).classList.remove('ativo');
+}
+
+function alternarDetalhesAgendamento(botao) {
+    const card = botao.closest('.card-agendamento-endocrino');
+    if (!card) return;
+
+    const aberto = card.classList.toggle('agendamento-aberto');
+    botao.setAttribute('aria-expanded', aberto ? 'true' : 'false');
 }
 
 function adicionarCampoAnexo(botao) {
