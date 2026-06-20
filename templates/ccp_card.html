@@ -70,12 +70,22 @@
 
         <form method="POST" action="/ccp/exame/editar/{{ exame.id }}" class="form-convenio form-ccp">
             <div class="campo-modal"><label>Paciente</label><input name="nome_paciente" value="{{ exame.nome_paciente or '' }}" required></div>
-            <div class="campo-modal"><label>Exame</label><input name="exame" value="{{ exame.exame or '' }}" required></div>
+            <div class="campo-modal">
+                <label>Exame</label>
+                <select name="exame" class="select-bonito select-exame-ccp" onchange="preencherValorExameCcp(this)" required>
+                    <option value="">Selecione</option>
+                    {% for tipo in tipos_exames %}
+                    {% if tipo.ativo != false %}
+                    <option value="{{ tipo.nome }}" data-valor="{{ tipo.valor or '' }}" {% if exame.exame == tipo.nome %}selected{% endif %}>{{ tipo.nome }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
             <div class="campo-modal"><label>CIP</label><input name="cip" value="{{ exame.cip or '' }}"></div>
             <div class="campo-modal"><label>CPF</label><input name="cpf" value="{{ exame.cpf or '' }}"></div>
             <div class="campo-modal"><label>Celular</label><input name="celular" value="{{ exame.celular or '' }}" placeholder="(00) 00000-0000"></div>
             <div class="campo-modal"><label>Convênio</label><input name="convenio" value="{{ exame.convenio or '' }}"></div>
-            <div class="campo-modal"><label>Valor</label><input name="valor" value="{{ exame.valor or '' }}" placeholder="R$ 0,00"></div>
+            <div class="campo-modal"><label>Valor</label><input name="valor" class="valor-exame-ccp" value="{{ exame.valor or '' }}" placeholder="R$ 0,00"></div>
             <div class="campo-modal"><label>Nascimento</label><input type="date" name="data_nascimento" value="{{ exame.data_nascimento or '' }}"></div>
             <div class="campo-modal"><label>Data do Exame</label><input type="date" name="data_exame" value="{{ exame.data_exame or '' }}"></div>
 

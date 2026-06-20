@@ -341,6 +341,7 @@ def proteger_rotas_por_permissao():
         ("/ccp/exame/editar", ("editar_ccp_exames",)),
         ("/ccp/exame/status", ("editar_ccp_exames",)),
         ("/ccp/exame/excluir", ("excluir_ccp_exames",)),
+        ("/ccp/tipos", ("editar_ccp_exames", "criar_ccp_exames")),
         ("/ccp", ("ver_ccp",)),
 
         ("/usuarios/aprovar", ("aprovar_usuarios",)),
@@ -1645,14 +1646,23 @@ def ccp():
         .execute()
     )
 
+    tipos_exames = (
+        supabase.table("ccp_tipos_exames")
+        .select("*")
+        .order("nome")
+        .execute()
+    )
+
     exames = resultado.data or []
     ativos = [exame for exame in exames if normalizar_status_ccp(exame.get("status")) in ("entrada", "aguardando_pagamento")]
     finalizados = [exame for exame in exames if normalizar_status_ccp(exame.get("status")) in ("pago", "finalizado")]
 
     return render_template(
         "ccp.html",
+        exames_todos=exames,
         exames_ativos=ativos,
         exames_finalizados=finalizados,
+        tipos_exames=tipos_exames.data or [],
         status_ccp=CCP_STATUS,
         aba=request.args.get("aba", "ativos"),
         nome=session.get("usuario_nome"),
@@ -1702,6 +1712,43 @@ def ccp_exame_excluir(exame_id):
 
     supabase.table("ccp_exames").delete().eq("id", exame_id).execute()
     return redirect("/ccp?aba=finalizados")
+
+
+@app.route("/ccp/tipos/novo", methods=["POST"])
+def ccp_tipo_exame_novo():
+    if not usuario_logado():
+        return redirect("/login")
+
+    supabase.table("ccp_tipos_exames").insert({
+        "nome": request.form.get("nome"),
+        "valor": request.form.get("valor") or None,
+        "ativo": True,
+    }).execute()
+
+    return redirect("/ccp")
+
+
+@app.route("/ccp/tipos/editar/<tipo_id>", methods=["POST"])
+def ccp_tipo_exame_editar(tipo_id):
+    if not usuario_logado():
+        return redirect("/login")
+
+    supabase.table("ccp_tipos_exames").update({
+        "nome": request.form.get("nome"),
+        "valor": request.form.get("valor") or None,
+        "ativo": "ativo" in request.form,
+    }).eq("id", tipo_id).execute()
+
+    return redirect("/ccp")
+
+
+@app.route("/ccp/tipos/excluir/<tipo_id>", methods=["POST"])
+def ccp_tipo_exame_excluir(tipo_id):
+    if not usuario_logado():
+        return redirect("/login")
+
+    supabase.table("ccp_tipos_exames").delete().eq("id", tipo_id).execute()
+    return redirect("/ccp")
 
 
 @app.route("/usuarios-cargos")

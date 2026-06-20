@@ -13,6 +13,10 @@
         {% if tem_permissao('criar_ccp_exames') %}
         <button type="button" onclick="abrirModalCcp('modalNovoCcp')" class="btn-ccp-primario">+ Novo Exame</button>
         {% endif %}
+        {% if tem_permissao('criar_ccp_exames') or tem_permissao('editar_ccp_exames') %}
+        <button type="button" onclick="abrirModalCcp('modalTiposCcp')" class="btn-ccp-acao">Exames</button>
+        {% endif %}
+        <button type="button" onclick="abrirRelatorioCcp()" class="btn-ccp-acao">Relatório</button>
         <a href="/ccp" class="btn-ccp-aba {% if aba != 'finalizados' %}ativo{% endif %}">Ativos</a>
         <a href="/ccp?aba=finalizados" class="btn-ccp-aba {% if aba == 'finalizados' %}ativo{% endif %}">Finalizados</a>
     </div>
@@ -97,12 +101,22 @@
 
         <form method="POST" action="/ccp/exame/novo" class="form-convenio form-ccp">
             <div class="campo-modal"><label>Paciente</label><input name="nome_paciente" required></div>
-            <div class="campo-modal"><label>Exame</label><input name="exame" required></div>
+            <div class="campo-modal">
+                <label>Exame</label>
+                <select name="exame" class="select-bonito select-exame-ccp" onchange="preencherValorExameCcp(this)" required>
+                    <option value="">Selecione</option>
+                    {% for tipo in tipos_exames %}
+                    {% if tipo.ativo != false %}
+                    <option value="{{ tipo.nome }}" data-valor="{{ tipo.valor or '' }}">{{ tipo.nome }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
             <div class="campo-modal"><label>CIP</label><input name="cip"></div>
             <div class="campo-modal"><label>CPF</label><input name="cpf"></div>
             <div class="campo-modal"><label>Celular</label><input name="celular" placeholder="(00) 00000-0000"></div>
             <div class="campo-modal"><label>Convênio</label><input name="convenio"></div>
-            <div class="campo-modal"><label>Valor</label><input name="valor" placeholder="R$ 0,00"></div>
+            <div class="campo-modal"><label>Valor</label><input name="valor" class="valor-exame-ccp" placeholder="R$ 0,00"></div>
             <div class="campo-modal"><label>Nascimento</label><input type="date" name="data_nascimento"></div>
             <div class="campo-modal"><label>Data do Exame</label><input type="date" name="data_exame"></div>
             <div class="campo-modal campo-ccp-observacao"><label>Observação</label><textarea name="observacao"></textarea></div>
@@ -115,6 +129,71 @@
     </div>
 </div>
 {% endif %}
+
+{% if tem_permissao('criar_ccp_exames') or tem_permissao('editar_ccp_exames') %}
+<div id="modalTiposCcp" class="modal-fundo">
+    <div class="modal-card">
+        <div class="modal-topo">
+            <div>
+                <h2>Exames</h2>
+                <p>Cadastre os exames e valores usados no CCP.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModalCcp('modalTiposCcp')">×</button>
+        </div>
+
+        <div class="ccp-tipos-lista">
+            {% for tipo in tipos_exames %}
+            <div class="ccp-tipo-item">
+                <form method="POST" action="/ccp/tipos/editar/{{ tipo.id }}" class="ccp-tipo-form">
+                    <div><label>Nome</label><input name="nome" value="{{ tipo.nome or '' }}" required></div>
+                    <div><label>Valor</label><input name="valor" value="{{ tipo.valor or '' }}" placeholder="R$ 0,00"></div>
+                    <label class="ccp-check-ativo"><input type="checkbox" name="ativo" {% if tipo.ativo != false %}checked{% endif %}> Ativo</label>
+                    <button type="submit">Salvar</button>
+                </form>
+                <form method="POST" action="/ccp/tipos/excluir/{{ tipo.id }}" onsubmit="return confirm('Excluir este exame cadastrado?')">
+                    <button type="submit" class="btn-ccp-excluir">Excluir</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="ccp-vazio">Nenhum exame cadastrado.</div>
+            {% endfor %}
+        </div>
+
+        <hr class="separador-modal">
+
+        <h3>Novo Exame</h3>
+        <form method="POST" action="/ccp/tipos/novo" class="form-convenio form-ccp-tipo-novo">
+            <div class="campo-modal"><label>Nome</label><input name="nome" required></div>
+            <div class="campo-modal"><label>Valor</label><input name="valor" placeholder="R$ 0,00"></div>
+            <div class="modal-botoes">
+                <button type="submit" class="btn-salvar">Salvar Exame</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div id="modalRelatorioCcp" class="modal-fundo">
+    <div class="modal-card modal-relatorio-ccp">
+        <div class="modal-topo">
+            <div>
+                <h2>Relatório CCP</h2>
+                <p>Filtre por data do exame e imprima o relatório completo.</p>
+            </div>
+            <button type="button" class="btn-fechar" onclick="fecharModalCcp('modalRelatorioCcp')">×</button>
+        </div>
+
+        <div class="ccp-filtros-relatorio">
+            <div><label>De</label><input type="date" id="relatorioCcpInicio" onchange="montarRelatorioCcp()"></div>
+            <div><label>Até</label><input type="date" id="relatorioCcpFim" onchange="montarRelatorioCcp()"></div>
+            <button type="button" onclick="limparFiltroRelatorioCcp()">Limpar</button>
+            <button type="button" onclick="imprimirRelatorioCcp()">Imprimir</button>
+        </div>
+
+        <div id="relatorioCcpResumo" class="ccp-relatorio-resumo"></div>
+        <div id="relatorioCcpConteudo" class="ccp-relatorio-conteudo"></div>
+    </div>
+</div>
 
 <style>
 .ccp-topo {
@@ -150,6 +229,7 @@
 }
 
 .btn-ccp-primario,
+.btn-ccp-acao,
 .btn-ccp-aba {
     width: auto;
     margin: 0;
@@ -161,6 +241,10 @@
 
 .btn-ccp-primario {
     background: #7ac143;
+}
+
+.btn-ccp-acao {
+    background: #64748b;
 }
 
 .btn-ccp-aba {
@@ -402,6 +486,134 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
+.ccp-tipos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.ccp-tipo-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: end;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.ccp-tipo-form {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) 150px auto auto;
+    gap: 8px;
+    align-items: end;
+}
+
+.ccp-tipo-form label,
+.form-ccp-tipo-novo label,
+.ccp-filtros-relatorio label {
+    margin: 0 0 4px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ccp-tipo-form input,
+.form-ccp-tipo-novo input {
+    margin: 0;
+}
+
+.ccp-check-ativo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 11px;
+}
+
+.ccp-check-ativo input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.ccp-tipo-form button,
+.ccp-tipo-item > form button,
+.ccp-filtros-relatorio button {
+    width: auto;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.form-ccp-tipo-novo {
+    display: grid;
+    grid-template-columns: 1fr 180px auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.modal-relatorio-ccp {
+    width: 1100px;
+}
+
+.ccp-filtros-relatorio {
+    display: grid;
+    grid-template-columns: 170px 170px auto auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 12px;
+}
+
+.ccp-filtros-relatorio input {
+    margin: 0;
+}
+
+.ccp-relatorio-resumo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.ccp-relatorio-resumo span {
+    background: #e2e8f0;
+    color: #334155;
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.ccp-relatorio-conteudo {
+    max-height: 58vh;
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.ccp-relatorio-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ccp-relatorio-tabela th,
+.ccp-relatorio-tabela td {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 9px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.ccp-relatorio-tabela th {
+    background: #f8fafc;
+    color: #334155;
+    position: sticky;
+    top: 0;
+}
+
 @media (max-width: 1000px) {
     .ccp-topo,
     .ccp-board {
@@ -414,7 +626,10 @@
     }
 
     .ccp-lista-finalizados,
-    .form-ccp {
+    .form-ccp,
+    .ccp-tipo-form,
+    .form-ccp-tipo-novo,
+    .ccp-filtros-relatorio {
         grid-template-columns: 1fr;
     }
 
@@ -445,6 +660,171 @@ function alternarCcpCard(botao) {
     if (!card) return;
     const aberto = card.classList.toggle('aberto');
     botao.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+}
+
+const examesRelatorioCcp = [
+    {% for exame in exames_todos %}
+    {
+        paciente: {{ (exame.nome_paciente or '')|tojson }},
+        exame: {{ (exame.exame or '')|tojson }},
+        valor: {{ (exame.valor or '')|tojson }},
+        convenio: {{ (exame.convenio or '')|tojson }},
+        cpf: {{ (exame.cpf or '')|tojson }},
+        cip: {{ (exame.cip or '')|tojson }},
+        celular: {{ (exame.celular or '')|tojson }},
+        data: {{ (exame.data_exame or '')|tojson }},
+        status: {{ (exame.status or 'entrada')|tojson }},
+        observacao: {{ (exame.observacao or '')|tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+const nomesStatusCcp = {
+    {% for chave, st in status_ccp.items() %}
+    "{{ chave }}": "{{ st.nome }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function preencherValorExameCcp(select) {
+    const form = select.closest('form');
+    const campoValor = form ? form.querySelector('.valor-exame-ccp') : null;
+    const valor = select.options[select.selectedIndex]?.dataset.valor || '';
+    if (campoValor) campoValor.value = valor;
+}
+
+function formatarDataCcp(data) {
+    if (!data) return '-';
+    const partes = String(data).split('-');
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
+}
+
+function abrirRelatorioCcp() {
+    abrirModalCcp('modalRelatorioCcp');
+    montarRelatorioCcp();
+}
+
+function examesFiltradosRelatorioCcp() {
+    const inicio = document.getElementById('relatorioCcpInicio')?.value || '';
+    const fim = document.getElementById('relatorioCcpFim')?.value || '';
+
+    return examesRelatorioCcp.filter(item => {
+        if (inicio && (!item.data || item.data < inicio)) return false;
+        if (fim && (!item.data || item.data > fim)) return false;
+        return true;
+    });
+}
+
+function montarRelatorioCcp() {
+    const exames = examesFiltradosRelatorioCcp();
+    const resumo = document.getElementById('relatorioCcpResumo');
+    const conteudo = document.getElementById('relatorioCcpConteudo');
+    const totais = exames.reduce((acc, item) => {
+        const status = item.status || 'entrada';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+    }, {});
+
+    if (resumo) {
+        resumo.innerHTML = `
+            <span>Total: ${exames.length}</span>
+            <span>Entrada: ${totais.entrada || 0}</span>
+            <span>Aguardando pagamento: ${totais.aguardando_pagamento || 0}</span>
+            <span>Pago: ${totais.pago || 0}</span>
+            <span>Finalizado: ${totais.finalizado || 0}</span>
+        `;
+    }
+
+    if (conteudo) {
+        conteudo.innerHTML = `
+            <table class="ccp-relatorio-tabela">
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Exame</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Contato</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${exames.map(item => `
+                        <tr>
+                            <td><strong>${item.paciente || '-'}</strong><br>CIP: ${item.cip || '-'}<br>CPF: ${item.cpf || '-'}</td>
+                            <td>${item.exame || '-'}<br><small>${item.convenio || '-'}</small></td>
+                            <td>${item.valor || '-'}</td>
+                            <td>${formatarDataCcp(item.data)}</td>
+                            <td>${nomesStatusCcp[item.status] || item.status || '-'}</td>
+                            <td>${item.celular || '-'}<br><small>${item.observacao || ''}</small></td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="6">Nenhum exame encontrado.</td></tr>'}
+                </tbody>
+            </table>
+        `;
+    }
+}
+
+function limparFiltroRelatorioCcp() {
+    const inicio = document.getElementById('relatorioCcpInicio');
+    const fim = document.getElementById('relatorioCcpFim');
+    if (inicio) inicio.value = '';
+    if (fim) fim.value = '';
+    montarRelatorioCcp();
+}
+
+function imprimirRelatorioCcp() {
+    const exames = examesFiltradosRelatorioCcp();
+    const inicio = document.getElementById('relatorioCcpInicio')?.value || '';
+    const fim = document.getElementById('relatorioCcpFim')?.value || '';
+    const janela = window.open('', '_blank', 'width=1200,height=800');
+    if (!janela) {
+        alert('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.');
+        return;
+    }
+
+    janela.document.write(`
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Relatório CCP</title>
+            <style>
+                body { font-family: Arial, Helvetica, sans-serif; margin: 18px; color: #111827; }
+                header { display: flex; justify-content: space-between; border-bottom: 2px solid #111827; padding-bottom: 8px; margin-bottom: 12px; }
+                h1 { margin: 0; font-size: 22px; }
+                .periodo { font-size: 12px; color: #475569; }
+                table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                th, td { border: 1px solid #cbd5e1; padding: 7px; text-align: left; vertical-align: top; }
+                th { background: #f1f5f9; text-transform: uppercase; font-size: 11px; }
+                @page { size: A4 landscape; margin: 8mm; }
+            </style>
+        </head>
+        <body>
+            <header>
+                <h1>Relatório CCP</h1>
+                <div class="periodo">Período: ${formatarDataCcp(inicio) || '-'} até ${formatarDataCcp(fim) || '-'}<br>${exames.length} exame(s)</div>
+            </header>
+            <table>
+                <thead><tr><th>Paciente</th><th>Exame</th><th>Valor</th><th>Data</th><th>Status</th><th>Contato</th><th>Observação</th></tr></thead>
+                <tbody>
+                    ${exames.map(item => `
+                        <tr>
+                            <td><strong>${item.paciente || '-'}</strong><br>CIP: ${item.cip || '-'}<br>CPF: ${item.cpf || '-'}</td>
+                            <td>${item.exame || '-'}<br>${item.convenio || '-'}</td>
+                            <td>${item.valor || '-'}</td>
+                            <td>${formatarDataCcp(item.data)}</td>
+                            <td>${nomesStatusCcp[item.status] || item.status || '-'}</td>
+                            <td>${item.celular || '-'}</td>
+                            <td>${item.observacao || ''}</td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="7">Nenhum exame encontrado.</td></tr>'}
+                </tbody>
+            </table>
+            <script>window.onload = function(){ window.print(); };<\/script>
+        </body>
+        </html>
+    `);
+    janela.document.close();
 }
 </script>
 
