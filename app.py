@@ -1618,6 +1618,26 @@ def normalizar_status_ccp(status):
     return status if status in CCP_STATUS else "entrada"
 
 
+def formatar_valor_reais(valor):
+    texto = str(valor or "").strip()
+
+    if not texto:
+        return None
+
+    texto = texto.replace("R$", "").replace(" ", "")
+
+    try:
+        if "," in texto:
+            numero = float(texto.replace(".", "").replace(",", "."))
+        else:
+            numero = float(texto)
+
+        formatado = f"R$ {numero:,.2f}"
+        return formatado.replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        return valor
+
+
 def dados_formulario_ccp(status_padrao="entrada"):
     return {
         "nome_paciente": request.form.get("nome_paciente"),
@@ -1625,8 +1645,7 @@ def dados_formulario_ccp(status_padrao="entrada"):
         "cip": request.form.get("cip"),
         "celular": request.form.get("celular"),
         "exame": request.form.get("exame"),
-        "convenio": request.form.get("convenio"),
-        "valor": request.form.get("valor") or None,
+        "valor": formatar_valor_reais(request.form.get("valor")),
         "data_nascimento": request.form.get("data_nascimento") or None,
         "data_exame": request.form.get("data_exame") or None,
         "observacao": request.form.get("observacao"),
@@ -1721,7 +1740,7 @@ def ccp_tipo_exame_novo():
 
     supabase.table("ccp_tipos_exames").insert({
         "nome": request.form.get("nome"),
-        "valor": request.form.get("valor") or None,
+        "valor": formatar_valor_reais(request.form.get("valor")),
         "ativo": True,
     }).execute()
 
@@ -1735,7 +1754,7 @@ def ccp_tipo_exame_editar(tipo_id):
 
     supabase.table("ccp_tipos_exames").update({
         "nome": request.form.get("nome"),
-        "valor": request.form.get("valor") or None,
+        "valor": formatar_valor_reais(request.form.get("valor")),
         "ativo": "ativo" in request.form,
     }).eq("id", tipo_id).execute()
 

@@ -103,7 +103,7 @@
             <div class="campo-modal"><label>Paciente</label><input name="nome_paciente" required></div>
             <div class="campo-modal">
                 <label>Exame</label>
-                <select name="exame" class="select-bonito select-exame-ccp" onchange="preencherValorExameCcp(this)" required>
+                <select name="exame" class="select-bonito select-ccp select-exame-ccp" onchange="preencherValorExameCcp(this)" required>
                     <option value="">Selecione</option>
                     {% for tipo in tipos_exames %}
                     {% if tipo.ativo != false %}
@@ -115,8 +115,15 @@
             <div class="campo-modal"><label>CIP</label><input name="cip"></div>
             <div class="campo-modal"><label>CPF</label><input name="cpf"></div>
             <div class="campo-modal"><label>Celular</label><input name="celular" placeholder="(00) 00000-0000"></div>
-            <div class="campo-modal"><label>Convênio</label><input name="convenio"></div>
-            <div class="campo-modal"><label>Valor</label><input name="valor" class="valor-exame-ccp" placeholder="R$ 0,00"></div>
+            <div class="campo-modal"><label>Valor</label><input name="valor" class="valor-exame-ccp campo-moeda-ccp" placeholder="R$ 0,00" onblur="formatarCampoMoedaCcp(this)"></div>
+            <div class="campo-modal">
+                <label>Status</label>
+                <select name="status" class="select-bonito select-ccp select-status-ccp">
+                    {% for chave, st in status_ccp.items() %}
+                    <option value="{{ chave }}" {% if chave == 'entrada' %}selected{% endif %}>{{ st.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="campo-modal"><label>Nascimento</label><input type="date" name="data_nascimento"></div>
             <div class="campo-modal"><label>Data do Exame</label><input type="date" name="data_exame"></div>
             <div class="campo-modal campo-ccp-observacao"><label>Observação</label><textarea name="observacao"></textarea></div>
@@ -146,7 +153,7 @@
             <div class="ccp-tipo-item">
                 <form method="POST" action="/ccp/tipos/editar/{{ tipo.id }}" class="ccp-tipo-form">
                     <div><label>Nome</label><input name="nome" value="{{ tipo.nome or '' }}" required></div>
-                    <div><label>Valor</label><input name="valor" value="{{ tipo.valor or '' }}" placeholder="R$ 0,00"></div>
+                    <div><label>Valor</label><input name="valor" class="campo-moeda-ccp" value="{{ tipo.valor or '' }}" placeholder="R$ 0,00" onblur="formatarCampoMoedaCcp(this)"></div>
                     <label class="ccp-check-ativo"><input type="checkbox" name="ativo" {% if tipo.ativo != false %}checked{% endif %}> Ativo</label>
                     <button type="submit">Salvar</button>
                 </form>
@@ -164,7 +171,7 @@
         <h3>Novo Exame</h3>
         <form method="POST" action="/ccp/tipos/novo" class="form-convenio form-ccp-tipo-novo">
             <div class="campo-modal"><label>Nome</label><input name="nome" required></div>
-            <div class="campo-modal"><label>Valor</label><input name="valor" placeholder="R$ 0,00"></div>
+            <div class="campo-modal"><label>Valor</label><input name="valor" class="campo-moeda-ccp" placeholder="R$ 0,00" onblur="formatarCampoMoedaCcp(this)"></div>
             <div class="modal-botoes">
                 <button type="submit" class="btn-salvar">Salvar Exame</button>
             </div>
@@ -245,6 +252,26 @@
 
 .btn-ccp-acao {
     background: #64748b;
+}
+
+.select-ccp {
+    min-height: 44px;
+    border: 1px solid #bfd1df;
+    border-radius: 10px;
+    background:
+        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    color: #0f172a;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(15,23,42,.05);
+}
+
+.select-ccp:focus {
+    border-color: #0077b6;
+    box-shadow: 0 0 0 3px rgba(0,119,182,.16);
+}
+
+.select-status-ccp {
+    text-transform: uppercase;
 }
 
 .btn-ccp-aba {
@@ -668,7 +695,6 @@ const examesRelatorioCcp = [
         paciente: {{ (exame.nome_paciente or '')|tojson }},
         exame: {{ (exame.exame or '')|tojson }},
         valor: {{ (exame.valor or '')|tojson }},
-        convenio: {{ (exame.convenio or '')|tojson }},
         cpf: {{ (exame.cpf or '')|tojson }},
         cip: {{ (exame.cip or '')|tojson }},
         celular: {{ (exame.celular or '')|tojson }},
@@ -689,7 +715,34 @@ function preencherValorExameCcp(select) {
     const form = select.closest('form');
     const campoValor = form ? form.querySelector('.valor-exame-ccp') : null;
     const valor = select.options[select.selectedIndex]?.dataset.valor || '';
-    if (campoValor) campoValor.value = valor;
+    if (campoValor) {
+        campoValor.value = formatarMoedaCcp(valor);
+    }
+}
+
+function formatarMoedaCcp(valor) {
+    let texto = String(valor || '').trim();
+    if (!texto) return '';
+
+    texto = texto.replace('R$', '').replace(/\s/g, '');
+
+    let numero;
+    if (texto.includes(',')) {
+        numero = Number(texto.replace(/\./g, '').replace(',', '.'));
+    } else {
+        numero = Number(texto);
+    }
+
+    if (Number.isNaN(numero)) return valor;
+
+    return numero.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
+function formatarCampoMoedaCcp(input) {
+    input.value = formatarMoedaCcp(input.value);
 }
 
 function formatarDataCcp(data) {
@@ -751,7 +804,7 @@ function montarRelatorioCcp() {
                     ${exames.map(item => `
                         <tr>
                             <td><strong>${item.paciente || '-'}</strong><br>CIP: ${item.cip || '-'}<br>CPF: ${item.cpf || '-'}</td>
-                            <td>${item.exame || '-'}<br><small>${item.convenio || '-'}</small></td>
+                            <td>${item.exame || '-'}</td>
                             <td>${item.valor || '-'}</td>
                             <td>${formatarDataCcp(item.data)}</td>
                             <td>${nomesStatusCcp[item.status] || item.status || '-'}</td>
@@ -810,7 +863,7 @@ function imprimirRelatorioCcp() {
                     ${exames.map(item => `
                         <tr>
                             <td><strong>${item.paciente || '-'}</strong><br>CIP: ${item.cip || '-'}<br>CPF: ${item.cpf || '-'}</td>
-                            <td>${item.exame || '-'}<br>${item.convenio || '-'}</td>
+                            <td>${item.exame || '-'}</td>
                             <td>${item.valor || '-'}</td>
                             <td>${formatarDataCcp(item.data)}</td>
                             <td>${nomesStatusCcp[item.status] || item.status || '-'}</td>
